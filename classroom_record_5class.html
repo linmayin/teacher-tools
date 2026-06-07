@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="課堂記錄">
+<meta name="theme-color" content="#1a1a2e">
+<title>課堂表現記錄（五班）</title>
+<style>
+:root{
+  --bg:#f5f4f0;--surface:#fff;--surface2:#f0ede8;--border:#e0dbd3;
+  --text:#1a1814;--text2:#6b6560;--text3:#a09a93;
+  --accent:#2d5be3;--accent-light:#edf0fd;
+  --minus:#c0392b;--minus-light:#fdf0ee;
+  --plus:#1e7e4a;--plus-light:#edf7f2;
+  --radius:14px;--radius-sm:9px;--shadow:0 2px 12px rgba(0,0,0,0.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'PingFang TC','Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);font-size:15px;display:flex;flex-direction:column;height:100dvh;}
+
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:env(safe-area-inset-top,12px) 16px 0;flex-shrink:0;}
+.header-top{display:flex;align-items:center;justify-content:space-between;min-height:48px;}
+.app-title{font-size:17px;font-weight:700;letter-spacing:-0.3px;}
+.date-pill{font-size:12px;color:var(--text2);background:var(--surface2);padding:4px 10px;border-radius:20px;border:1px solid var(--border);}
+.tabs{display:flex;padding:10px 0 0;}
+.tab{flex:1;text-align:center;font-size:12px;font-weight:500;color:var(--text3);padding:6px 4px 10px;border-bottom:2px solid transparent;cursor:pointer;user-select:none;}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab-icon{font-size:18px;display:block;margin-bottom:2px;}
+
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px env(safe-area-inset-bottom,16px);}
+.panel{display:none;}.panel.active{display:block;}
+
+.card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:14px;margin-bottom:12px;box-shadow:var(--shadow);}
+.card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--text3);margin-bottom:10px;}
+
+.chip-wrap{display:flex;flex-wrap:wrap;gap:7px;}
+.chip{padding:7px 14px;border-radius:20px;font-size:13px;font-weight:500;background:var(--surface2);border:1.5px solid var(--border);color:var(--text2);cursor:pointer;transition:all 0.12s;user-select:none;}
+.chip.sel{background:var(--accent);border-color:var(--accent);color:#fff;}
+.chip.sel-minus{background:var(--minus);border-color:var(--minus);color:#fff;}
+.chip.sel-plus{background:var(--plus);border-color:var(--plus);color:#fff;}
+
+.num-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin-bottom:10px;}
+.num-btn{aspect-ratio:1;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;font-family:'SF Mono','Fira Mono',monospace;}
+.num-btn.sel{background:var(--accent);border-color:var(--accent);color:#fff;}
+.num-row-sep{grid-column:1/-1;height:1px;background:var(--border);margin:2px 0;}
+
+.field{margin-bottom:10px;}
+.field label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:5px;}
+input[type=date],input[type=text],select{width:100%;height:42px;padding:0 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);font-size:15px;color:var(--text);font-family:inherit;-webkit-appearance:none;appearance:none;}
+input:focus,select:focus{outline:none;border-color:var(--accent);}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 18px;height:42px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;user-select:none;}
+.btn:active{opacity:0.7;transform:scale(0.97);}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
+.btn-full{width:100%;}
+.btn-sm{height:30px;padding:0 10px;font-size:12px;}
+.btn-danger{border-color:var(--minus);color:var(--minus);}
+
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;}
+.badge-plus{background:var(--plus-light);color:var(--plus);}
+.badge-minus{background:var(--minus-light);color:var(--minus);}
+.badge-cls{background:var(--accent-light);color:var(--accent);}
+
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.metric{background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);padding:12px;}
+.metric-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--text3);margin-bottom:4px;}
+.metric-value{font-size:26px;font-weight:700;}
+.pos{color:var(--plus);}.neg{color:var(--minus);}
+
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;padding:8px 6px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;}
+td{padding:9px 6px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--surface2);}
+
+.empty{text-align:center;color:var(--text3);padding:32px 0;font-size:13px;}
+.row{display:flex;gap:8px;align-items:flex-end;}
+.f1{flex:1;}
+.tbl-wrap{overflow-x:auto;}
+
+.setting-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.setting-row:last-child{border-bottom:none;}
+.setting-row input[type=text]{height:36px;font-size:14px;}
+
+.toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,16px) + 16px);left:50%;transform:translateX(-50%);background:#1a1814;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999;white-space:nowrap;}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <span class="app-title">📋 課堂記錄</span>
+    <span class="date-pill" id="today-pill"></span>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('record',this)"><span class="tab-icon">✏️</span>登記</div>
+    <div class="tab" onclick="switchTab('log',this)"><span class="tab-icon">📄</span>記錄</div>
+    <div class="tab" onclick="switchTab('summary',this)"><span class="tab-icon">📊</span>統整</div>
+    <div class="tab" onclick="switchTab('settings',this)"><span class="tab-icon">⚙️</span>設定</div>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- 登記 -->
+  <div class="panel active" id="panel-record">
+    <div class="card">
+      <div class="card-title">選擇班級</div>
+      <div class="chip-wrap" id="class-chips"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">選擇項目</div>
+      <div class="chip-wrap" id="item-chips">
+        <div class="chip sel-minus" onclick="pickItem(this,'功課未交',-1)">功課未交 −1</div>
+        <div class="chip" onclick="pickItem(this,'上課講話',-1)">上課講話 −1</div>
+        <div class="chip" onclick="pickItem(this,'上課睡覺',-1)">上課睡覺 −1</div>
+        <div class="chip" onclick="pickItem(this,'表現優異',+1)">表現優異 +1</div>
+        <div class="chip" onclick="pickItem(this,'主動回答',+1)">主動回答 +1</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row">
+        <div class="f1">
+          <div class="field" style="margin:0">
+            <label>日期</label>
+            <input type="date" id="rec-date">
+          </div>
+        </div>
+        <div style="width:80px">
+          <div class="field" style="margin:0">
+            <label>分數</label>
+            <input type="text" id="rec-score" value="-1" style="text-align:center">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="card-title" style="margin:0">座號 <span style="font-size:12px;color:var(--text3)" id="sel-count"></span></div>
+        <button class="btn btn-sm" onclick="clearNums()">清除</button>
+      </div>
+      <div class="num-grid" id="num-grid"></div>
+      <button class="btn btn-primary btn-full" onclick="submitRecords()">✓ 新增記錄</button>
+    </div>
+  </div>
+
+  <!-- 記錄 -->
+  <div class="panel" id="panel-log">
+    <div class="card">
+      <div class="row" style="flex-wrap:wrap;gap:8px;margin-bottom:8px">
+        <div class="f1">
+          <div class="field" style="margin:0">
+            <label>班級</label>
+            <select id="filter-class" onchange="renderLog()">
+              <option value="">全部</option>
+            </select>
+          </div>
+        </div>
+        <div class="f1">
+          <div class="field" style="margin:0">
+            <label>日期</label>
+            <input type="date" id="filter-date" oninput="renderLog()">
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn f1" onclick="clearFilters()">清除篩選</button>
+        <button class="btn f1" onclick="exportCSV()">⬇ 匯出 CSV</button>
+      </div>
+    </div>
+    <div class="card" style="padding:0 14px">
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>日期</th><th>班級</th><th style="text-align:center">座號</th><th>項目</th><th style="text-align:center">分</th><th></th>
+          </tr></thead>
+          <tbody id="log-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 統整 -->
+  <div class="panel" id="panel-summary">
+    <div class="card">
+      <div class="field" style="margin-bottom:10px">
+        <label>篩選班級</label>
+        <select id="sum-class" onchange="renderSummary()">
+          <option value="">全部班級</option>
+        </select>
+      </div>
+      <button class="btn btn-full" onclick="exportSummaryCSV()">⬇ 匯出統整 CSV</button>
+    </div>
+    <div class="metric-grid" id="sum-metrics"></div>
+    <div class="card" style="padding:0 14px">
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th>班級</th><th style="text-align:center">座號</th><th style="text-align:center">總分</th><th style="text-align:center">次數</th><th>最常見</th>
+          </tr></thead>
+          <tbody id="sum-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 設定 -->
+  <div class="panel" id="panel-settings">
+    <div class="card">
+      <div class="card-title">班級名稱設定</div>
+      <div id="class-name-list"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">資料管理</div>
+      <button class="btn btn-full" onclick="exportAllCSV()" style="margin-bottom:8px">⬇ 匯出全部資料</button>
+      <label class="btn btn-full" style="cursor:pointer">
+        ⬆ 匯入 CSV 資料
+        <input type="file" accept=".csv" id="import-file" style="display:none" onchange="importCSV(this)">
+      </label>
+    </div>
+    <div class="card" style="border-color:#ffcdd2">
+      <div class="card-title" style="color:var(--minus)">危險區域</div>
+      <button class="btn btn-danger btn-full" onclick="clearAll()">清除所有記錄</button>
+    </div>
+  </div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+var DB='cr5_records_v1', CFG='cr5_config_v1';
+var records=[];
+var cfg={classes:['班級一','班級二','班級三','班級四','班級五']};
+var selClass='', curItem='功課未交', curScore=-1, selNums=new Set();
+
+function init(){
+  try{var r=localStorage.getItem(DB);if(r)records=JSON.parse(r);}catch(e){}
+  try{var c=localStorage.getItem(CFG);if(c)cfg=JSON.parse(c);}catch(e){}
+  selClass=cfg.classes[0]||'';
+  document.getElementById('rec-date').value=new Date().toLocaleDateString('sv');
+  document.getElementById('today-pill').textContent=new Date().toLocaleDateString('zh-TW',{month:'long',day:'numeric',weekday:'short'});
+  buildClassChips();
+  buildNumGrid();
+  buildDropdowns();
+  buildSettings();
+  renderLog();
+  renderSummary();
+  updateSelCount();
+}
+
+function save(){try{localStorage.setItem(DB,JSON.stringify(records));}catch(e){}}
+function saveCfg(){try{localStorage.setItem(CFG,JSON.stringify(cfg));}catch(e){}}
+
+function buildClassChips(){
+  var el=document.getElementById('class-chips');
+  el.innerHTML='';
+  cfg.classes.forEach(function(cls){
+    var d=document.createElement('div');
+    d.className='chip'+(selClass===cls?' sel':'');
+    d.textContent=cls;
+    d.onclick=(function(el2,c){return function(){
+      document.querySelectorAll('#class-chips .chip').forEach(function(x){x.className='chip';});
+      el2.className='chip sel';selClass=c;
+    };})(d,cls);
+    el.appendChild(d);
+  });
+}
+
+function buildNumGrid(){
+  var g=document.getElementById('num-grid');
+  g.innerHTML='';
+  for(var i=1;i<=40;i++){
+    if(i===11||i===21||i===31){
+      var sep=document.createElement('div');sep.className='num-row-sep';g.appendChild(sep);
+    }
+    var b=document.createElement('button');
+    b.className='num-btn'+(selNums.has(i)?' sel':'');
+    b.textContent=String(i).padStart(2,'0');
+    b.id='nb-'+i;
+    var n=i;
+    b.onclick=(function(btn,num){return function(){
+      if(selNums.has(num)){selNums.delete(num);btn.className='num-btn';}
+      else{selNums.add(num);btn.className='num-btn sel';}
+      updateSelCount();
+    };})(b,n);
+    g.appendChild(b);
+  }
+}
+
+function updateSelCount(){
+  var el=document.getElementById('sel-count');
+  el.textContent=selNums.size>0?'（已選 '+selNums.size+' 人）':'';
+}
+
+function clearNums(){
+  selNums.clear();
+  document.querySelectorAll('.num-btn').forEach(function(b){b.className='num-btn';});
+  updateSelCount();
+}
+
+function pickItem(el,item,score){
+  document.querySelectorAll('#item-chips .chip').forEach(function(c){c.className='chip';});
+  el.className='chip '+(score<0?'sel-minus':'sel-plus');
+  curItem=item;curScore=score;
+  document.getElementById('rec-score').value=score;
+}
+
+function submitRecords(){
+  if(!selClass){showToast('請先選擇班級');return;}
+  if(selNums.size===0){showToast('請點選座號');return;}
+  var date=document.getElementById('rec-date').value;
+  if(!date){showToast('請選擇日期');return;}
+  var score=parseFloat(document.getElementById('rec-score').value);
+  if(isNaN(score))score=curScore;
+  selNums.forEach(function(n){
+    records.push({id:Date.now()+'_'+n+'_'+Math.random().toString(36).slice(2),date:date,cls:selClass,num:n,item:curItem,score:score});
+  });
+  save();
+  showToast('已新增 '+selNums.size+' 筆記錄 ✓');
+  clearNums();renderLog();renderSummary();
+}
+
+function buildDropdowns(){
+  ['filter-class','sum-class'].forEach(function(id){
+    var sel=document.getElementById(id);
+    var first=sel.options[0].outerHTML;
+    sel.innerHTML=first;
+    cfg.classes.forEach(function(cls){
+      var o=document.createElement('option');o.value=cls;o.textContent=cls;sel.appendChild(o);
+    });
+  });
+}
+
+function buildSettings(){
+  var el=document.getElementById('class-name-list');
+  el.innerHTML='';
+  cfg.classes.forEach(function(cls,i){
+    var row=document.createElement('div');
+    row.className='setting-row';
+    row.innerHTML='<span style="font-size:12px;color:var(--text3);min-width:40px">班級'+(i+1)+'</span>'
+      +'<input type="text" value="'+cls+'" maxlength="12" id="cls-inp-'+i+'">'
+      +'<button class="btn btn-sm" onclick="saveClassName('+i+')">儲存</button>';
+    el.appendChild(row);
+  });
+}
+
+function saveClassName(idx){
+  var val=document.getElementById('cls-inp-'+idx).value.trim();
+  if(!val){showToast('名稱不可空白');return;}
+  var old=cfg.classes[idx];
+  cfg.classes[idx]=val;
+  records.forEach(function(r){if(r.cls===old)r.cls=val;});
+  save();saveCfg();
+  selClass=cfg.classes[0];
+  buildClassChips();buildDropdowns();
+  renderLog();renderSummary();
+  showToast('已更新為「'+val+'」');
+}
+
+function getFiltered(){
+  var fc=document.getElementById('filter-class').value;
+  var fd=document.getElementById('filter-date').value;
+  return records.filter(function(r){return(!fc||r.cls===fc)&&(!fd||r.date===fd);});
+}
+
+function renderLog(){
+  var rows=getFiltered().slice().sort(function(a,b){return b.date.localeCompare(a.date)||a.cls.localeCompare(b.cls)||a.num-b.num;});
+  var tb=document.getElementById('log-body');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="6" class="empty">尚無記錄</td></tr>';return;}
+  tb.innerHTML=rows.map(function(r){
+    var sc=r.score>=0?'<span class="badge badge-plus">+'+r.score+'</span>':'<span class="badge badge-minus">'+r.score+'</span>';
+    return '<tr><td style="font-size:12px;white-space:nowrap">'+r.date+'</td>'
+      +'<td><span class="badge badge-cls" style="white-space:nowrap">'+r.cls+'</span></td>'
+      +'<td style="text-align:center;font-family:monospace">'+String(r.num).padStart(2,'0')+'</td>'
+      +'<td style="font-size:12px">'+r.item+'</td>'
+      +'<td style="text-align:center">'+sc+'</td>'
+      +'<td><button class="btn btn-sm btn-danger" onclick="delRecord(\''+r.id+'\')">✕</button></td></tr>';
+  }).join('');
+}
+
+function delRecord(id){
+  if(!confirm('確定刪除這筆記錄？'))return;
+  records=records.filter(function(r){return r.id!==id;});
+  save();renderLog();renderSummary();
+}
+
+function clearFilters(){
+  document.getElementById('filter-class').value='';
+  document.getElementById('filter-date').value='';
+  renderLog();
+}
+
+function renderSummary(){
+  var sc=document.getElementById('sum-class').value;
+  var sub=records.filter(function(r){return!sc||r.cls===sc;});
+  var map={};
+  sub.forEach(function(r){
+    var k=r.cls+'__'+r.num;
+    if(!map[k])map[k]={cls:r.cls,num:r.num,total:0,count:0,items:{}};
+    map[k].total+=r.score;map[k].count++;
+    map[k].items[r.item]=(map[k].items[r.item]||0)+1;
+  });
+  var rows=Object.values(map).sort(function(a,b){
+    return cfg.classes.indexOf(a.cls)-cfg.classes.indexOf(b.cls)||a.num-b.num;
+  });
+  var pos=sub.filter(function(r){return r.score>0;}).length;
+  var neg=sub.filter(function(r){return r.score<0;}).length;
+  var tot=sub.reduce(function(s,r){return s+r.score;},0);
+  document.getElementById('sum-metrics').innerHTML=
+    '<div class="metric"><div class="metric-label">總記錄數</div><div class="metric-value">'+sub.length+'</div></div>'
+    +'<div class="metric"><div class="metric-label">涉及人次</div><div class="metric-value">'+rows.length+'</div></div>'
+    +'<div class="metric"><div class="metric-label">加分次數</div><div class="metric-value pos">'+pos+'</div></div>'
+    +'<div class="metric"><div class="metric-label">扣分次數</div><div class="metric-value neg">'+neg+'</div></div>';
+  var tb=document.getElementById('sum-body');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="5" class="empty">尚無資料</td></tr>';return;}
+  tb.innerHTML=rows.map(function(r){
+    var top=Object.entries(r.items).sort(function(a,b){return b[1]-a[1];})[0];
+    var cls=r.total>0?'pos':r.total<0?'neg':'';
+    return '<tr>'
+      +'<td><span class="badge badge-cls" style="white-space:nowrap">'+r.cls+'</span></td>'
+      +'<td style="text-align:center;font-family:monospace">'+String(r.num).padStart(2,'0')+'</td>'
+      +'<td style="text-align:center;font-weight:700" class="'+cls+'">'+r.total+'</td>'
+      +'<td style="text-align:center">'+r.count+'</td>'
+      +'<td style="font-size:12px">'+top[0]+'×'+top[1]+'</td></tr>';
+  }).join('');
+}
+
+function switchTab(name,el){
+  document.querySelectorAll('.tab').forEach(function(t){t.className='tab';});
+  document.querySelectorAll('.panel').forEach(function(p){p.className='panel';});
+  el.className='tab active';
+  document.getElementById('panel-'+name).className='panel active';
+  if(name==='log')renderLog();
+  if(name==='summary')renderSummary();
+  if(name==='settings')buildSettings();
+}
+
+function exportCSV(){
+  var rows=getFiltered().sort(function(a,b){return b.date.localeCompare(a.date);});
+  if(!rows.length){showToast('沒有資料可匯出');return;}
+  var csv='\uFEFF日期,班級,座號,項目,分數\n'+rows.map(function(r){
+    return r.date+','+r.cls+','+String(r.num).padStart(2,'0')+','+r.item+','+r.score;
+  }).join('\n');
+  dl(csv,'課堂記錄_'+new Date().toLocaleDateString('sv')+'.csv');
+}
+
+function exportSummaryCSV(){
+  var sc=document.getElementById('sum-class').value;
+  var sub=records.filter(function(r){return!sc||r.cls===sc;});
+  if(!sub.length){showToast('沒有資料可匯出');return;}
+  var map={};
+  sub.forEach(function(r){
+    var k=r.cls+'__'+r.num;
+    if(!map[k])map[k]={cls:r.cls,num:r.num,total:0,count:0,hw:0,talk:0};
+    map[k].total+=r.score;map[k].count++;
+    if(r.item==='功課未交')map[k].hw++;
+    if(r.item==='上課講話')map[k].talk++;
+  });
+  var rows=Object.values(map).sort(function(a,b){
+    return cfg.classes.indexOf(a.cls)-cfg.classes.indexOf(b.cls)||a.num-b.num;
+  });
+  var csv='\uFEFF班級,座號,總分,記錄次數,功課未交,上課講話\n'+rows.map(function(r){
+    return r.cls+','+String(r.num).padStart(2,'0')+','+r.total+','+r.count+','+r.hw+','+r.talk;
+  }).join('\n');
+  dl(csv,'期末統整_'+new Date().toLocaleDateString('sv')+'.csv');
+}
+
+function exportAllCSV(){
+  if(!records.length){showToast('沒有資料可匯出');return;}
+  var csv='\uFEFF日期,班級,座號,項目,分數\n'+records.map(function(r){
+    return r.date+','+r.cls+','+String(r.num).padStart(2,'0')+','+r.item+','+r.score;
+  }).join('\n');
+  dl(csv,'全部記錄_'+new Date().toLocaleDateString('sv')+'.csv');
+  showToast('已匯出 '+records.length+' 筆資料');
+}
+
+function importCSV(input){
+  var file=input.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var lines=e.target.result.replace(/^\uFEFF/,'').split('\n').filter(function(l){return l.trim();});
+    var count=0;
+    lines.slice(1).forEach(function(line){
+      var p=line.split(',');
+      if(p.length<5)return;
+      var date=p[0].trim(),cls=p[1].trim(),num=parseInt(p[2]),item=p[3].trim(),score=parseFloat(p[4]);
+      if(!date||!cls||isNaN(num)||!item||isNaN(score))return;
+      var exists=records.some(function(r){return r.date===date&&r.cls===cls&&r.num===num&&r.item===item&&r.score===score;});
+      if(!exists){records.push({id:Date.now()+'_'+Math.random().toString(36).slice(2),date:date,cls:cls,num:num,item:item,score:score});count++;}
+    });
+    save();renderLog();renderSummary();
+    showToast('匯入完成，新增 '+count+' 筆');
+    input.value='';
+  };
+  reader.readAsText(file,'utf-8');
+}
+
+function clearAll(){
+  if(!confirm('確定清除所有記錄？此操作無法還原。'))return;
+  records=[];save();renderLog();renderSummary();showToast('已清除所有記錄');
+}
+
+function dl(csv,name){
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8;'}));
+  a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
+
+function showToast(msg){
+  var t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show';
+  clearTimeout(t._t);t._t=setTimeout(function(){t.className='toast';},2200);
+}
+
+init();
+</script>
+</body>
+</html>

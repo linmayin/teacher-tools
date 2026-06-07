@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="教師工具箱">
+<meta name="theme-color" content="#1a1814">
+<title>教師工具箱</title>
+<style>
+:root{
+  --bg:#f5f4f0;--surface:#fff;--surface2:#f0ede8;--border:#e0dbd3;
+  --text:#1a1814;--text2:#6b6560;--text3:#a09a93;
+  --accent:#2d5be3;--accent-light:#edf0fd;
+  --green:#1e7e4a;--green-light:#edf7f2;
+  --amber:#b45309;--amber-light:#fef3c7;
+  --radius:16px;--shadow:0 4px 20px rgba(0,0,0,0.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{min-height:100%;background:var(--bg);font-family:'PingFang TC','Noto Sans TC',sans-serif;color:var(--text);}
+
+.page{max-width:480px;margin:0 auto;padding:env(safe-area-inset-top,0px) 18px env(safe-area-inset-bottom,32px);}
+
+/* Hero */
+.hero{padding:40px 0 24px;text-align:center;}
+.hero-icon{font-size:52px;margin-bottom:12px;display:block;}
+.hero-title{font-size:24px;font-weight:800;letter-spacing:-0.5px;color:var(--text);margin-bottom:6px;}
+.hero-sub{font-size:13px;color:var(--text3);line-height:1.6;}
+
+/* Cards */
+.tool-card{
+  background:var(--surface);
+  border-radius:var(--radius);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+  margin-bottom:14px;
+  overflow:hidden;
+  text-decoration:none;
+  display:block;
+  transition:transform 0.12s, box-shadow 0.12s;
+}
+.tool-card:active{transform:scale(0.98);box-shadow:0 2px 10px rgba(0,0,0,0.06);}
+
+.card-accent{height:5px;}
+.accent-blue{background:var(--accent);}
+.accent-green{background:var(--green);}
+.accent-amber{background:var(--amber);}
+
+.card-body{padding:16px 18px 18px;}
+.card-header{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.card-emoji{font-size:28px;flex-shrink:0;}
+.card-name{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
+.card-desc{font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:12px;}
+
+.tag-row{display:flex;flex-wrap:wrap;gap:6px;}
+.tag{display:inline-block;font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;}
+.tag-blue{background:var(--accent-light);color:var(--accent);}
+.tag-green{background:var(--green-light);color:var(--green);}
+.tag-amber{background:var(--amber-light);color:var(--amber);}
+
+.open-btn{
+  display:flex;align-items:center;justify-content:center;gap:6px;
+  margin-top:14px;height:40px;border-radius:10px;
+  font-size:14px;font-weight:600;
+  transition:opacity 0.12s;
+}
+.open-btn:active{opacity:0.75;}
+.btn-blue{background:var(--accent);color:#fff;}
+.btn-green{background:var(--green);color:#fff;}
+.btn-amber{background:var(--amber);color:#fff;}
+
+/* Footer */
+.footer{text-align:center;padding:24px 0 8px;font-size:11px;color:var(--text3);line-height:1.8;}
+.footer a{color:var(--text3);}
+
+/* Divider */
+.section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--text3);margin:4px 0 10px;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="hero">
+    <span class="hero-icon">🧰</span>
+    <div class="hero-title">教師工具箱</div>
+    <div class="hero-sub">課堂表現記錄 ＆ 優缺點管理<br>點選工具即可開始使用</div>
+  </div>
+
+  <div class="section-label">課堂表現記錄</div>
+
+  <a class="tool-card" href="classroom_record.html">
+    <div class="card-accent accent-blue"></div>
+    <div class="card-body">
+      <div class="card-header">
+        <span class="card-emoji">📋</span>
+        <span class="card-name">課堂記錄（四班）</span>
+      </div>
+      <div class="card-desc">記錄學生課堂表現的加扣分，支援四個班級，可依班級、日期篩選，期末匯出 CSV 統整。</div>
+      <div class="tag-row">
+        <span class="tag tag-blue">四個班級</span>
+        <span class="tag tag-blue">座號 1–40</span>
+        <span class="tag tag-blue">班級名稱可自訂</span>
+        <span class="tag tag-blue">匯出 CSV</span>
+      </div>
+      <div class="open-btn btn-blue">開啟工具 →</div>
+    </div>
+  </a>
+
+  <a class="tool-card" href="classroom_record_5class.html">
+    <div class="card-accent accent-blue"></div>
+    <div class="card-body">
+      <div class="card-header">
+        <span class="card-emoji">📋</span>
+        <span class="card-name">課堂記錄（五班）</span>
+      </div>
+      <div class="card-desc">與四班版本功能相同，擴充至五個班級，適合授課班級較多的老師使用。</div>
+      <div class="tag-row">
+        <span class="tag tag-blue">五個班級</span>
+        <span class="tag tag-blue">座號 1–40</span>
+        <span class="tag tag-blue">班級名稱可自訂</span>
+        <span class="tag tag-blue">匯出 CSV</span>
+      </div>
+      <div class="open-btn btn-blue">開啟工具 →</div>
+    </div>
+  </a>
+
+  <div class="section-label" style="margin-top:8px">導師班管理</div>
+
+  <a class="tool-card" href="merit_record_v2.html">
+    <div class="card-accent accent-green"></div>
+    <div class="card-body">
+      <div class="card-header">
+        <span class="card-emoji">🏅</span>
+        <span class="card-name">優缺點記錄</span>
+      </div>
+      <div class="card-desc">記錄導師班學生的優缺點支數，自動換算嘉獎／警告，期中期末一鍵結轉，匯出合併列印 CSV 供通知單使用。</div>
+      <div class="tag-row">
+        <span class="tag tag-green">座號 1–35</span>
+        <span class="tag tag-green">全班一鍵登記</span>
+        <span class="tag tag-green">自動換算嘉獎</span>
+        <span class="tag tag-green">一鍵結轉</span>
+        <span class="tag tag-green">合併列印 CSV</span>
+      </div>
+      <div class="open-btn btn-green">開啟工具 →</div>
+    </div>
+  </a>
+
+  <div class="footer">
+    資料儲存於本機瀏覽器，不會上傳至伺服器<br>
+    建議定期匯出 CSV 備份以防資料遺失
+  </div>
+
+</div>
+</body>
+</html>
