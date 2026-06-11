@@ -14,66 +14,41 @@
   --accent:#2d5be3;--accent-light:#edf0fd;
   --green:#1e7e4a;--green-light:#edf7f2;
   --amber:#b45309;--amber-light:#fef3c7;
+  --purple:#6d28d9;--purple-light:#ede9fe;
   --radius:16px;--shadow:0 4px 20px rgba(0,0,0,0.08);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 html,body{min-height:100%;background:var(--bg);font-family:'PingFang TC','Noto Sans TC',sans-serif;color:var(--text);}
-
 .page{max-width:480px;margin:0 auto;padding:env(safe-area-inset-top,0px) 18px env(safe-area-inset-bottom,32px);}
-
-/* Hero */
 .hero{padding:40px 0 24px;text-align:center;}
 .hero-icon{font-size:52px;margin-bottom:12px;display:block;}
 .hero-title{font-size:24px;font-weight:800;letter-spacing:-0.5px;color:var(--text);margin-bottom:6px;}
 .hero-sub{font-size:13px;color:var(--text3);line-height:1.6;}
-
-/* Cards */
-.tool-card{
-  background:var(--surface);
-  border-radius:var(--radius);
-  border:1px solid var(--border);
-  box-shadow:var(--shadow);
-  margin-bottom:14px;
-  overflow:hidden;
-  text-decoration:none;
-  display:block;
-  transition:transform 0.12s, box-shadow 0.12s;
-}
+.tool-card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden;text-decoration:none;display:block;transition:transform 0.12s, box-shadow 0.12s;}
 .tool-card:active{transform:scale(0.98);box-shadow:0 2px 10px rgba(0,0,0,0.06);}
-
 .card-accent{height:5px;}
 .accent-blue{background:var(--accent);}
 .accent-green{background:var(--green);}
 .accent-amber{background:var(--amber);}
-
+.accent-purple{background:var(--purple);}
 .card-body{padding:16px 18px 18px;}
 .card-header{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
 .card-emoji{font-size:28px;flex-shrink:0;}
 .card-name{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
 .card-desc{font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:12px;}
-
 .tag-row{display:flex;flex-wrap:wrap;gap:6px;}
 .tag{display:inline-block;font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;}
 .tag-blue{background:var(--accent-light);color:var(--accent);}
 .tag-green{background:var(--green-light);color:var(--green);}
 .tag-amber{background:var(--amber-light);color:var(--amber);}
-
-.open-btn{
-  display:flex;align-items:center;justify-content:center;gap:6px;
-  margin-top:14px;height:40px;border-radius:10px;
-  font-size:14px;font-weight:600;
-  transition:opacity 0.12s;
-}
+.tag-purple{background:var(--purple-light);color:var(--purple);}
+.open-btn{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:14px;height:40px;border-radius:10px;font-size:14px;font-weight:600;transition:opacity 0.12s;}
 .open-btn:active{opacity:0.75;}
 .btn-blue{background:var(--accent);color:#fff;}
 .btn-green{background:var(--green);color:#fff;}
 .btn-amber{background:var(--amber);color:#fff;}
-
-/* Footer */
+.btn-purple{background:var(--purple);color:#fff;}
 .footer{text-align:center;padding:24px 0 8px;font-size:11px;color:var(--text3);line-height:1.8;}
-.footer a{color:var(--text3);}
-
-/* Divider */
 .section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--text3);margin:4px 0 10px;}
 </style>
 </head>
@@ -142,6 +117,25 @@ html,body{min-height:100%;background:var(--bg);font-family:'PingFang TC','Noto S
         <span class="tag tag-green">合併列印 CSV</span>
       </div>
       <div class="open-btn btn-green">開啟工具 →</div>
+    </div>
+  </a>
+
+  <a class="tool-card" href="life_rules.html">
+    <div class="card-accent accent-purple"></div>
+    <div class="card-body">
+      <div class="card-header">
+        <span class="card-emoji">📝</span>
+        <span class="card-name">生活常規登記表</span>
+      </div>
+      <div class="card-desc">每日登記學生生活常規違規項目，週統計自動計算缺點支數，產生個別家長通知並直接寄送 Gmail。</div>
+      <div class="tag-row">
+        <span class="tag tag-purple">座號 1–33</span>
+        <span class="tag tag-purple">9 個登記項目</span>
+        <span class="tag tag-purple">自動計算缺點</span>
+        <span class="tag tag-purple">Gmail 寄送</span>
+        <span class="tag tag-purple">匯出 CSV</span>
+      </div>
+      <div class="open-btn btn-purple">開啟工具 →</div>
     </div>
   </a>
 
