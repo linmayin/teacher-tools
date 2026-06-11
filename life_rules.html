@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>生活常規登記表</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif;font-size:16px;background:#f5f5f5;color:#1a1a1a}
+.tab-bar{display:flex;background:#fff;border-bottom:1px solid #e0e0e0;overflow-x:auto;-webkit-overflow-scrolling:touch;position:sticky;top:0;z-index:100}
+.tab{flex:1;min-width:64px;padding:14px 8px;font-size:13px;cursor:pointer;border:none;background:none;color:#888;border-bottom:3px solid transparent;white-space:nowrap;text-align:center}
+.tab.active{color:#1a1a1a;border-bottom:3px solid #1a1a1a;font-weight:600}
+.section{display:none;padding:16px}.section.active{display:block}
+.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
+.card-title{font-size:15px;font-weight:600;margin-bottom:12px;color:#1a1a1a}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+label.field-label{font-size:13px;color:#666;display:block;margin-bottom:5px}
+input[type=text],input[type=number],input[type=email],select,textarea{width:100%;font-size:16px;padding:10px 12px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#1a1a1a;-webkit-appearance:none;appearance:none}
+select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+.badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600}
+.badge-success{background:#e6f4ea;color:#1e7e34}
+.badge-danger{background:#fce8e8;color:#c0392b}
+.badge-info{background:#e8f0fe;color:#1a73e8}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:12px 18px;border-radius:10px;border:1.5px solid #ddd;background:#fff;color:#1a1a1a;cursor:pointer;font-size:15px;font-weight:500;-webkit-tap-highlight-color:transparent}
+.btn:active{opacity:0.75;transform:scale(0.97)}
+.btn-primary{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.btn-sm{padding:8px 14px;font-size:13px;border-radius:8px}
+.btn-danger{background:#fce8e8;color:#c0392b;border-color:#f5c6c6}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-weight:600;font-size:12px;color:#666;text-align:left;padding:8px 10px;border-bottom:1px solid #eee}
+td{padding:8px 10px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+.overflow-x{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.msg{padding:12px 14px;border-radius:8px;font-size:14px;margin:8px 0}
+.msg-success{background:#e6f4ea;color:#1e7e34}
+.msg-error{background:#fce8e8;color:#c0392b}
+.msg-info{background:#e8f0fe;color:#1a73e8}
+.tag{display:inline-block;padding:2px 8px;border-radius:5px;font-size:12px;margin:2px;background:#f0f0f0;color:#555}
+.tag-warn{background:#fff3e0;color:#e65100}
+.tag-danger{background:#fce8e8;color:#c0392b}
+.tag-note{background:#e8f0fe;color:#1a73e8}
+.no-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:8px;margin-top:8px}
+.no-btn{padding:13px 4px;border-radius:10px;border:1.5px solid #ddd;background:#f8f8f8;cursor:pointer;font-size:16px;font-weight:600;text-align:center;color:#1a1a1a;-webkit-tap-highlight-color:transparent;transition:background 0.1s}
+.no-btn:active{transform:scale(0.94)}
+.no-btn.selected{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.item-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin:8px 0}
+.item-btn{padding:14px 10px;border-radius:10px;border:1.5px solid #ddd;background:#f8f8f8;cursor:pointer;font-size:14px;text-align:center;color:#1a1a1a;line-height:1.4;-webkit-tap-highlight-color:transparent}
+.item-btn:active{transform:scale(0.96)}
+.item-btn.selected{border-color:#1a1a1a;background:#fff;font-weight:600}
+.item-btn.only-record{border-style:dashed;color:#888}
+.item-btn.only-record.selected{border-style:solid;color:#1a1a1a}
+.log-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0;font-size:14px;gap:8px}
+.student-result{border-bottom:1px solid #f0f0f0;padding:12px 0}
+.day-label{font-size:12px;font-weight:600;color:#888;margin:12px 0 6px;text-transform:uppercase}
+textarea.paste-area{height:130px;font-size:13px;font-family:monospace;padding:10px;border:1px solid #ddd;border-radius:8px;resize:vertical}
+</style>
+</head>
+<body>
+<div class="tab-bar">
+  <button class="tab active" onclick="switchTab('record',this)">✏️ 登記</button>
+  <button class="tab" onclick="switchTab('log',this)">📋 記錄</button>
+  <button class="tab" onclick="switchTab('summary',this)">📊 統計</button>
+  <button class="tab" onclick="switchTab('notify',this)">📨 通知</button>
+  <button class="tab" onclick="switchTab('setup',this)">⚙️ 設定</button>
+</div>
+
+<!-- 每日登記 -->
+<div id="tab-record" class="section active">
+  <div class="card">
+    <div class="card-title">選擇星期</div>
+    <select id="daySelect">
+      <option value="一">星期一</option><option value="二">星期二</option>
+      <option value="三">星期三</option><option value="四">星期四</option>
+      <option value="五">星期五</option>
+    </select>
+  </div>
+  <div class="card">
+    <div class="card-title">選擇項目</div>
+    <div class="item-grid" id="itemGrid"></div>
+  </div>
+  <div class="card" id="noteCard" style="display:none">
+    <div class="card-title">作業備註</div>
+    <input type="text" id="noteInput" placeholder="例：英習、數作（逗號分開）">
+  </div>
+  <div class="card">
+    <div class="card-title">選擇座號（可多選）</div>
+    <div class="no-grid" id="noGrid"></div>
+  </div>
+  <div style="padding:0 0 16px">
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="addRecord()">＋ 新增登記</button>
+      <button class="btn" onclick="clearSelection()">清除選擇</button>
+    </div>
+    <div id="recordMsg" style="margin-top:8px"></div>
+  </div>
+</div>
+
+<!-- 登記記錄 -->
+<div id="tab-log" class="section">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+      <div class="card-title" style="margin:0">本週登記</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <select id="logDayFilter" onchange="renderLog()" style="width:auto;font-size:14px">
+          <option value="">全部</option>
+          <option value="一">週一</option><option value="二">週二</option>
+          <option value="三">週三</option><option value="四">週四</option>
+          <option value="五">週五</option>
+        </select>
+        <button class="btn btn-sm btn-danger" onclick="clearAllRecords()">🗑 清除全部</button>
+      </div>
+    </div>
+    <div id="logList"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">貼上 CSV 文字匯入</div>
+    <div style="font-size:12px;color:#888;margin-bottom:8px">格式：座號,項目,星期（第一行標題可省略）</div>
+    <textarea class="paste-area" id="csvPaste" placeholder="座號,項目,星期&#10;3,作業缺交/學用品,三&#10;7,服裝儀容,三"></textarea>
+    <div class="btn-row" style="margin-top:10px">
+      <button class="btn btn-primary btn-sm" onclick="importPasteCSV()">⬆ 匯入</button>
+      <label class="btn btn-sm" style="cursor:pointer">📂 上傳 CSV 檔
+        <input type="file" accept=".csv" style="display:none" onchange="importRecordCSVFile(this)">
+      </label>
+    </div>
+    <div id="importMsg"></div>
+  </div>
+</div>
+
+<!-- 週統計 -->
+<div id="tab-summary" class="section">
+  <div id="summaryContent"></div>
+  <div class="btn-row" style="padding-bottom:16px">
+    <button class="btn btn-primary" onclick="calcSummary()">↻ 計算統計</button>
+    <button class="btn btn-sm" onclick="exportSummaryCSV()">⬇ 週統計 CSV</button>
+    <button class="btn btn-sm" onclick="exportDetailCSV()">⬇ 每日明細 CSV</button>
+  </div>
+</div>
+
+<!-- 通知寄送 -->
+<div id="tab-notify" class="section">
+  <div id="notifyContent"><div class="msg msg-info">請先至「統計」頁計算統計後再使用此頁。</div></div>
+</div>
+
+<!-- 設定 -->
+<div id="tab-setup" class="section">
+  <div class="card">
+    <div class="card-title">週次設定</div>
+    <div class="grid2">
+      <div><label class="field-label">第幾週</label><input type="number" id="weekNum" value="1" min="1" max="52"></div>
+      <div><label class="field-label">日期範圍</label><input type="text" id="weekRange" placeholder="5/12－5/16"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+      <div class="card-title" style="margin:0">家長 Email 名單</div>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-sm" onclick="downloadEmailTemplate()">⬇ 範本</button>
+        <label class="btn btn-sm" style="cursor:pointer">⬆ 匯入
+          <input type="file" accept=".csv" style="display:none" onchange="importEmailCSV(this)">
+        </label>
+      </div>
+    </div>
+    <div style="font-size:12px;color:#888;margin-bottom:8px">CSV 格式：座號,姓名,家長Email</div>
+    <div class="overflow-x">
+      <table>
+        <thead><tr><th>座號</th><th>姓名</th><th>家長 Email</th></tr></thead>
+        <tbody id="emailTable"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const ITEMS=[
+  {key:'遲到',label:'上學遲到',noDeduct:true},
+  {key:'晚進',label:'上課晚進',noDeduct:false},
+  {key:'秩序',label:'秩序表現',noDeduct:false},
+  {key:'趴睡',label:'上課趴睡',noDeduct:false},
+  {key:'聯絡本',label:'聯絡本缺遲',noDeduct:false},
+  {key:'作業',label:'作業缺交/學用品',noDeduct:false,hasNote:true},
+  {key:'打掃',label:'打掃工作',noDeduct:false},
+  {key:'環境',label:'環境與桌椅',noDeduct:false},
+  {key:'服儀',label:'服裝儀容',noDeduct:true}
+];
+const DAYS=['一','二','三','四','五'];
+const TOTAL=33;
+let students=[];
+let logs=[];
+let emailList=[];
+let summaryData=null;
+let selItem=null;
+let selNos=new Set();
+
+function initStudents(){
+  students=[];
+  for(let i=1;i<=TOTAL;i++) students.push({no:i,name:''});
+}
+initStudents();
+
+function switchTab(t,btn){
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+t).classList.add('active');
+  if(t==='record'){renderItemGrid();renderNoGrid();}
+  if(t==='log') renderLog();
+  if(t==='summary') calcSummary();
+  if(t==='notify') renderNotify();
+  if(t==='setup') renderEmailTable();
+}
+
+function renderItemGrid(){
+  const grid=document.getElementById('itemGrid');
+  grid.innerHTML='';
+  ITEMS.forEach(it=>{
+    const btn=document.createElement('button');
+    btn.className='item-btn'+(it.noDeduct?' only-record':'')+(selItem===it.key?' selected':'');
+    btn.innerHTML=it.label+(it.noDeduct?'<br><small style="font-size:11px;opacity:0.6">僅登記</small>':'');
+    btn.onclick=()=>{
+      selItem=selItem===it.key?null:it.key;
+      document.getElementById('noteCard').style.display=(selItem&&ITEMS.find(x=>x.key===selItem)?.hasNote)?'block':'none';
+      renderItemGrid();
+    };
+    grid.appendChild(btn);
+  });
+}
+
+function renderNoGrid(){
+  const grid=document.getElementById('noGrid');
+  grid.innerHTML='';
+  for(let i=1;i<=TOTAL;i++){
+    const s=students[i-1];
+    const btn=document.createElement('button');
+    btn.className='no-btn'+(selNos.has(i)?' selected':'');
+    btn.innerHTML=i+(s.name?`<br><small style="font-size:10px;font-weight:400">${s.name}</small>`:'');
+    btn.onclick=()=>{
+      if(selNos.has(i)) selNos.delete(i); else selNos.add(i);
+      renderNoGrid();
+    };
+    grid.appendChild(btn);
+  }
+}
+
+function addRecord(){
+  const msg=document.getElementById('recordMsg');
+  if(!selItem){showMsg(msg,'請先選擇項目','error');return;}
+  if(selNos.size===0){showMsg(msg,'請選擇至少一個座號','error');return;}
+  const day=document.getElementById('daySelect').value;
+  const note=document.getElementById('noteInput').value.trim();
+  selNos.forEach(no=>{
+    logs.push({no,item:selItem,day,note:ITEMS.find(x=>x.key===selItem)?.hasNote?note:''});
+  });
+  const count=selNos.size;
+  const label=ITEMS.find(x=>x.key===selItem)?.label;
+  selNos.clear();
+  document.getElementById('noteInput').value='';
+  renderNoGrid();
+  showMsg(msg,`已新增 ${count} 筆（週${day}・${label}）`,'success');
+}
+
+function clearSelection(){
+  selItem=null;selNos.clear();
+  document.getElementById('noteInput').value='';
+  document.getElementById('noteCard').style.display='none';
+  renderItemGrid();renderNoGrid();
+}
+
+function showMsg(el,text,type){
+  el.innerHTML=`<div class="msg msg-${type==='error'?'error':'success'}">${text}</div>`;
+  setTimeout(()=>el.innerHTML='',2500);
+}
+
+function renderLog(){
+  const dayFilter=document.getElementById('logDayFilter').value;
+  const list=document.getElementById('logList');
+  const filtered=logs.filter(l=>!dayFilter||l.day===dayFilter);
+  if(filtered.length===0){list.innerHTML='<div style="color:#888;font-size:14px;padding:8px 0">尚無登記記錄</div>';return;}
+  const grouped={};
+  filtered.forEach((l)=>{
+    if(!grouped[l.day]) grouped[l.day]=[];
+    grouped[l.day].push({...l,idx:logs.indexOf(l)});
+  });
+  let html='';
+  DAYS.forEach(d=>{
+    if(!grouped[d]) return;
+    html+=`<div class="day-label">星期${d}</div>`;
+    grouped[d].forEach(l=>{
+      const it=ITEMS.find(x=>x.key===l.item);
+      const s=students[l.no-1];
+      html+=`<div class="log-item">
+        <span><strong>${l.no}${s.name?' '+s.name:''}</strong> — ${it?.label||l.item}${l.note?` <span class="tag tag-note">${l.note}</span>`:''}${it?.noDeduct?' <span class="tag">僅登記</span>':''}</span>
+        <button class="btn btn-sm btn-danger" onclick="deleteLog(${l.idx})" style="flex-shrink:0">🗑</button>
+      </div>`;
+    });
+  });
+  list.innerHTML=html;
+}
+
+function deleteLog(idx){logs.splice(idx,1);renderLog();}
+function clearAllRecords(){if(!confirm('確定清除本週所有登記？'))return;logs=[];renderLog();}
+
+function importPasteCSV(){
+  const text=document.getElementById('csvPaste').value.trim();
+  const msgEl=document.getElementById('importMsg');
+  if(!text){msgEl.innerHTML='<div class="msg msg-error">請先貼上 CSV 內容</div>';return;}
+  const count=parseCSVText(text);
+  document.getElementById('csvPaste').value='';
+  msgEl.innerHTML=`<div class="msg msg-success">${count} 筆記錄已匯入</div>`;
+  setTimeout(()=>msgEl.innerHTML='',3000);
+  renderLog();
+}
+
+function importRecordCSVFile(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const count=parseCSVText(e.target.result.replace(/^\uFEFF/,''));
+    document.getElementById('importMsg').innerHTML=`<div class="msg msg-success">${count} 筆記錄已匯入</div>`;
+    setTimeout(()=>document.getElementById('importMsg').innerHTML='',3000);
+    renderLog();
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
+function parseCSVText(text){
+  let count=0;
+  text.split('\n').forEach(l=>{
+    l=l.trim();if(!l)return;
+    const parts=l.split(',');
+    if(parts.length<3)return;
+    const no=parseInt(parts[0]);
+    const itemLabel=parts[1].trim();
+    const day=parts[2].trim();
+    const note=parts[3]?parts[3].trim():'';
+    if(isNaN(no)||no<1||no>TOTAL||!DAYS.includes(day))return;
+    if(itemLabel==='項目')return;
+    const it=ITEMS.find(x=>x.label===itemLabel||x.label.includes(itemLabel)||itemLabel.includes(x.key)||itemLabel===x.key);
+    if(it){logs.push({no,item:it.key,day,note:it.hasNote?note:''});count++;}
+  });
+  return count;
+}
+
+function getWeeklyCounts(){
+  const counts={};
+  for(let i=1;i<=TOTAL;i++){
+    counts[i]={};
+    ITEMS.forEach(it=>{counts[i][it.key]={count:0,notes:[],days:[]};});
+  }
+  logs.forEach(l=>{
+    if(counts[l.no]&&counts[l.no][l.item]){
+      counts[l.no][l.item].count++;
+      counts[l.no][l.item].days.push(l.day);
+      if(l.note&&!counts[l.no][l.item].notes.includes(l.note)) counts[l.no][l.item].notes.push(l.note);
+    }
+  });
+  return counts;
+}
+
+function calcWeeklySummary(){
+  const counts=getWeeklyCounts();
+  return Array.from({length:TOTAL},(_,i)=>{
+    const s=students[i];
+    let totalDeduct=0,recordDetails=[];
+    ITEMS.forEach(it=>{
+      const c=counts[i+1][it.key];
+      if(c.count>0){
+        recordDetails.push({label:it.label,key:it.key,count:c.count,notes:c.notes,days:[...new Set(c.days)],noDeduct:it.noDeduct});
+        if(!it.noDeduct&&c.count>=3) totalDeduct+=Math.floor(c.count/3);
+      }
+    });
+    const level=recordDetails.length===0?'優異':totalDeduct===0?'不錯':'加強';
+    return {no:i+1,name:s.name,level,totalDeduct,recordDetails,counts:counts[i+1]};
+  });
+}
+
+function calcSummary(){
+  summaryData=calcWeeklySummary();
+  const week=document.getElementById('weekNum').value;
+  const range=document.getElementById('weekRange').value;
+  const good=summaryData.filter(x=>x.level==='優異').length;
+  const ok=summaryData.filter(x=>x.level==='不錯').length;
+  const warn=summaryData.filter(x=>x.level==='加強').length;
+  const labelMap={'優異':'表現優異','不錯':'表現不錯','加強':'有待加強'};
+  let html=`<div class="grid3" style="margin-bottom:12px">
+    <div class="card" style="text-align:center;padding:12px"><div style="font-size:12px;color:#888">表現優異</div><div style="font-size:28px;font-weight:700;color:#1e7e34">${good}</div></div>
+    <div class="card" style="text-align:center;padding:12px"><div style="font-size:12px;color:#888">表現不錯</div><div style="font-size:28px;font-weight:700">${ok}</div></div>
+    <div class="card" style="text-align:center;padding:12px"><div style="font-size:12px;color:#888">有待加強</div><div style="font-size:28px;font-weight:700;color:#c0392b">${warn}</div></div>
+  </div>
+  <div class="card"><div class="card-title">全班明細 第${week}週 ${range}</div>
+  <div class="overflow-x"><table><thead><tr><th>號</th><th>姓名</th><th>評等</th><th>缺點</th><th>登記明細</th></tr></thead><tbody>`;
+  summaryData.forEach(s=>{
+    const bc=s.level==='優異'?'badge-success':s.level==='不錯'?'badge-info':'badge-danger';
+    const det=s.recordDetails.map(d=>{
+      const cls=d.noDeduct?'tag':'tag'+(d.count>=6?' tag-danger':d.count>=3?' tag-warn':'');
+      const noteTags=d.notes.map(n=>`<span class="tag tag-note">${n}</span>`).join('');
+      return `<div style="margin:2px 0"><span class="${cls}">${d.label}×${d.count}（週${d.days.join('、')}）</span>${noteTags}</div>`;
+    }).join('')||'<span style="color:#aaa;font-size:12px">無記錄</span>';
+    html+=`<tr><td>${s.no}</td><td style="white-space:nowrap">${s.name||'-'}</td><td><span class="badge ${bc}">${labelMap[s.level]}</span></td><td style="text-align:center">${s.totalDeduct>0?s.totalDeduct+' 支':'-'}</td><td>${det}</td></tr>`;
+  });
+  html+=`</tbody></table></div></div>`;
+  document.getElementById('summaryContent').innerHTML=html;
+}
+
+function exportSummaryCSV(){
+  if(!summaryData){alert('請先計算統計');return;}
+  const week=document.getElementById('weekNum').value;
+  const range=document.getElementById('weekRange').value;
+  const labelMap={'優異':'表現優異','不錯':'表現不錯','加強':'有待加強'};
+  let csv='\uFEFF第'+week+'週生活常規週統計,'+range+'\n\n';
+  csv+='座號,姓名,評等,缺點支數';
+  ITEMS.forEach(it=>csv+=','+it.label+'（次）,'+it.label+'（星期）,'+it.label+'（備註）');
+  csv+='\n';
+  summaryData.forEach(s=>{
+    csv+=s.no+',"'+(s.name||'')+'",'+labelMap[s.level]+','+s.totalDeduct;
+    ITEMS.forEach(it=>{
+      const c=s.counts[it.key];
+      csv+=',"'+(c.count||'')+'","'+(c.count?[...new Set(c.days)].join(''):'')+'","'+(c.notes.join('、'))+'"';
+    });
+    csv+='\n';
+  });
+  dlFile('第'+week+'週生活常規統計.csv',csv,'text/csv');
+}
+
+function exportDetailCSV(){
+  const week=document.getElementById('weekNum').value;
+  const range=document.getElementById('weekRange').value;
+  let csv='\uFEFF第'+week+'週生活常規每日明細,'+range+'\n\n座號,姓名,星期,項目,備註\n';
+  [...logs].sort((a,b)=>DAYS.indexOf(a.day)-DAYS.indexOf(b.day)||a.no-b.no).forEach(l=>{
+    const s=students[l.no-1];
+    const it=ITEMS.find(x=>x.key===l.item);
+    csv+=l.no+',"'+(s.name||'')+'",'+l.day+',"'+(it?.label||l.item)+'","'+(l.note||'')+'"\n';
+  });
+  dlFile('第'+week+'週生活常規每日明細.csv',csv,'text/csv');
+}
+
+function genNotifyText(s,week,range){
+  const name=s.name||s.no+'號';
+  let t='親愛的家長您好，\n\n以下是第'+week+'週（'+range+'）'+name+'同學的生活常規週報：\n\n';
+  const labelMap={'優異':'表現優異','不錯':'表現不錯','加強':'有待加強'};
+  if(s.level==='優異'){t+='【表現優異】\n整週各方面表現良好，記優點一支。\n';}
+  else if(s.level==='不錯'){
+    t+='【表現不錯，請繼續努力】\n';
+    if(s.recordDetails.length>0){
+      t+='本週登記項目：\n';
+      s.recordDetails.forEach(d=>{
+        const notesStr=d.notes.length>0?'（'+d.notes.join('、')+'）':'';
+        t+='・'+d.label+'：'+d.count+'次（週'+d.days.join('、')+'）'+notesStr+'\n';
+      });
+    }
+  } else {
+    t+='【有待加強】\n本週登記項目：\n';
+    s.recordDetails.forEach(d=>{
+      const notesStr=d.notes.length>0?'（'+d.notes.join('、')+'）':'';
+      const pts=!d.noDeduct&&d.count>=3?' → 記'+Math.floor(d.count/3)+'支缺點':'';
+      t+='・'+d.label+'：'+d.count+'次（週'+d.days.join('、')+'）'+notesStr+pts+'\n';
+    });
+    t+='\n記缺點共'+s.totalDeduct+'支，請家長留意並鼓勵孩子加油。\n';
+  }
+  t+='\n如有疑問歡迎與導師聯繫。\n\n導師 敬上';
+  return t;
+}
+
+function renderNotify(){
+  if(!summaryData) calcSummary();
+  const week=document.getElementById('weekNum').value;
+  const range=document.getElementById('weekRange').value;
+  const labelMap={'優異':'表現優異','不錯':'表現不錯','加強':'有待加強'};
+  let html=`<div class="card">
+    <div class="card-title">批次寄送</div>
+    <p style="font-size:14px;color:#666;margin-bottom:12px">對所有有 Email 的家長寄出個人化通知，每封需確認。</p>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="sendAllEmails()">📨 開始逐一寄送</button>
+      <button class="btn" onclick="exportAllText()">⬇ 匯出純文字備案</button>
+    </div>
+  </div>
+  <div id="sendLog"></div>
+  <div class="card"><div class="card-title">個別預覽</div>`;
+  summaryData.forEach(s=>{
+    const email=emailList.find(x=>x.no===s.no);
+    const emailStr=email?email.email:'（無 Email）';
+    const bc=s.level==='優異'?'badge-success':s.level==='不錯'?'badge-info':'badge-danger';
+    const txt=genNotifyText(s,week,range);
+    html+=`<div class="student-result">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+        <div><span style="font-weight:600;font-size:15px">${s.no} ${s.name||''}</span> <span class="badge ${bc}">${labelMap[s.level]}</span></div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          <span style="font-size:12px;color:#888">${emailStr}</span>
+          ${email&&email.email?`<button class="btn btn-sm" onclick="sendOne(${s.no})">📨 寄送</button>`:''}
+          <button class="btn btn-sm" onclick="copyText('txt_${s.no}')">📋 複製</button>
+        </div>
+      </div>
+      <textarea id="txt_${s.no}" style="width:100%;height:150px;font-size:13px;padding:10px;border:1px solid #ddd;border-radius:8px;background:#f8f8f8;color:#1a1a1a;resize:vertical">${txt}</textarea>
+    </div>`;
+  });
+  html+=`</div>`;
+  document.getElementById('notifyContent').innerHTML=html;
+}
+
+async function sendOne(no){
+  const s=summaryData.find(x=>x.no===no);
+  const emailEntry=emailList.find(x=>x.no===no);
+  if(!emailEntry||!emailEntry.email){alert('此學生無 Email');return;}
+  const week=document.getElementById('weekNum').value;
+  const range=document.getElementById('weekRange').value;
+  if(!confirm('確定寄送給 '+emailEntry.email+'？')) return;
+  await callGmailAPI(emailEntry.email,'第'+week+'週生活常規週報－'+(s.name||s.no+'號'),genNotifyText(s,week,range));
+}
+
+async function sendAllEmails(){
+  if(!confirm('確定開始逐一寄送？每封需個別確認。'))return;
+  const week=document.getElementById('weekNum').value;
+  const range=document.getElementById('weekRange').value;
+  let sent=0,skip=0;
+  for(const s of summaryData){
+    const e=emailList.find(x=>x.no===s.no);
+    if(!e||!e.email){skip++;continue;}
+    if(!confirm('寄送給 '+(s.name||s.no+'號')+' ('+e.email+')？')){skip++;continue;}
+    await callGmailAPI(e.email,'第'+week+'週生活常規週報－'+(s.name||s.no+'號'),genNotifyText(s,week,range));
+    sent++;
+  }
+  document.getElementById('sendLog').innerHTML='<div class="msg msg-success">完成：寄出 '+sent+' 封，略過 '+skip+' 人。</div>';
+}
+
+async function callGmailAPI(to,subject,body){
+  const log=document.getElementById('sendLog');
+  log.innerHTML='<div class="msg msg-info">寄送中：'+to+'…</div>';
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',max_tokens:1000,
+        system:'你是 Gmail 寄信助理。用 Gmail MCP 建立草稿。只做這件事。',
+        messages:[{role:'user',content:'建立 Gmail 草稿\n收件人：'+to+'\n主旨：'+subject+'\n內文：\n'+body}],
+        mcp_servers:[{type:'url',url:'https://gmailmcp.googleapis.com/mcp/v1',name:'gmail-mcp'}]
+      })
+    });
+    const data=await resp.json();
+    if(data.content) log.innerHTML='<div class="msg msg-success">草稿已建立（'+to+'），請至 Gmail 確認後寄出。</div>';
+    else throw new Error(JSON.stringify(data));
+  }catch(err){
+    log.innerHTML='<div class="msg msg-error">寄送失敗：'+err.message+'</div>';
+  }
+}
+
+function copyText(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  navigator.clipboard.writeText(el.value).then(()=>{
+    const orig=el.style.borderColor;
+    el.style.borderColor='#1e7e34';
+    setTimeout(()=>el.style.borderColor=orig,1000);
+  });
+}
+
+function exportAllText(){
+  const week=document.getElementById('weekNum').value;
+  const range=document.getElementById('weekRange').value;
+  let txt='第'+week+'週（'+range+'）生活常規通知備案\n匯出時間：'+new Date().toLocaleString('zh-TW')+'\n'+'='.repeat(40)+'\n\n';
+  summaryData.forEach(s=>{
+    const e=emailList.find(x=>x.no===s.no);
+    txt+='【'+s.no+' '+(s.name||'')+'】'+(e?'Email: '+e.email:'無 Email')+'\n';
+    txt+=genNotifyText(s,week,range)+'\n'+'-'.repeat(30)+'\n\n';
+  });
+  dlFile('第'+week+'週通知備案.txt',txt,'text/plain');
+}
+
+function renderEmailTable(){
+  const tbody=document.getElementById('emailTable');
+  tbody.innerHTML='';
+  for(let i=1;i<=TOTAL;i++){
+    const s=students[i-1];
+    const e=emailList.find(x=>x.no===i)||{email:''};
+    tbody.innerHTML+=`<tr><td>${i}</td>
+      <td><input type="text" value="${s.name||''}" onchange="students[${i-1}].name=this.value;renderNoGrid()" style="width:70px;font-size:14px"></td>
+      <td><input type="email" value="${e.email||''}" onchange="setEmail(${i},this.value)" style="width:180px;font-size:14px"></td></tr>`;
+  }
+}
+
+function setEmail(no,val){
+  let e=emailList.find(x=>x.no===no);
+  if(e) e.email=val; else emailList.push({no,email:val});
+}
+
+function downloadEmailTemplate(){
+  let csv='\uFEFF座號,姓名,家長Email\n';
+  for(let i=1;i<=TOTAL;i++) csv+=i+',\n,';
+  dlFile('家長名單範本.csv',csv,'text/csv');
+}
+
+function importEmailCSV(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    emailList=[];
+    e.target.result.replace(/^\uFEFF/,'').split('\n').slice(1).forEach(l=>{
+      const parts=l.split(',');
+      if(parts.length>=2&&parts[0].trim()){
+        const no=parseInt(parts[0]);
+        if(!isNaN(no)&&no>=1&&no<=TOTAL){
+          students[no-1].name=(parts[1]||'').trim()||students[no-1].name;
+          emailList.push({no,name:(parts[1]||'').trim(),email:(parts[2]||'').trim()});
+        }
+      }
+    });
+    renderEmailTable();
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
+function dlFile(name,content,type){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type:type+';charset=utf-8'}));
+  a.download=name;a.click();
+}
+
+renderItemGrid();
+renderNoGrid();
+renderEmailTable();
+</script>
+</body>
+</html>
