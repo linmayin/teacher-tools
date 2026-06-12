@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>段考看板</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-base: #0d0f18;
+    --bg-panel: #13162200;
+    --bg-card: #161925;
+    --bg-row: #12151f;
+    --bg-input: #0d0f18;
+    --border: #252a3d;
+    --border-focus: #4a6cf7;
+    --text-primary: #e8eaf6;
+    --text-secondary: #7b82a8;
+    --text-muted: #4a5070;
+    --accent: #4a6cf7;
+    --accent-soft: #1e2d5a;
+    --active-bg: #0f1e3d;
+    --active-border: #3a5cc5;
+    --active-text: #93b4ff;
+    --active-time: #bbc9ff;
+    --active-ret: #64b5f6;
+    --highlight: #f59e0b;
+    --danger: #e57373;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: 'Noto Sans TC', sans-serif;
+    overflow: hidden;
+  }
+
+  .dashboard {
+    width: 100vw;
+    height: 100vh;
+    display: grid;
+    grid-template-rows: 72px 1fr 88px;
+    grid-template-columns: 1fr 300px;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-card);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 0 22px;
+    position: relative;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .title-zh {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 1px;
+  }
+
+  .title-box {
+    display: inline-block;
+    background: #1a1f35;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 10px;
+    min-width: 44px;
+    text-align: center;
+  }
+
+  .editable-box {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-size: inherit;
+    font-weight: inherit;
+    font-family: inherit;
+    text-align: center;
+    width: 100%;
+  }
+
+  .title-en {
+    font-family: 'Arial Black', 'Arial', sans-serif;
+    font-size: 20px;
+    font-weight: 900;
+    color: #9fa8da;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 1px;
+  }
+
+  .title-en .title-box {
+    min-width: 36px;
+  }
+
+  .clock-block {
+    text-align: right;
+  }
+
+  .clock-time {
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: 'Georgia', monospace;
+    letter-spacing: 3px;
+    line-height: 1;
+  }
+
+  .clock-date {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    letter-spacing: 1px;
+  }
+
+  /* mode toggle */
+  .mode-btn {
+    background: #1a1f35;
+    border: 0.5px solid var(--border);
+    border-radius: 20px;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-family: 'Noto Sans TC', sans-serif;
+    padding: 3px 14px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: color 0.2s, border-color 0.2s;
+    white-space: nowrap;
+  }
+  .mode-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ── SCHEDULE ── */
+  .schedule-panel {
+    grid-column: 1;
+    background: var(--bg-card);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+  }
+
+  .panel-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 3px;
+    border-bottom: 0.5px solid var(--border);
+    padding-bottom: 8px;
+    margin-bottom: 2px;
+  }
+
+  .subject-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 140px;
+    gap: 10px;
+    align-items: center;
+    padding: 10px 14px;
+    border-radius: 8px;
+    border: 0.5px solid var(--border);
+    background: var(--bg-row);
+    transition: background 0.3s, border-color 0.3s;
+    flex: 1;
+  }
+
+  .subject-row.active {
+    background: var(--active-bg);
+    border-color: var(--active-border);
+  }
+
+  .subject-col {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .subject-name-display {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1;
+  }
+  .subject-row.active .subject-name-display { color: var(--active-text); }
+
+  .active-badge {
+    display: none;
+    font-size: 10px;
+    background: #0d1e45;
+    color: #64b5f6;
+    border-radius: 4px;
+    padding: 2px 7px;
+    letter-spacing: 1px;
+    width: fit-content;
+  }
+  .subject-row.active .active-badge { display: block; }
+
+  .time-col {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .time-display {
+    font-size: 20px;
+    font-weight: 500;
+    color: #9fa8da;
+    font-family: 'Georgia', monospace;
+    letter-spacing: 1px;
+  }
+  .subject-row.active .time-display { color: var(--active-time); }
+
+  .time-sep { color: var(--text-muted); font-size: 18px; }
+
+  .ret-col {
+    text-align: right;
+  }
+
+  .ret-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .ret-val {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text-muted);
+    font-family: 'Georgia', monospace;
+    letter-spacing: 1px;
+  }
+  .subject-row.active .ret-val { color: var(--active-ret); }
+
+  /* edit mode inputs */
+  .subject-name-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #2a2f4a;
+    color: var(--text-primary);
+    font-size: 20px;
+    font-weight: 700;
+    font-family: 'Noto Sans TC', sans-serif;
+    outline: none;
+    width: 100%;
+    padding: 2px 0;
+    transition: border-color 0.2s;
+  }
+  .subject-name-input:focus { border-bottom-color: var(--border-focus); }
+
+  .time-input {
+    background: var(--bg-input);
+    border: 0.5px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 16px;
+    font-family: 'Georgia', monospace;
+    outline: none;
+    padding: 5px 8px;
+    width: 108px;
+    text-align: center;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+  .time-input::-webkit-calendar-picker-indicator { filter: invert(0.6); cursor: pointer; }
+  .time-input:focus { border-color: var(--border-focus); }
+
+  /* ── RIGHT PANEL ── */
+  .right-panel {
+    grid-column: 2;
+    background: var(--bg-card);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;
+  }
+
+  .att-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .att-label { font-size: 12px; color: var(--text-secondary); }
+
+  .att-num {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: 'Georgia', monospace;
+  }
+
+  .att-input {
+    background: var(--bg-input);
+    border: 0.5px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 20px;
+    font-weight: 700;
+    font-family: 'Georgia', monospace;
+    outline: none;
+    padding: 4px 8px;
+    width: 70px;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  .att-input:focus { border-color: var(--border-focus); }
+
+  .absent-label { font-size: 11px; color: var(--text-muted); margin-bottom: 6px; letter-spacing: 1px; }
+
+  .absent-display {
+    font-size: 14px;
+    color: #ef9a9a;
+    line-height: 1.8;
+    flex: 1;
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
+
+  .absent-textarea {
+    background: var(--bg-input);
+    border: 0.5px solid var(--border);
+    border-radius: 6px;
+    color: #ef9a9a;
+    font-size: 14px;
+    font-family: 'Noto Sans TC', sans-serif;
+    outline: none;
+    padding: 8px;
+    width: 100%;
+    flex: 1;
+    resize: none;
+    line-height: 1.7;
+    transition: border-color 0.2s;
+  }
+  .absent-textarea:focus { border-color: var(--border-focus); }
+
+  .divider {
+    height: 0.5px;
+    background: var(--border);
+    margin: 2px 0;
+  }
+
+  /* ── NOTE PANEL ── */
+  .note-panel {
+    grid-column: 1 / -1;
+    background: var(--bg-card);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 18px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .note-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    white-space: nowrap;
+    margin-top: 3px;
+    padding-top: 2px;
+  }
+
+  .note-display {
+    font-size: 16px;
+    color: var(--text-secondary);
+    line-height: 1.9;
+    flex: 1;
+    white-space: pre-wrap;
+  }
+
+  .note-textarea {
+    background: transparent;
+    border: none;
+    border-left: 2px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 16px;
+    font-family: 'Noto Sans TC', sans-serif;
+    outline: none;
+    width: 100%;
+    flex: 1;
+    resize: none;
+    line-height: 1.9;
+    padding-left: 12px;
+    height: 100%;
+  }
+  .note-textarea:focus { border-left-color: var(--border-focus); }
+
+  /* ── SHOW MODE ── */
+  .edit-only { display: block; }
+  .show-only { display: none; }
+
+  body.show-mode .edit-only { display: none !important; }
+  body.show-mode .show-only { display: block; }
+  body.show-mode .title-box { border-color: transparent; background: transparent; }
+  body.show-mode .mode-btn { opacity: 0.3; }
+  body.show-mode .mode-btn:hover { opacity: 1; }
+
+  /* ── OVERLAY ── */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #07080f;
+    z-index: 9999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px;
+  }
+  .overlay.show { display: flex; }
+
+  .overlay-icon {
+    font-size: 48px;
+    margin-bottom: 24px;
+    color: #4a6cf7;
+    letter-spacing: 16px;
+  }
+
+  .overlay-main {
+    font-size: 42px;
+    font-weight: 900;
+    color: #c5cae9;
+    letter-spacing: 4px;
+    line-height: 1.5;
+    margin-bottom: 28px;
+  }
+
+  .overlay-sub {
+    font-size: 20px;
+    color: #7986cb;
+    font-family: 'Georgia', monospace;
+    letter-spacing: 2px;
+    margin-bottom: 44px;
+  }
+
+  .overlay-time {
+    font-size: 28px;
+    font-weight: 700;
+    color: #9fa8da;
+    font-family: 'Georgia', monospace;
+    letter-spacing: 3px;
+    margin-bottom: 12px;
+  }
+
+  .overlay-close-btn {
+    background: #1a1f35;
+    border: 1px solid #3a4a80;
+    border-radius: 8px;
+    color: #7986cb;
+    font-size: 14px;
+    font-family: 'Noto Sans TC', sans-serif;
+    padding: 10px 32px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .overlay-close-btn:hover { border-color: var(--accent); color: var(--accent-soft); color: #90a8ff; }
+
+  .countdown-bar-wrap {
+    width: 300px;
+    height: 3px;
+    background: #1a1f35;
+    border-radius: 2px;
+    margin-bottom: 28px;
+    overflow: hidden;
+  }
+  .countdown-bar {
+    height: 100%;
+    background: #3a5cc5;
+    border-radius: 2px;
+    transition: width 1s linear;
+  }
+</style>
+</head>
+<body>
+
+<div class="dashboard" id="dashboard">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="title-zh">
+        第
+        <span class="title-box" style="min-width:54px;">
+          <span class="show-only" id="examNumDisplay">一</span>
+          <input class="editable-box edit-only" id="examNumInput" value="一" placeholder="一">
+        </span>
+        次段考
+      </div>
+      <div class="title-en">
+        Day
+        <span class="title-box" style="min-width:44px;">
+          <span class="show-only" id="examDayDisplay">1</span>
+          <input class="editable-box edit-only" id="examDayInput" value="1" placeholder="1">
+        </span>
+      </div>
+    </div>
+
+
+    <div class="clock-block">
+      <div class="clock-time" id="clockTime">--:--</div>
+      <div class="clock-date" id="clockDate"></div>
+    </div>
+  </div>
+
+  <!-- SCHEDULE -->
+  <div class="schedule-panel">
+    <div class="panel-label">考試時程</div>
+    <div id="subjectList" style="display:flex;flex-direction:column;gap:8px;flex:1;"></div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right-panel">
+    <div class="panel-label">出缺狀況</div>
+    <div class="att-stat">
+      <span class="att-label">應到人數</span>
+      <span class="show-only att-num" id="totalDisplay">30</span>
+      <input class="att-input edit-only" id="totalInput" type="number" value="30" min="0">
+    </div>
+    <div class="att-stat">
+      <span class="att-label">實到人數</span>
+      <span class="show-only att-num" id="presentDisplay">30</span>
+      <input class="att-input edit-only" id="presentInput" type="number" value="30" min="0">
+    </div>
+    <div class="divider"></div>
+    <div class="absent-label">缺席座號</div>
+    <div class="show-only absent-display" id="absentDisplay"></div>
+    <textarea class="absent-textarea edit-only" id="absentInput" placeholder="02(病假)&#10;15(事假)"></textarea>
+  </div>
+
+  <!-- NOTE -->
+  <div class="note-panel" style="position:relative;">
+    <div class="note-label">導師叮嚀</div>
+    <div class="show-only note-display" id="noteDisplay"></div>
+    <textarea class="note-textarea edit-only" id="noteInput" placeholder="在此輸入導師叮嚀事項..."></textarea>
+    <button class="mode-btn" id="modeBtn" onclick="toggleMode()" style="position:absolute;bottom:10px;right:14px;">⬡ 切換展示模式</button>
+  </div>
+
+</div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="overlay-icon">◈ ◈ ◈</div>
+  <div class="overlay-main">請考生回到座位<br>安靜等候考試</div>
+  <div class="overlay-time" id="overlayTime">--:--</div>
+  <div class="overlay-sub" id="overlaySub">下節考試開始時間：--:--</div>
+  <div class="countdown-bar-wrap">
+    <div class="countdown-bar" id="countdownBar" style="width:100%"></div>
+  </div>
+  <button class="overlay-close-btn" onclick="closeOverlay()">關閉提醒</button>
+</div>
+
+<script>
+const STORAGE_KEY = 'examDashboard_v2';
+
+const defaultSubjects = [
+  { name: '數學', start: '08:30', end: '09:30' },
+  { name: '自習', start: '09:50', end: '10:40' },
+  { name: '英語', start: '11:00', end: '12:00' },
+  { name: '自習', start: '13:40', end: '14:40' },
+  { name: '國文', start: '15:05', end: '16:05' },
+];
+
+let state = loadState();
+let firedReminders = new Set();
+let overlayTimer = null;
+let overlayCountdown = null;
+let overlayEndTime = null;
+let isShowMode = false;
+let chimeInterval = null;
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return {
+    examNum: '一',
+    examDay: '1',
+    subjects: defaultSubjects.map(s => ({...s})),
+    total: '30',
+    present: '30',
+    absent: '',
+    note: '',
+  };
+}
+
+function saveState() {
+  state.examNum = document.getElementById('examNumInput').value;
+  state.examDay = document.getElementById('examDayInput').value;
+  state.total = document.getElementById('totalInput').value;
+  state.present = document.getElementById('presentInput').value;
+  state.absent = document.getElementById('absentInput').value;
+  state.note = document.getElementById('noteInput').value;
+  state.subjects = subjects.map((s,i) => ({
+    name: document.getElementById('sname-'+i)?.value ?? s.name,
+    start: document.getElementById('sstart-'+i)?.value ?? s.start,
+    end: document.getElementById('send-'+i)?.value ?? s.end,
+  }));
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+let subjects = state.subjects.map(s => ({...s}));
+
+function pad(n) { return String(n).padStart(2,'0'); }
+
+function timeToMin(str) {
+  const p = (str||'').split(':');
+  if (p.length < 2) return NaN;
+  return parseInt(p[0])*60 + parseInt(p[1]);
+}
+
+function minToStr(m) { return pad(Math.floor(m/60))+':'+pad(m%60); }
+
+function calcReturn(startStr) {
+  const m = timeToMin(startStr);
+  return isNaN(m) ? '--:--' : minToStr(m - 10);
+}
+
+function renderSubjects() {
+  const list = document.getElementById('subjectList');
+  list.innerHTML = '';
+  subjects.forEach((s, i) => {
+    const row = document.createElement('div');
+    row.className = 'subject-row';
+    row.id = 'row-'+i;
+    row.style.flex = '1';
+    row.innerHTML = `
+      <div class="subject-col">
+        <span class="show-only subject-name-display" id="sname-display-${i}">${s.name||'──'}</span>
+        <input class="subject-name-input edit-only" id="sname-${i}" value="${s.name}" placeholder="科目">
+        <span class="active-badge">進行中</span>
+      </div>
+      <div class="time-col">
+        <span class="show-only time-display" id="stime-display-${i}">${s.start||'--:--'} – ${s.end||'--:--'}</span>
+        <div class="edit-only" style="display:flex;align-items:center;gap:6px;">
+          <input class="time-input" id="sstart-${i}" type="time" value="${s.start}">
+          <span class="time-sep">–</span>
+          <input class="time-input" id="send-${i}" type="time" value="${s.end}">
+        </div>
+      </div>
+      <div class="ret-col">
+        <span class="ret-label">返座時間</span>
+        <span class="ret-val" id="ret-${i}">${calcReturn(s.start)}</span>
+      </div>
+    `;
+    list.appendChild(row);
+
+    document.getElementById('sname-'+i).addEventListener('input', e => {
+      subjects[i].name = e.target.value;
+      document.getElementById('sname-display-'+i).textContent = e.target.value || '──';
+      saveState();
+    });
+    document.getElementById('sstart-'+i).addEventListener('change', e => {
+      subjects[i].start = e.target.value;
+      document.getElementById('ret-'+i).textContent = calcReturn(e.target.value);
+      document.getElementById('stime-display-'+i).textContent = (e.target.value||'--:--') + ' – ' + (subjects[i].end||'--:--');
+      firedReminders.delete(i);
+      saveState();
+    });
+    document.getElementById('send-'+i).addEventListener('change', e => {
+      subjects[i].end = e.target.value;
+      document.getElementById('stime-display-'+i).textContent = (subjects[i].start||'--:--') + ' – ' + (e.target.value||'--:--');
+      saveState();
+    });
+  });
+}
+
+// sync display fields from state
+function syncInputsFromState() {
+  document.getElementById('examNumInput').value = state.examNum;
+  document.getElementById('examDayInput').value = state.examDay;
+  document.getElementById('totalInput').value = state.total;
+  document.getElementById('presentInput').value = state.present;
+  document.getElementById('absentInput').value = state.absent;
+  document.getElementById('noteInput').value = state.note;
+}
+
+function syncDisplayFields() {
+  document.getElementById('examNumDisplay').textContent = document.getElementById('examNumInput').value || '　';
+  document.getElementById('examDayDisplay').textContent = document.getElementById('examDayInput').value || '　';
+  document.getElementById('totalDisplay').textContent = document.getElementById('totalInput').value;
+  document.getElementById('presentDisplay').textContent = document.getElementById('presentInput').value;
+  document.getElementById('absentDisplay').textContent = document.getElementById('absentInput').value;
+  document.getElementById('noteDisplay').textContent = document.getElementById('noteInput').value;
+}
+
+function toggleMode() {
+  isShowMode = !isShowMode;
+  syncDisplayFields();
+  document.body.classList.toggle('show-mode', isShowMode);
+  document.getElementById('modeBtn').textContent = isShowMode ? '⬡ 切換編輯模式' : '⬡ 切換展示模式';
+  if (!isShowMode) saveState();
+}
+
+['examNumInput','examDayInput','totalInput','presentInput','absentInput','noteInput'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', saveState);
+});
+
+// clock & highlight
+function updateClock() {
+  const now = new Date();
+  const h = pad(now.getHours()), m = pad(now.getMinutes()), s = pad(now.getSeconds());
+  document.getElementById('clockTime').textContent = h+':'+m;
+  const days = ['日','一','二','三','四','五','六'];
+  document.getElementById('clockDate').textContent =
+    `${now.getFullYear()} / ${pad(now.getMonth()+1)} / ${pad(now.getDate())}  （週${days[now.getDay()]}）`;
+
+  // update overlay time
+  if (document.getElementById('overlay').classList.contains('show')) {
+    document.getElementById('overlayTime').textContent = h+':'+m;
+    if (overlayEndTime) {
+      const elapsed = Date.now() - (overlayEndTime - 5*60*1000);
+      const pct = Math.max(0, 100 - (elapsed / (5*60*1000)) * 100);
+      document.getElementById('countdownBar').style.width = pct.toFixed(1) + '%';
+    }
+  }
+
+  const nowMin = now.getHours()*60 + now.getMinutes();
+  const nowSec = now.getSeconds();
+
+  subjects.forEach((s, i) => {
+    const startMin = timeToMin(s.start);
+    const endMin = timeToMin(s.end);
+    const retMin = startMin - 10;
+    const row = document.getElementById('row-'+i);
+    if (!row) return;
+
+    row.classList.toggle('active', !isNaN(startMin) && !isNaN(endMin) && nowMin >= startMin && nowMin < endMin);
+
+    if (!isNaN(retMin) && nowMin === retMin && nowSec === 0 && !firedReminders.has(i)) {
+      firedReminders.add(i);
+      triggerReminder(i, s);
+    }
+  });
+}
+
+// chime
+function playChime() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const notes = [523.25, 659.25, 783.99];
+    let t = ctx.currentTime;
+    notes.forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      const t0 = t + idx * 0.38;
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(0.15, t0 + 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + 0.7);
+      osc.start(t0); osc.stop(t0 + 0.75);
+    });
+    return 1300;
+  } catch(e) { return 500; }
+}
+
+function triggerReminder(idx, subject) {
+  let count = 0;
+  function ring() {
+    if (count >= 5) {
+      showOverlay(subject);
+      return;
+    }
+    count++;
+    const dur = playChime();
+    setTimeout(ring, dur);
+  }
+  ring();
+}
+
+function showOverlay(subject) {
+  const overlay = document.getElementById('overlay');
+  document.getElementById('overlaySub').textContent = `下節考試開始時間：${subject.start}`;
+  overlayEndTime = Date.now() + 5*60*1000;
+  overlay.classList.add('show');
+  document.getElementById('countdownBar').style.width = '100%';
+
+  if (overlayTimer) clearTimeout(overlayTimer);
+  overlayTimer = setTimeout(closeOverlay, 5*60*1000);
+}
+
+function closeOverlay() {
+  document.getElementById('overlay').classList.remove('show');
+  if (overlayTimer) clearTimeout(overlayTimer);
+  overlayEndTime = null;
+}
+
+// init
+syncInputsFromState();
+renderSubjects();
+updateClock();
+setInterval(updateClock, 1000);
+</script>
+</body>
+</html>
