@@ -57,8 +57,8 @@ body{font-family:'PingFang TC','Noto Sans TC',sans-serif;background:var(--bg);co
 .count-ctrl button:active{background:var(--border);}
 .count-ctrl span{width:40px;text-align:center;font-size:16px;font-weight:600;background:var(--surface);}
 
-.num-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin-bottom:10px;}
-.num-btn{aspect-ratio:1;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;font-family:'SF Mono','Fira Mono',monospace;}
+.num-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:6px;margin-bottom:10px;}
+.num-btn{padding:10px 4px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-tap-highlight-color:transparent;}
 .num-btn.sel-plus{background:var(--plus);border-color:var(--plus);color:#fff;}
 .num-btn.sel-minus{background:var(--minus);border-color:var(--minus);color:#fff;}
 .num-row-sep{grid-column:1/-1;height:1px;background:var(--border);margin:2px 0;}
@@ -175,7 +175,7 @@ tr:hover td{background:var(--surface2);}
         <div class="card-title" style="margin:0">座號 <span style="font-size:12px;color:var(--text3)" id="sel-count"></span></div>
         <button class="btn btn-sm" onclick="clearNums()">清除</button>
       </div>
-      <button class="all-btn" id="all-btn" onclick="toggleAll()">👥 全班（1–35號）</button>
+      <button class="all-btn" id="all-btn" onclick="toggleAll()">👥 全班（1–33號）</button>
       <div class="num-grid" id="num-grid"></div>
       <button class="btn btn-primary btn-full" onclick="submitRecords()">✓ 新增記錄</button>
     </div>
@@ -250,7 +250,7 @@ tr:hover td{background:var(--surface2);}
         <button class="btn" style="flex:1;font-size:13px" onclick="downloadNameTemplate()">⬇ 下載範本</button>
         <label class="btn" style="flex:1;font-size:13px;cursor:pointer;text-align:center">
           ⬆ 匯入名單
-          <input type="file" accept=".csv,.txt,text/plain,text/csv" style="display:none" onchange="importNameCSV(this)">
+          <input type="file" accept=".csv" style="display:none" onchange="importNameCSV(this)">
         </label>
       </div>
       <div id="nameListPreview" style="font-size:12px;color:var(--text3)">尚未匯入名單</div>
@@ -260,7 +260,7 @@ tr:hover td{background:var(--surface2);}
       <button class="btn btn-full" onclick="exportAllCSV()" style="margin-bottom:8px">⬇ 匯出全部原始資料</button>
       <label class="btn btn-full" style="cursor:pointer;margin-bottom:8px">
         ⬆ 匯入 CSV（含餘數結轉）
-        <input type="file" accept=".csv,.txt,text/plain,text/csv" id="import-file" style="display:none" onchange="importCSV(this)">
+        <input type="file" accept=".csv" id="import-file" style="display:none" onchange="importCSV(this)">
       </label>
       <div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:8px">匯入格式：日期,座號,類型,項目,分數</div>
     </div>
@@ -293,7 +293,7 @@ function saveNames(){try{localStorage.setItem(NAME_DB,JSON.stringify(nameList));
 function loadNames(){try{var d=localStorage.getItem(NAME_DB);if(d)nameList=JSON.parse(d);}catch(e){}}
 function downloadNameTemplate(){
   var csv='\uFEFF座號,姓名,家長Email\n';
-  for(var i=1;i<=35;i++) csv+=i+',,\n';
+  for(var i=1;i<=33;i++) csv+=i+',,\n';
   dl(csv,'學生名單範本.csv');
 }
 function importNameCSV(input){
@@ -306,7 +306,7 @@ function importNameCSV(input){
       var parts=l.split(',');
       if(parts.length>=2&&parts[0].trim()){
         var no=parseInt(parts[0]);
-        if(!isNaN(no)&&no>=1&&no<=35){
+        if(!isNaN(no)&&no>=1&&no<=33){
           nameList[no]={name:(parts[1]||'').trim(),email:(parts[2]||'').trim()};
         }
       }
@@ -415,8 +415,8 @@ function changeCount(d){curCount=Math.max(1,curCount+d);document.getElementById(
 
 function buildNumGrid(){
   var g=document.getElementById('num-grid');g.innerHTML='';
-  for(var i=1;i<=35;i++){
-    if(i===11||i===21||i===31){var sep=document.createElement('div');sep.className='num-row-sep';g.appendChild(sep);}
+  for(var i=1;i<=33;i++){
+
     var b=document.createElement('button');
     b.className='num-btn';b.textContent=String(i).padStart(2,'0');b.id='nb-'+i;
     var n=i;
@@ -431,7 +431,7 @@ function buildNumGrid(){
 }
 
 function updateNumBtns(){
-  for(var i=1;i<=35;i++){
+  for(var i=1;i<=33;i++){
     var b=document.getElementById('nb-'+i);if(!b)continue;
     b.className='num-btn'+((selNums.has(i)||isAllSelected)?' sel-'+curType:'');
   }
@@ -446,7 +446,7 @@ function toggleAll(){
 function updateAllBtn(){
   var btn=document.getElementById('all-btn');
   btn.className='all-btn'+(isAllSelected?' sel-'+curType:'');
-  btn.textContent=isAllSelected?'✓ 全班已選取（1–35號）':'👥 全班（1–35號）';
+  btn.textContent=isAllSelected?'✓ 全班已選取（1–33號）':'👥 全班（1–33號）';
 }
 
 function clearNums(){
@@ -456,13 +456,13 @@ function clearNums(){
 
 function updateSelCount(){
   var el=document.getElementById('sel-count');
-  if(isAllSelected)el.textContent='（全班 35 人）';
+  if(isAllSelected)el.textContent='（全班 33 人）';
   else el.textContent=selNums.size>0?'（已選 '+selNums.size+' 人）':'';
 }
 
 function submitRecords(){
   var nums=[];
-  if(isAllSelected){for(var i=1;i<=35;i++)nums.push(i);}
+  if(isAllSelected){for(var i=1;i<=33;i++)nums.push(i);}
   else nums=Array.from(selNums);
   if(!nums.length){showToast('請選擇座號或全班');return;}
   var date=document.getElementById('rec-date').value;
@@ -480,7 +480,7 @@ function submitRecords(){
 function buildFilterNumDropdown(){
   var sel=document.getElementById('filter-num');
   sel.innerHTML='<option value="">全部座號</option>';
-  for(var i=1;i<=35;i++){var o=document.createElement('option');o.value=i;o.textContent=String(i).padStart(2,'0')+'號';sel.appendChild(o);}
+  for(var i=1;i<=33;i++){var o=document.createElement('option');o.value=i;o.textContent=String(i).padStart(2,'0')+'號';sel.appendChild(o);}
 }
 
 function getFiltered(){
@@ -588,7 +588,7 @@ function renderSummary(){
 function exportSummaryCSV(){
   if(!records.length){showToast('沒有資料可匯出');return;}
   var rows=[];
-  for(var i=1;i<=35;i++){
+  for(var i=1;i<=33;i++){
     var m=calcMerit(i);
     var sub=records.filter(function(r){return r.num===i;}).sort(function(a,b){return a.date.localeCompare(b.date);});
     // 明細文字（方案B：合併成一欄）
@@ -617,7 +617,7 @@ function exportNotifyText(){
   var today=new Date().toLocaleString('zh-TW');
   var txt='品德卡優缺點結算通知備案\n匯出時間：'+today+'\n'+'='.repeat(40)+'\n\n';
 
-  for(var i=1;i<=35;i++){
+  for(var i=1;i<=33;i++){
     var sub=records.filter(function(r){return r.num===i;}).sort(function(a,b){return a.date.localeCompare(b.date);});
     var m=calcMerit(i);
     // 找姓名（若有設定）
@@ -717,7 +717,7 @@ function doTransfer(){
 
   // ② 計算每人餘數，備好結轉資料
   var carryOvers=[];
-  for(var j=1;j<=35;j++){
+  for(var j=1;j<=33;j++){
     var mc=calcMerit(j);
     if(mc.remain>0){
       var score=mc.remainType==='優點'?mc.remain:-mc.remain;
