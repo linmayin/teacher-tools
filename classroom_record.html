@@ -132,24 +132,24 @@
   /* Number grid: 10 per row */
   .num-grid {
     display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    gap: 5px;
+    grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+    gap: 6px;
     margin-bottom: 10px;
   }
   .num-btn {
-    aspect-ratio: 1;
-    border-radius: 8px;
+    padding: 10px 4px;
+    border-radius: 10px;
     border: 1.5px solid var(--border);
     background: var(--surface2);
     color: var(--text);
-    font-size: 12px;
-    font-weight: 500;
+    font-size: 15px;
+    font-weight: 600;
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     transition: all 0.1s;
     user-select: none;
     -webkit-user-select: none;
-    font-family: 'SF Mono', 'Fira Mono', monospace;
+    -webkit-tap-highlight-color: transparent;
   }
   .num-btn.sel {
     background: var(--accent);
@@ -464,12 +464,7 @@ function buildClassChips(){
 function buildNumGrid(){
   var g=document.getElementById('num-grid');
   g.innerHTML='';
-  for(var i=1;i<=40;i++){
-    if(i===11||i===21||i===31){
-      var sep=document.createElement('div');
-      sep.className='num-row-sep';
-      g.appendChild(sep);
-    }
+  for(var i=1;i<=33;i++){
     var b=document.createElement('button');
     b.className='num-btn'+(selNums.has(i)?' sel':'');
     b.textContent=String(i).padStart(2,'0');
