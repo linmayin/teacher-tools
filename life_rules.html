@@ -209,7 +209,8 @@ let summaryData=null;
 let selItem=null;
 let selNos=new Set();
 
-const LS_KEY='meritData_v1';
+const LS_KEY='lifeRulesData_v2';
+const ROSTER_KEY='sharedRoster_v1';
 
 function getWeekStartValue(){
   const y=document.getElementById('weekStartY').value;
@@ -222,25 +223,31 @@ function getWeekStartValue(){
 function saveData(){
   try{
     localStorage.setItem(LS_KEY,JSON.stringify({
-      students,logs,emailList,
+      logs,
       weekNum:document.getElementById('weekNum').value,
       weekStart:getWeekStartValue(),
       weekRange:document.getElementById('weekRange').value
     }));
+    localStorage.setItem(ROSTER_KEY,JSON.stringify({students,emailList}));
   }catch(e){}
 }
 
 function loadData(){
   try{
     const raw=localStorage.getItem(LS_KEY);
-    if(!raw) return false;
-    const d=JSON.parse(raw);
-    if(d.students) students=d.students;
-    if(d.logs) logs=d.logs;
-    if(d.emailList) emailList=d.emailList;
-    if(d.weekNum) document.getElementById('weekNum').value=d.weekNum;
-    if(d.weekStart) setWeekStartSelects(d.weekStart);
-    if(d.weekRange) document.getElementById('weekRange').value=d.weekRange;
+    if(raw){
+      const d=JSON.parse(raw);
+      if(d.logs) logs=d.logs;
+      if(d.weekNum) document.getElementById('weekNum').value=d.weekNum;
+      if(d.weekStart) setWeekStartSelects(d.weekStart);
+      if(d.weekRange) document.getElementById('weekRange').value=d.weekRange;
+    }
+    const rosterRaw=localStorage.getItem(ROSTER_KEY);
+    if(rosterRaw){
+      const r=JSON.parse(rosterRaw);
+      if(r.students) students=r.students;
+      if(r.emailList) emailList=r.emailList;
+    }
     return true;
   }catch(e){return false;}
 }
