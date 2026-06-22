@@ -3,731 +3,820 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>生活常規登記表</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="優缺點記錄">
+<meta name="theme-color" content="#1a1a2e">
+<title>優缺點記錄系統</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif;font-size:16px;background:#f5f5f5;color:#1a1a1a}
-.tab-bar{display:flex;background:#fff;border-bottom:1px solid #e0e0e0;overflow-x:auto;-webkit-overflow-scrolling:touch;position:sticky;top:0;z-index:100}
-.tab{flex:1;min-width:60px;padding:14px 6px;font-size:13px;cursor:pointer;border:none;background:none;color:#888;border-bottom:3px solid transparent;white-space:nowrap;text-align:center}
-.tab.active{color:#1a1a1a;border-bottom:3px solid #1a1a1a;font-weight:600}
-.section{display:none;padding:16px}.section.active{display:block}
-.card{background:#fff;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.08)}
-.card-title{font-size:15px;font-weight:600;margin-bottom:12px;color:#1a1a1a}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-label.field-label{font-size:13px;color:#666;display:block;margin-bottom:5px}
-input[type=text],input[type=number],input[type=date],input[type=email],select,textarea{width:100%;font-size:16px;padding:10px 12px;border:1px solid #ddd;border-radius:8px;background:#fff;color:#1a1a1a;-webkit-appearance:none;appearance:none}
-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
-.badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600}
-.badge-success{background:#e6f4ea;color:#1e7e34}
-.badge-danger{background:#fce8e8;color:#c0392b}
-.badge-info{background:#e8f0fe;color:#1a73e8}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:12px 18px;border-radius:10px;border:1.5px solid #ddd;background:#fff;color:#1a1a1a;cursor:pointer;font-size:15px;font-weight:500;-webkit-tap-highlight-color:transparent}
-.btn:active{opacity:0.75;transform:scale(0.97)}
-.btn-primary{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
-.btn-sm{padding:8px 14px;font-size:13px;border-radius:8px}
-.btn-danger{background:#fce8e8;color:#c0392b;border-color:#f5c6c6}
-.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
-table{width:100%;border-collapse:collapse;font-size:14px}
-th{font-weight:600;font-size:12px;color:#666;text-align:left;padding:8px 10px;border-bottom:1px solid #eee}
-td{padding:8px 10px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
-.overflow-x{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.msg{padding:12px 14px;border-radius:8px;font-size:14px;margin:8px 0}
-.msg-success{background:#e6f4ea;color:#1e7e34}
-.msg-error{background:#fce8e8;color:#c0392b}
-.msg-info{background:#e8f0fe;color:#1a73e8}
-.tag{display:inline-block;padding:2px 8px;border-radius:5px;font-size:12px;margin:2px;background:#f0f0f0;color:#555}
-.tag-warn{background:#fff3e0;color:#e65100}
-.tag-danger{background:#fce8e8;color:#c0392b}
-.tag-note{background:#e8f0fe;color:#1a73e8}
-.no-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:8px;margin-top:8px}
-.no-btn{padding:13px 4px;border-radius:10px;border:1.5px solid #ddd;background:#f8f8f8;cursor:pointer;font-size:16px;font-weight:600;text-align:center;color:#1a1a1a;-webkit-tap-highlight-color:transparent}
-.no-btn:active{transform:scale(0.94)}
-.no-btn.selected{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
-.item-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin:8px 0}
-.item-btn{padding:14px 10px;border-radius:10px;border:1.5px solid #ddd;background:#f8f8f8;cursor:pointer;font-size:14px;text-align:center;color:#1a1a1a;line-height:1.4;-webkit-tap-highlight-color:transparent}
-.item-btn:active{transform:scale(0.96)}
-.item-btn.selected{border-color:#1a1a1a;background:#fff;font-weight:600}
-.item-btn.only-record{border-style:dashed;color:#888}
-.item-btn.only-record.selected{border-style:solid;color:#1a1a1a}
-.log-item{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f0f0;font-size:14px;gap:8px}
-.student-result{border-bottom:1px solid #f0f0f0;padding:12px 0}
-.day-label{font-size:12px;font-weight:600;color:#888;margin:12px 0 6px}
-textarea.paste-area{height:130px;font-size:13px;font-family:monospace;padding:10px;border:1px solid #ddd;border-radius:8px;resize:vertical}
+:root{
+  --bg:#f5f4f0;--surface:#fff;--surface2:#f0ede8;--border:#e0dbd3;
+  --text:#1a1814;--text2:#6b6560;--text3:#a09a93;
+  --accent:#2d5be3;--accent-light:#edf0fd;
+  --minus:#c0392b;--minus-light:#fdf0ee;
+  --plus:#1e7e4a;--plus-light:#edf7f2;
+  --warn:#b45309;--warn-light:#fef3c7;
+  --radius:14px;--radius-sm:9px;--shadow:0 2px 12px rgba(0,0,0,0.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'PingFang TC','Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);font-size:15px;display:flex;flex-direction:column;height:100dvh;}
+
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:env(safe-area-inset-top,12px) 16px 0;flex-shrink:0;}
+.header-top{display:flex;align-items:center;justify-content:space-between;min-height:48px;}
+.app-title{font-size:17px;font-weight:700;letter-spacing:-0.3px;}
+.date-pill{font-size:12px;color:var(--text2);background:var(--surface2);padding:4px 10px;border-radius:20px;border:1px solid var(--border);}
+.tabs{display:flex;padding:10px 0 0;}
+.tab{flex:1;text-align:center;font-size:12px;font-weight:500;color:var(--text3);padding:6px 4px 10px;border-bottom:2px solid transparent;cursor:pointer;user-select:none;}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab-icon{font-size:18px;display:block;margin-bottom:2px;}
+
+.content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px env(safe-area-inset-bottom,16px);}
+.panel{display:none;}.panel.active{display:block;}
+
+.card{background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:14px;margin-bottom:12px;box-shadow:var(--shadow);}
+.card-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--text3);margin-bottom:10px;}
+
+.type-toggle{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.type-btn{height:44px;border-radius:var(--radius-sm);border:2px solid var(--border);background:var(--surface2);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;user-select:none;}
+.type-btn.sel-plus{background:var(--plus);border-color:var(--plus);color:#fff;}
+.type-btn.sel-minus{background:var(--minus);border-color:var(--minus);color:#fff;}
+
+.chip-wrap{display:flex;flex-wrap:wrap;gap:7px;}
+.chip{padding:7px 14px;border-radius:20px;font-size:13px;font-weight:500;background:var(--surface2);border:1.5px solid var(--border);color:var(--text2);cursor:pointer;user-select:none;}
+.chip.sel-plus{background:var(--plus);border-color:var(--plus);color:#fff;}
+.chip.sel-minus{background:var(--minus);border-color:var(--minus);color:#fff;}
+
+.custom-row{display:flex;gap:8px;margin-top:8px;align-items:center;}
+.custom-row input{flex:1;height:38px;padding:0 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);font-size:14px;color:var(--text);font-family:inherit;}
+.custom-row input:focus{outline:none;border-color:var(--accent);}
+.custom-row button{height:38px;padding:0 14px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);font-size:13px;font-weight:500;cursor:pointer;color:var(--text);white-space:nowrap;}
+
+.count-ctrl{display:flex;align-items:center;border:1.5px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;}
+.count-ctrl button{width:40px;height:38px;border:none;background:var(--surface2);font-size:18px;cursor:pointer;color:var(--text);display:flex;align-items:center;justify-content:center;}
+.count-ctrl button:active{background:var(--border);}
+.count-ctrl span{width:40px;text-align:center;font-size:16px;font-weight:600;background:var(--surface);}
+
+.num-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:6px;margin-bottom:10px;}
+.num-btn{padding:10px 4px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-tap-highlight-color:transparent;}
+.num-btn.sel-plus{background:var(--plus);border-color:var(--plus);color:#fff;}
+.num-btn.sel-minus{background:var(--minus);border-color:var(--minus);color:#fff;}
+.num-row-sep{grid-column:1/-1;height:1px;background:var(--border);margin:2px 0;}
+.all-btn{width:100%;height:40px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);font-size:14px;font-weight:600;cursor:pointer;color:var(--text);margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:6px;}
+.all-btn.sel-plus{background:var(--plus-light);border-color:var(--plus);color:var(--plus);}
+.all-btn.sel-minus{background:var(--minus-light);border-color:var(--minus);color:var(--minus);}
+
+.field{margin-bottom:10px;}
+.field label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:5px;}
+input[type=date],select{width:100%;height:42px;padding:0 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);font-size:15px;color:var(--text);font-family:inherit;-webkit-appearance:none;appearance:none;}
+input[type=date]:focus,select:focus{outline:none;border-color:var(--accent);}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 18px;height:42px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;user-select:none;}
+.btn:active{opacity:0.7;transform:scale(0.97);}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
+.btn-full{width:100%;}
+.btn-sm{height:30px;padding:0 10px;font-size:12px;}
+.btn-danger{border-color:var(--minus);color:var(--minus);}
+
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;}
+.badge-plus{background:var(--plus-light);color:var(--plus);}
+.badge-minus{background:var(--minus-light);color:var(--minus);}
+.badge-warn{background:var(--warn-light);color:var(--warn);}
+.badge-neu{background:var(--surface2);color:var(--text2);}
+
+.metric-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
+.metric{background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border);padding:12px;}
+.metric-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--text3);margin-bottom:4px;}
+.metric-value{font-size:26px;font-weight:700;}
+.pos{color:var(--plus);}.neg{color:var(--minus);}.warn-c{color:var(--warn);}
+
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;padding:8px 6px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;}
+td{padding:9px 6px;border-bottom:1px solid var(--border);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--surface2);}
+
+.empty{text-align:center;color:var(--text3);padding:32px 0;font-size:13px;}
+.row{display:flex;gap:8px;align-items:flex-end;}
+.f1{flex:1;}
+.tbl-wrap{overflow-x:auto;}
+
+/* 個人記錄區塊 */
+.student-block{border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:10px;overflow:hidden;}
+.student-block-header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface2);cursor:pointer;user-select:none;}
+.student-block-header:active{opacity:0.8;}
+.student-block-body{padding:0 12px;display:none;}
+.student-block-body.open{display:block;}
+.detail-row{display:flex;gap:8px;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px;}
+.detail-row:last-child{border-bottom:none;}
+
+.setting-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);}
+.setting-row:last-child{border-bottom:none;}
+.setting-row input[type=text]{flex:1;height:36px;font-size:14px;padding:0 10px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface2);color:var(--text);font-family:inherit;}
+
+.toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,16px)+16px);left:50%;transform:translateX(-50%);background:#1a1814;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999;white-space:nowrap;}
+.toast.show{opacity:1;}
 </style>
 </head>
 <body>
-<div class="tab-bar">
-  <button class="tab active" onclick="switchTab('record',this)">✏️ 登記</button>
-  <button class="tab" onclick="switchTab('log',this)">📋 記錄</button>
-  <button class="tab" onclick="switchTab('summary',this)">📊 統計</button>
-  <button class="tab" onclick="switchTab('notify',this)">📨 通知</button>
-  <button class="tab" onclick="switchTab('setup',this)">⚙️ 設定</button>
-</div>
 
-<!-- 每日登記 -->
-<div id="tab-record" class="section active">
-  <div class="card">
-    <div class="card-title">選擇星期</div>
-    <select id="daySelect">
-      <option value="一">星期一</option><option value="二">星期二</option>
-      <option value="三">星期三</option><option value="四">星期四</option>
-      <option value="五">星期五</option>
-    </select>
+<div class="header">
+  <div class="header-top">
+    <span class="app-title">🏅 優缺點記錄</span>
+    <span class="date-pill" id="today-pill"></span>
   </div>
-  <div class="card">
-    <div class="card-title">選擇項目</div>
-    <div class="item-grid" id="itemGrid"></div>
-  </div>
-  <div class="card" id="noteCard" style="display:none">
-    <div class="card-title">作業備註</div>
-    <input type="text" id="noteInput" placeholder="例：英習、數作（逗號分開）">
-  </div>
-  <div class="card">
-    <div class="card-title">選擇座號（可多選）</div>
-    <div class="no-grid" id="noGrid"></div>
-  </div>
-  <div style="padding:0 0 16px">
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="addRecord()">＋ 新增登記</button>
-      <button class="btn" onclick="clearSelection()">清除選擇</button>
-    </div>
-    <div id="recordMsg" style="margin-top:8px"></div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('record',this)"><span class="tab-icon">✏️</span>登記</div>
+    <div class="tab" onclick="switchTab('log',this)"><span class="tab-icon">📄</span>記錄</div>
+    <div class="tab" onclick="switchTab('summary',this)"><span class="tab-icon">📊</span>統整</div>
+    <div class="tab" onclick="switchTab('settings',this)"><span class="tab-icon">⚙️</span>設定</div>
   </div>
 </div>
 
-<!-- 登記記錄 -->
-<div id="tab-log" class="section">
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
-      <div class="card-title" style="margin:0">本週登記</div>
-      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-        <select id="logDayFilter" onchange="renderLog()" style="width:auto;font-size:14px">
-          <option value="">全部</option>
-          <option value="一">週一</option><option value="二">週二</option>
-          <option value="三">週三</option><option value="四">週四</option>
-          <option value="五">週五</option>
-        </select>
-        <button class="btn btn-sm btn-danger" onclick="clearAllRecords()">🗑 清除全部</button>
+<div class="content">
+
+  <!-- 登記 -->
+  <div class="panel active" id="panel-record">
+    <div class="card">
+      <div class="card-title">優點 / 缺點</div>
+      <div class="type-toggle">
+        <button class="type-btn sel-plus" id="type-plus" onclick="setType('plus')">✦ 優點 +</button>
+        <button class="type-btn" id="type-minus" onclick="setType('minus')">✦ 缺點 −</button>
       </div>
     </div>
-    <div id="logList"></div>
-  </div>
-  <div class="card">
-    <div class="card-title">貼上 CSV 文字匯入</div>
-    <div style="font-size:12px;color:#888;margin-bottom:8px">格式：座號,項目,星期（第一行標題可省略）</div>
-    <textarea class="paste-area" id="csvPaste" placeholder="座號,項目,星期&#10;3,作業缺交/學用品,三&#10;7,服裝儀容,三"></textarea>
-    <div class="btn-row" style="margin-top:10px">
-      <button class="btn btn-primary btn-sm" onclick="importPasteCSV()">⬆ 匯入</button>
-      <label class="btn btn-sm" style="cursor:pointer">📂 上傳 CSV 檔
-        <input type="file" accept=".csv" style="display:none" onchange="importRecordCSVFile(this)">
-      </label>
+    <div class="card">
+      <div class="card-title" id="item-card-title">選擇優點項目</div>
+      <div class="chip-wrap" id="item-chips"></div>
+      <div class="custom-row">
+        <input type="text" id="custom-input" placeholder="自行輸入項目…" list="custom-datalist">
+        <datalist id="custom-datalist"></datalist>
+        <button onclick="addCustomItem()">套用</button>
+      </div>
     </div>
-    <div id="importMsg"></div>
-  </div>
-</div>
-
-<!-- 週統計 -->
-<div id="tab-summary" class="section">
-  <div id="summaryContent"></div>
-  <div class="btn-row" style="padding-bottom:8px">
-    <button class="btn btn-primary" onclick="calcSummary()">↻ 計算統計</button>
-    <button class="btn btn-sm" onclick="exportSummaryCSV()">⬇ 週統計 CSV</button>
-    <button class="btn btn-sm" onclick="exportDetailCSV()">⬇ 每日明細 CSV</button>
-  </div>
-  <div class="btn-row" style="padding-bottom:16px">
-    <button class="btn btn-sm" onclick="exportMeritCSV()" style="background:#e8f0fe;color:#1a73e8;border-color:#c5d8fb">🏅 匯出優缺點 CSV（匯入優缺點系統用）</button>
-  </div>
-</div>
-
-<!-- 通知 -->
-<div id="tab-notify" class="section">
-  <div id="notifyContent"><div class="msg msg-info">請先至「統計」頁計算統計後再使用此頁。</div></div>
-</div>
-
-<!-- 設定 -->
-<div id="tab-setup" class="section">
-  <div class="card">
-    <div class="card-title">週次設定</div>
-    <div class="grid2">
-      <div><label class="field-label">第幾週</label><input type="number" id="weekNum" value="1" min="1" max="52" onchange="saveData()"></div>
-      <div>
-        <label class="field-label">週一日期</label>
-        <div style="display:flex;gap:4px;align-items:center">
-          <select id="weekStartY" onchange="autoFillWeekRange()" style="flex:2;min-width:0"></select>
-          <span style="color:#888;font-size:14px">/</span>
-          <select id="weekStartM" onchange="autoFillWeekRange()" style="flex:1.5;min-width:0"></select>
-          <span style="color:#888;font-size:14px">/</span>
-          <select id="weekStartD" onchange="autoFillWeekRange()" style="flex:1.5;min-width:0"></select>
+    <div class="card">
+      <div class="row">
+        <div class="f1">
+          <div class="field" style="margin:0"><label>日期</label><input type="date" id="rec-date"></div>
+        </div>
+        <div>
+          <div class="field" style="margin:0">
+            <label>支數</label>
+            <div class="count-ctrl">
+              <button onclick="changeCount(-1)">−</button>
+              <span id="count-display">1</span>
+              <button onclick="changeCount(+1)">+</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    <div style="margin-top:10px">
-      <label class="field-label">日期範圍（自動產生）</label>
-      <input type="text" id="weekRange" placeholder="輸入週一日期後自動產生" readonly style="background:#f8f8f8;color:#555">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div class="card-title" style="margin:0">座號 <span style="font-size:12px;color:var(--text3)" id="sel-count"></span></div>
+        <button class="btn btn-sm" onclick="clearNums()">清除</button>
+      </div>
+      <button class="all-btn" id="all-btn" onclick="toggleAll()">👥 全班（1–33號）</button>
+      <div class="num-grid" id="num-grid"></div>
+      <button class="btn btn-primary btn-full" onclick="submitRecords()">✓ 新增記錄</button>
     </div>
   </div>
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px">
-      <div class="card-title" style="margin:0">學生名單</div>
-      <div style="display:flex;gap:6px">
-        <button class="btn btn-sm" onclick="downloadNameTemplate()">⬇ 範本</button>
-        <label class="btn btn-sm" style="cursor:pointer">⬆ 匯入
+
+  <!-- 記錄（依座號展開） -->
+  <div class="panel" id="panel-log">
+    <div class="card">
+      <div class="row" style="flex-wrap:wrap;gap:8px;margin-bottom:8px">
+        <div class="f1">
+          <div class="field" style="margin:0"><label>座號</label>
+            <select id="filter-num" onchange="renderLog()"><option value="">全部座號</option></select>
+          </div>
+        </div>
+        <div class="f1">
+          <div class="field" style="margin:0"><label>類型</label>
+            <select id="filter-type" onchange="renderLog()">
+              <option value="">全部</option><option value="plus">優點</option><option value="minus">缺點</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="row" style="margin-bottom:8px">
+        <div class="f1">
+          <div class="field" style="margin:0"><label>日期</label><input type="date" id="filter-date" oninput="renderLog()"></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn f1" onclick="clearFilters()">清除篩選</button>
+        <button class="btn f1" onclick="exportLogCSV()">⬇ 匯出 CSV</button>
+      </div>
+    </div>
+    <div id="log-container"></div>
+  </div>
+
+  <!-- 統整 -->
+  <div class="panel" id="panel-summary">
+    <div class="card">
+      <button class="btn btn-full" onclick="exportNotifyText()" style="margin-bottom:8px">⬇ 匯出純文字備案（Email 通知用）</button>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:12px;text-align:center">匯出後傳給電腦版 Claude，請它批次建立 Gmail 草稿</div>
+      <button class="btn btn-full" onclick="exportSummaryCSV()">⬇ 匯出統計結果 CSV（備查用）</button>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px;text-align:center">含座號、淨支數、嘉獎、警告、餘數、明細</div>
+    </div>
+    <div class="metric-grid" id="sum-metrics"></div>
+    <div class="card" style="padding:0 14px">
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th style="text-align:center">座號</th>
+            <th style="text-align:center">淨支數</th>
+            <th style="text-align:center">嘉獎</th>
+            <th style="text-align:center">警告</th>
+            <th style="text-align:center">餘數</th>
+          </tr></thead>
+          <tbody id="sum-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- 設定 -->
+  <div class="panel" id="panel-settings">
+    <div class="card">
+      <div class="card-title">自訂項目管理</div>
+      <div id="custom-list-plus" style="margin-bottom:10px"></div>
+      <div id="custom-list-minus"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">學生名單（姓名與家長 Email）</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px">CSV 格式：座號,姓名,家長Email</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button class="btn" style="flex:1;font-size:13px" onclick="downloadNameTemplate()">⬇ 下載範本</button>
+        <label class="btn" style="flex:1;font-size:13px;cursor:pointer;text-align:center">
+          ⬆ 匯入名單
           <input type="file" accept=".csv" style="display:none" onchange="importNameCSV(this)">
         </label>
       </div>
+      <div id="nameListPreview" style="font-size:12px;color:var(--text3)">尚未匯入名單</div>
     </div>
-    <div style="font-size:12px;color:#888;margin-bottom:8px">CSV 格式：座號,姓名,家長Email</div>
-    <div class="overflow-x">
-      <table>
-        <thead><tr><th>座號</th><th>姓名</th><th>家長 Email</th></tr></thead>
-        <tbody id="nameTable"></tbody>
-      </table>
+    <div class="card">
+      <div class="card-title">資料管理</div>
+      <button class="btn btn-full" onclick="exportAllCSV()" style="margin-bottom:8px">⬇ 匯出全部原始資料</button>
+      <label class="btn btn-full" style="cursor:pointer;margin-bottom:8px">
+        ⬆ 匯入 CSV（含餘數結轉）
+        <input type="file" accept=".csv" id="import-file" style="display:none" onchange="importCSV(this)">
+      </label>
+      <div style="font-size:11px;color:var(--text3);text-align:center;margin-bottom:8px">匯入格式：日期,座號,類型,項目,分數</div>
+    </div>
+    <div class="card" style="border-color:#b45309">
+      <div class="card-title" style="color:var(--warn)">期中／期末結轉</div>
+      <div style="font-size:12px;color:var(--text2);margin-bottom:10px;line-height:1.6">
+        結轉將自動執行以下三步驟：<br>
+        ① 匯出純文字備案（可傳給 Claude 批次寄 Email）<br>
+        ② 清除所有記錄<br>
+        ③ 將各生餘數以結轉當天日期存回
+      </div>
+      <button class="btn btn-full" style="background:var(--warn);border-color:var(--warn);color:#fff;font-weight:600;margin-bottom:0" onclick="doTransfer()">🔄 執行結轉</button>
+    </div>
+    <div class="card" style="border-color:#ffcdd2">
+      <div class="card-title" style="color:var(--minus)">危險區域</div>
+      <button class="btn btn-danger btn-full" onclick="clearAll()">清除所有記錄（不結轉）</button>
     </div>
   </div>
+
 </div>
+<div class="toast" id="toast"></div>
 
 <script>
-// 登記用顯示名稱 vs 週報輸出名稱
-const ITEMS=[
-  {key:'遲到',  label:'上學遲到',      outLabel:'上學遲到',                                          noDeduct:true},
-  {key:'晚進',  label:'上課晚進',      outLabel:'上課晚進',                                          noDeduct:false},
-  {key:'秩序',  label:'秩序表現',      outLabel:'影響秩序',                                          noDeduct:false},
-  {key:'趴睡',  label:'上課趴睡',      outLabel:'上課趴睡',                                          noDeduct:false},
-  {key:'聯絡本',label:'聯絡本缺遲',    outLabel:'聯絡本缺遲',                                        noDeduct:false},
-  {key:'作業',  label:'作業缺交/學用品',outLabel:'作業缺交/學用品未帶',                               noDeduct:false,hasNote:true},
-  {key:'打掃',  label:'打掃工作',      outLabel:'打掃未完成',                                        noDeduct:false},
-  {key:'環境',  label:'環境與桌椅',    outLabel:'環境（桌面未清空、椅子未靠、環境清潔待改善）',       noDeduct:false},
-  {key:'服儀',  label:'服裝儀容',      outLabel:'服裝儀容待改善',                                    noDeduct:true}
-];
-const DAYS=['一','二','三','四','五'];
-const TOTAL=33;
-let students=[];
-let logs=[];
-let emailList=[];
-let summaryData=null;
-let selItem=null;
-let selNos=new Set();
-
-const LS_KEY='meritData_v1';
-const ROSTER_KEY='sharedRoster_v1';
-
-function getWeekStartValue(){
-  const y=document.getElementById('weekStartY').value;
-  const m=document.getElementById('weekStartM').value;
-  const d=document.getElementById('weekStartD').value;
-  if(!y||!m||!d) return '';
-  return `${y}-${m.padStart(2,'0')}-${d.padStart(2,'0')}`;
-}
-
-function saveData(){
+var DB='merit2_records_v1', CFG='merit2_config_v1';
+var records=[];
+var cfg={customPlus:[],customMinus:[]};
+var nameList={}; // {座號: {name:'', email:''}}
+var NAME_DB='sharedRoster_v1';
+function saveNames(){
   try{
-    localStorage.setItem(LS_KEY,JSON.stringify({
-      logs,
-      weekNum:document.getElementById('weekNum').value,
-      weekStart:getWeekStartValue(),
-      weekRange:document.getElementById('weekRange').value
-    }));
-    localStorage.setItem(ROSTER_KEY,JSON.stringify({students,emailList}));
+    // 轉為 sharedRoster 格式 {students:[{no,name}], emailList:[{no,name,email}]}
+    var students=[];var emailList=[];
+    for(var i=1;i<=33;i++){
+      var s=nameList[i]||{name:'',email:''};
+      students.push({no:i,name:s.name||''});
+      emailList.push({no:i,name:s.name||'',email:s.email||''});
+    }
+    localStorage.setItem(NAME_DB,JSON.stringify({students:students,emailList:emailList}));
   }catch(e){}
 }
-
-function loadData(){
+function loadNames(){
   try{
-    const raw=localStorage.getItem(LS_KEY);
-    if(raw){
-      const d=JSON.parse(raw);
-      if(d.logs) logs=d.logs;
-      if(d.weekNum) document.getElementById('weekNum').value=d.weekNum;
-      if(d.weekStart) setWeekStartSelects(d.weekStart);
-      if(d.weekRange) document.getElementById('weekRange').value=d.weekRange;
+    var d=localStorage.getItem(NAME_DB);
+    if(!d)return;
+    var parsed=JSON.parse(d);
+    nameList={};
+    // 支援兩種格式：舊版（直接是 {座號:{name,email}}）或新版 sharedRoster
+    if(parsed.emailList){
+      // sharedRoster 格式
+      parsed.emailList.forEach(function(e){
+        if(e.no) nameList[e.no]={name:e.name||'',email:e.email||''};
+      });
+    } else {
+      // 舊格式直接使用
+      nameList=parsed;
     }
-    const rosterRaw=localStorage.getItem(ROSTER_KEY);
-    if(rosterRaw){
-      const r=JSON.parse(rosterRaw);
-      if(r.students) students=r.students;
-      if(r.emailList) emailList=r.emailList;
-    }
-    return true;
-  }catch(e){return false;}
+  }catch(e){}
 }
-
-function initStudents(){
-  students=[];
-  for(let i=1;i<=TOTAL;i++) students.push({no:i,name:''});
-}
-initStudents();
-
-// 初始化年月日下拉
-function initDateSelects(){
-  const yEl=document.getElementById('weekStartY');
-  const mEl=document.getElementById('weekStartM');
-  const dEl=document.getElementById('weekStartD');
-  const now=new Date();
-  const cy=now.getFullYear();
-  // 年：前1年～後1年
-  [cy-1,cy,cy+1].forEach(y=>{
-    const o=document.createElement('option');
-    o.value=y;o.textContent=y+'年';
-    yEl.appendChild(o);
-  });
-  yEl.value=cy;
-  // 月
-  for(let m=1;m<=12;m++){
-    const o=document.createElement('option');
-    o.value=String(m).padStart(2,'0');o.textContent=m+'月';
-    mEl.appendChild(o);
-  }
-  mEl.value=String(now.getMonth()+1).padStart(2,'0');
-  // 日
-  for(let d=1;d<=31;d++){
-    const o=document.createElement('option');
-    o.value=String(d).padStart(2,'0');o.textContent=d+'日';
-    dEl.appendChild(o);
-  }
-  dEl.value=String(now.getDate()).padStart(2,'0');
-}
-
-function setWeekStartSelects(val){
-  // val: 'YYYY-MM-DD'
-  if(!val||!val.includes('-')) return;
-  const [y,m,d]=val.split('-');
-  const yEl=document.getElementById('weekStartY');
-  // 確保年份存在於選項中
-  if(![...yEl.options].some(o=>o.value===y)){
-    const o=document.createElement('option');
-    o.value=y;o.textContent=y+'年';
-    yEl.insertBefore(o,yEl.firstChild);
-  }
-  yEl.value=y;
-  document.getElementById('weekStartM').value=m;
-  document.getElementById('weekStartD').value=d;
-}
-
-// 週一選擇 → 自動產生週五日期範圍
-function autoFillWeekRange(){
-  const val=getWeekStartValue();
-  if(!val) return;
-  const mon=new Date(val);
-  if(isNaN(mon.getTime())) return;
-  const fri=new Date(mon);
-  fri.setDate(mon.getDate()+4);
-  const fmt=d=>`${d.getMonth()+1}/${d.getDate()}`;
-  document.getElementById('weekRange').value=`${fmt(mon)}（一）－${fmt(fri)}（五）`;
-  saveData();
-}
-
-function switchTab(t,btn){
-  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
-  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
-  btn.classList.add('active');
-  document.getElementById('tab-'+t).classList.add('active');
-  if(t==='record'){renderItemGrid();renderNoGrid();}
-  if(t==='log') renderLog();
-  if(t==='summary') calcSummary();
-  if(t==='notify') renderNotify();
-  if(t==='setup') renderNameTable();
-}
-
-function renderItemGrid(){
-  const grid=document.getElementById('itemGrid');
-  grid.innerHTML='';
-  ITEMS.forEach(it=>{
-    const btn=document.createElement('button');
-    btn.className='item-btn'+(it.noDeduct?' only-record':'')+(selItem===it.key?' selected':'');
-    btn.innerHTML=it.label+(it.noDeduct?'<br><small style="font-size:11px;opacity:0.6">僅登記</small>':'');
-    btn.onclick=()=>{
-      selItem=selItem===it.key?null:it.key;
-      document.getElementById('noteCard').style.display=(selItem&&ITEMS.find(x=>x.key===selItem)?.hasNote)?'block':'none';
-      renderItemGrid();
-    };
-    grid.appendChild(btn);
-  });
-}
-
-function renderNoGrid(){
-  const grid=document.getElementById('noGrid');
-  grid.innerHTML='';
-  for(let i=1;i<=TOTAL;i++){
-    const s=students[i-1];
-    const btn=document.createElement('button');
-    btn.className='no-btn'+(selNos.has(i)?' selected':'');
-    btn.innerHTML=i+(s.name?`<br><small style="font-size:10px;font-weight:400">${s.name}</small>`:'');
-    btn.onclick=()=>{
-      if(selNos.has(i)) selNos.delete(i); else selNos.add(i);
-      renderNoGrid();
-    };
-    grid.appendChild(btn);
-  }
-}
-
-function addRecord(){
-  const msg=document.getElementById('recordMsg');
-  if(!selItem){showMsg(msg,'請先選擇項目','error');return;}
-  if(selNos.size===0){showMsg(msg,'請選擇至少一個座號','error');return;}
-  const day=document.getElementById('daySelect').value;
-  const note=document.getElementById('noteInput').value.trim();
-  selNos.forEach(no=>{
-    logs.push({no,item:selItem,day,note:ITEMS.find(x=>x.key===selItem)?.hasNote?note:''});
-  });
-  const count=selNos.size;
-  const label=ITEMS.find(x=>x.key===selItem)?.label;
-  selNos.clear();
-  document.getElementById('noteInput').value='';
-  renderNoGrid();
-  saveData();
-  showMsg(msg,`已新增 ${count} 筆（週${day}・${label}）`,'success');
-}
-
-function clearSelection(){
-  selItem=null;selNos.clear();
-  document.getElementById('noteInput').value='';
-  document.getElementById('noteCard').style.display='none';
-  renderItemGrid();renderNoGrid();
-}
-
-function showMsg(el,text,type){
-  el.innerHTML=`<div class="msg msg-${type==='error'?'error':'success'}">${text}</div>`;
-  setTimeout(()=>el.innerHTML='',2500);
-}
-
-function renderLog(){
-  const dayFilter=document.getElementById('logDayFilter').value;
-  const list=document.getElementById('logList');
-  const filtered=logs.filter(l=>!dayFilter||l.day===dayFilter);
-  if(filtered.length===0){list.innerHTML='<div style="color:#888;font-size:14px;padding:8px 0">尚無登記記錄</div>';return;}
-  const grouped={};
-  filtered.forEach(l=>{
-    if(!grouped[l.day]) grouped[l.day]=[];
-    grouped[l.day].push({...l,idx:logs.indexOf(l)});
-  });
-  let html='';
-  DAYS.forEach(d=>{
-    if(!grouped[d]) return;
-    html+=`<div class="day-label">星期${d}</div>`;
-    grouped[d].forEach(l=>{
-      const it=ITEMS.find(x=>x.key===l.item);
-      const s=students[l.no-1];
-      html+=`<div class="log-item">
-        <span><strong>${l.no}${s.name?' '+s.name:''}</strong> — ${it?.label||l.item}${l.note?` <span class="tag tag-note">${l.note}</span>`:''}${it?.noDeduct?' <span class="tag">僅登記</span>':''}</span>
-        <button class="btn btn-sm btn-danger" onclick="deleteLog(${l.idx})" style="flex-shrink:0">🗑</button>
-      </div>`;
-    });
-  });
-  list.innerHTML=html;
-}
-
-function deleteLog(idx){logs.splice(idx,1);saveData();renderLog();}
-function clearAllRecords(){if(!confirm('確定清除本週所有登記？'))return;logs=[];saveData();renderLog();}
-
-function importPasteCSV(){
-  const text=document.getElementById('csvPaste').value.trim();
-  const msgEl=document.getElementById('importMsg');
-  if(!text){msgEl.innerHTML='<div class="msg msg-error">請先貼上 CSV 內容</div>';return;}
-  const count=parseCSVText(text);
-  document.getElementById('csvPaste').value='';
-  msgEl.innerHTML=`<div class="msg msg-success">${count} 筆記錄已匯入</div>`;
-  setTimeout(()=>msgEl.innerHTML='',3000);
-  saveData();
-  renderLog();
-}
-
-function importRecordCSVFile(input){
-  const file=input.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    const count=parseCSVText(e.target.result.replace(/^\uFEFF/,''));
-    document.getElementById('importMsg').innerHTML=`<div class="msg msg-success">${count} 筆記錄已匯入</div>`;
-    setTimeout(()=>document.getElementById('importMsg').innerHTML='',3000);
-    saveData();
-    renderLog();
-  };
-  reader.readAsText(file,'UTF-8');
-}
-
-function parseCSVText(text){
-  let count=0;
-  text.split('\n').forEach(l=>{
-    l=l.trim();if(!l)return;
-    const parts=l.split(',');
-    if(parts.length<3)return;
-    const no=parseInt(parts[0]);
-    const itemLabel=parts[1].trim();
-    const day=parts[2].trim();
-    const note=parts[3]?parts[3].trim():'';
-    if(isNaN(no)||no<1||no>TOTAL||!DAYS.includes(day))return;
-    if(itemLabel==='項目')return;
-    const it=ITEMS.find(x=>x.label===itemLabel||x.label.includes(itemLabel)||itemLabel.includes(x.key)||itemLabel===x.key);
-    if(it){logs.push({no,item:it.key,day,note:it.hasNote?note:''});count++;}
-  });
-  return count;
-}
-
-function getWeeklyCounts(){
-  const counts={};
-  for(let i=1;i<=TOTAL;i++){
-    counts[i]={};
-    ITEMS.forEach(it=>{counts[i][it.key]={count:0,notes:[],days:[]};});
-  }
-  logs.forEach(l=>{
-    if(counts[l.no]&&counts[l.no][l.item]){
-      counts[l.no][l.item].count++;
-      counts[l.no][l.item].days.push(l.day);
-      if(l.note&&!counts[l.no][l.item].notes.includes(l.note)) counts[l.no][l.item].notes.push(l.note);
-    }
-  });
-  return counts;
-}
-
-function calcWeeklySummary(){
-  const counts=getWeeklyCounts();
-  return Array.from({length:TOTAL},(_,i)=>{
-    const s=students[i];
-    let totalDeduct=0,recordDetails=[];
-    ITEMS.forEach(it=>{
-      const c=counts[i+1][it.key];
-      if(c.count>0){
-        recordDetails.push({label:it.label,outLabel:it.outLabel,key:it.key,count:c.count,notes:c.notes,days:[...new Set(c.days)],noDeduct:it.noDeduct});
-        if(!it.noDeduct&&c.count>=3) totalDeduct+=Math.floor(c.count/3);
-      }
-    });
-    const level=recordDetails.length===0?'優異':totalDeduct===0?'不錯':'加強';
-    return {no:i+1,name:s.name,level,totalDeduct,recordDetails,counts:counts[i+1]};
-  });
-}
-
-function calcSummary(){
-  summaryData=calcWeeklySummary();
-  const week=document.getElementById('weekNum').value;
-  const range=document.getElementById('weekRange').value;
-  const good=summaryData.filter(x=>x.level==='優異').length;
-  const ok=summaryData.filter(x=>x.level==='不錯').length;
-  const warn=summaryData.filter(x=>x.level==='加強').length;
-  const labelMap={'優異':'表現優異','不錯':'表現不錯','加強':'尚待努力'};
-  let html=`<div class="grid3" style="margin-bottom:12px">
-    <div class="card" style="text-align:center;padding:12px"><div style="font-size:12px;color:#888">表現優異</div><div style="font-size:28px;font-weight:700;color:#1e7e34">${good}</div></div>
-    <div class="card" style="text-align:center;padding:12px"><div style="font-size:12px;color:#888">表現不錯</div><div style="font-size:28px;font-weight:700">${ok}</div></div>
-    <div class="card" style="text-align:center;padding:12px"><div style="font-size:12px;color:#888">尚待努力</div><div style="font-size:28px;font-weight:700;color:#c0392b">${warn}</div></div>
-  </div>
-  <div class="card"><div class="card-title">全班明細 第${week}週 ${range}</div>
-  <div class="overflow-x"><table><thead><tr><th>號</th><th>姓名</th><th>評等</th><th>缺點</th><th>登記明細</th></tr></thead><tbody>`;
-  summaryData.forEach(s=>{
-    const bc=s.level==='優異'?'badge-success':s.level==='不錯'?'badge-info':'badge-danger';
-    const det=s.recordDetails.map(d=>{
-      const cls=d.noDeduct?'tag':'tag'+(d.count>=6?' tag-danger':d.count>=3?' tag-warn':'');
-      const noteTags=d.notes.map(n=>`<span class="tag tag-note">${n}</span>`).join('');
-      return `<div style="margin:2px 0"><span class="${cls}">${d.label}×${d.count}（週${d.days.join('、')}）</span>${noteTags}</div>`;
-    }).join('')||'<span style="color:#aaa;font-size:12px">無記錄</span>';
-    html+=`<tr><td>${s.no}</td><td style="white-space:nowrap">${s.name||'-'}</td><td><span class="badge ${bc}">${labelMap[s.level]}</span></td><td style="text-align:center">${s.totalDeduct>0?s.totalDeduct+' 支':'-'}</td><td>${det}</td></tr>`;
-  });
-  html+=`</tbody></table></div></div>`;
-  document.getElementById('summaryContent').innerHTML=html;
-}
-
-function exportSummaryCSV(){
-  if(!summaryData){alert('請先計算統計');return;}
-  const week=document.getElementById('weekNum').value;
-  const range=document.getElementById('weekRange').value;
-  const labelMap={'優異':'表現優異','不錯':'表現不錯','加強':'尚待努力'};
-  let csv='\uFEFF第'+week+'週生活常規週統計,'+range+'\n\n';
-  csv+='座號,姓名,評等,缺點支數';
-  ITEMS.forEach(it=>csv+=','+it.label+'（次）,'+it.label+'（星期）,備註');
-  csv+='\n';
-  summaryData.forEach(s=>{
-    csv+=s.no+',"'+(s.name||'')+'",'+labelMap[s.level]+','+s.totalDeduct;
-    ITEMS.forEach(it=>{
-      const c=s.counts[it.key];
-      csv+=',"'+(c.count||'')+'","'+(c.count?[...new Set(c.days)].join(''):'')+'","'+(c.notes.join('、'))+'"';
-    });
-    csv+='\n';
-  });
-  dlFile('第'+week+'週生活常規統計.csv',csv,'text/csv');
-}
-
-function exportDetailCSV(){
-  const week=document.getElementById('weekNum').value;
-  const range=document.getElementById('weekRange').value;
-  let csv='\uFEFF第'+week+'週生活常規每日明細,'+range+'\n\n座號,姓名,星期,項目,備註\n';
-  [...logs].sort((a,b)=>DAYS.indexOf(a.day)-DAYS.indexOf(b.day)||a.no-b.no).forEach(l=>{
-    const s=students[l.no-1];
-    const it=ITEMS.find(x=>x.key===l.item);
-    csv+=l.no+',"'+(s.name||'')+'",'+l.day+',"'+(it?.label||l.item)+'","'+(l.note||'')+'"\n';
-  });
-  dlFile('第'+week+'週生活常規每日明細.csv',csv,'text/csv');
-}
-
-function exportMeritCSV(){
-  if(!summaryData){alert('請先計算統計');return;}
-  const week=document.getElementById('weekNum').value;
-  const weekStart=getWeekStartValue();
-  // 用週五日期作為記錄日期（週一+4天）
-  let dateStr='';
-  if(weekStart){
-    const fri=new Date(weekStart);
-    fri.setDate(fri.getDate()+4);
-    dateStr=fri.toLocaleDateString('sv'); // YYYY-MM-DD
-  } else {
-    dateStr=new Date().toLocaleDateString('sv');
-  }
-
-  let csv='\uFEFF日期,座號,類型,項目,分數\n';
-  summaryData.forEach(s=>{
-    if(s.level==='優異'){
-      // 表現優異 → 優點 1支
-      csv+=`${dateStr},${s.no},優點,第${week}週生活常規表現優異,1\n`;
-    } else if(s.totalDeduct>0){
-      // 有缺點 → 每支各記一筆
-      for(let i=0;i<s.totalDeduct;i++){
-        csv+=`${dateStr},${s.no},缺點,第${week}週生活常規缺點,-1\n`;
-      }
-    }
-    // 表現不錯 → 不產生記錄
-  });
-
-  dlFile(`第${week}週生活常規優缺點.csv`,csv,'text/csv');
-}
-
-// 週報內文產生（依範本格式，使用 outLabel）
-function genNotifyText(s,week,range){
-  const name=s.name||s.no+'號同學';
-  const levelMap={'優異':'表現優異','不錯':'表現不錯','加強':'尚待努力'};
-  let t='貴家長您好，以下是第'+week+'週的日常表現紀錄：\n\n本週'+name+'表現\n';
-  t+='【'+levelMap[s.level]+'】\n';
-
-  if(s.level==='優異'){
-    t+='本週各方面表現良好，記優點一支。\n';
-  } else {
-    t+='待改善部分：\n';
-    s.recordDetails.forEach(d=>{
-      const notesStr=d.notes.length>0?'（'+d.notes.join('、')+'）':'';
-      const daysStr=d.days.join('、');
-      const pts=!d.noDeduct&&d.count>=3?' → 記'+Math.floor(d.count/3)+'支缺點':'';
-      t+='・'+d.outLabel+'：'+d.count+'次（週'+daysStr+'）'+notesStr+pts+'\n';
-    });
-    if(s.totalDeduct>0){
-      t+='\n總計缺點共'+s.totalDeduct+'支，請家長留意並督促孩子一起重視團體規範，並鼓勵孩子主動找老師進行「愛班服務」來抵銷缺點，藉此培養負責任的態度。\n';
-    }
-  }
-  t+='\n非常感謝您在家庭端的陪伴與鼓勵，我們一起引導孩子建立良好的生活常規。若您對孩子的狀況有任何想進一步了解或討論的地方，可以直接回覆此 Email。\n';
-  t+='\n導師 林美吟 敬上';
-  return t;
-}
-
-function renderNotify(){
-  if(!summaryData) calcSummary();
-  const week=document.getElementById('weekNum').value;
-  const range=document.getElementById('weekRange').value;
-  const levelMap={'優異':'表現優異','不錯':'表現不錯','加強':'尚待努力'};
-  let html=`<div class="card">
-    <div class="card-title">通知文字（供複製傳給 Claude 批次建立草稿）</div>
-    <div style="font-size:13px;color:#666;margin-bottom:10px">點「匯出純文字備案」後，將 .txt 檔傳給電腦版 Claude，請它批次建立 Gmail 草稿。</div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="exportAllText()">⬇ 匯出純文字備案</button>
-    </div>
-  </div>
-  <div class="card"><div class="card-title">個別預覽</div>`;
-  summaryData.forEach(s=>{
-    const email=emailList.find(x=>x.no===s.no);
-    const emailStr=email&&email.email?email.email:'（無 Email）';
-    const bc=s.level==='優異'?'badge-success':s.level==='不錯'?'badge-info':'badge-danger';
-    const txt=genNotifyText(s,week,range);
-    html+=`<div class="student-result">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px;flex-wrap:wrap">
-        <div><span style="font-weight:600;font-size:15px">${s.no} ${s.name||''}</span> <span class="badge ${bc}">${levelMap[s.level]}</span></div>
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          <span style="font-size:12px;color:#888">${emailStr}</span>
-          <button class="btn btn-sm" onclick="copyText('txt_${s.no}')">📋 複製</button>
-        </div>
-      </div>
-      <textarea id="txt_${s.no}" style="width:100%;height:180px;font-size:13px;padding:10px;border:1px solid #ddd;border-radius:8px;background:#f8f8f8;color:#1a1a1a;resize:vertical">${txt}</textarea>
-    </div>`;
-  });
-  html+=`</div>`;
-  document.getElementById('notifyContent').innerHTML=html;
-}
-
-function copyText(id){
-  const el=document.getElementById(id);
-  if(!el)return;
-  navigator.clipboard.writeText(el.value).then(()=>{
-    el.style.borderColor='#1e7e34';
-    setTimeout(()=>el.style.borderColor='',1000);
-  });
-}
-
-function exportAllText(){
-  if(!summaryData){alert('請先計算統計');return;}
-  const week=document.getElementById('weekNum').value;
-  const range=document.getElementById('weekRange').value;
-  const levelMap={'優異':'表現優異','不錯':'表現不錯','加強':'尚待努力'};
-  let txt='第'+week+'週（'+range+'）生活常規通知備案\n匯出時間：'+new Date().toLocaleString('zh-TW')+'\n'+'='.repeat(40)+'\n\n';
-  summaryData.forEach(s=>{
-    const e=emailList.find(x=>x.no===s.no);
-    const subject='第'+week+'週班級通訊－'+s.no+'號'+(s.name||'')+'同學';
-    txt+='【'+s.no+' '+(s.name||'')+'】'+(e&&e.email?'Email: '+e.email:'無 Email')+'\n';
-    txt+='主旨：'+subject+'\n';
-    txt+=genNotifyText(s,week,range)+'\n'+'-'.repeat(30)+'\n\n';
-  });
-  dlFile('第'+week+'週通知備案.txt',txt,'text/plain');
-}
-
-function renderNameTable(){
-  const tbody=document.getElementById('nameTable');
-  tbody.innerHTML='';
-  for(let i=1;i<=TOTAL;i++){
-    const s=students[i-1];
-    const e=emailList.find(x=>x.no===i)||{email:''};
-    tbody.innerHTML+=`<tr><td>${i}</td>
-      <td><input type="text" value="${s.name||''}" onchange="students[${i-1}].name=this.value;renderNoGrid();saveData()" style="width:70px;font-size:14px"></td>
-      <td><input type="email" value="${e.email||''}" onchange="setEmail(${i},this.value)" style="width:180px;font-size:14px"></td></tr>`;
-  }
-}
-
-function setEmail(no,val){
-  let e=emailList.find(x=>x.no===no);
-  if(e) e.email=val; else emailList.push({no,email:val});
-  saveData();
-}
-
 function downloadNameTemplate(){
-  let csv='\uFEFF座號,姓名,家長Email\n';
-  for(let i=1;i<=TOTAL;i++) csv+=i+',,\n';
-  dlFile('學生名單範本.csv',csv,'text/csv');
+  var csv='\uFEFF座號,姓名,家長Email\n';
+  for(var i=1;i<=33;i++) csv+=i+',,\n';
+  dl(csv,'學生名單範本.csv');
 }
-
 function importNameCSV(input){
-  const file=input.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    emailList=[];
-    e.target.result.replace(/^\uFEFF/,'').split('\n').slice(1).forEach(l=>{
-      const parts=l.split(',');
+  var file=input.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    nameList={};
+    var lines=e.target.result.replace(/^\uFEFF/,'').split('\n').slice(1);
+    lines.forEach(function(l){
+      var parts=l.split(',');
       if(parts.length>=2&&parts[0].trim()){
-        const no=parseInt(parts[0]);
-        if(!isNaN(no)&&no>=1&&no<=TOTAL){
-          students[no-1].name=(parts[1]||'').trim()||students[no-1].name;
-          emailList.push({no,name:(parts[1]||'').trim(),email:(parts[2]||'').trim()});
+        var no=parseInt(parts[0]);
+        if(!isNaN(no)&&no>=1&&no<=33){
+          nameList[no]={name:(parts[1]||'').trim(),email:(parts[2]||'').trim()};
         }
       }
     });
-    renderNameTable();
-    renderNoGrid();
-    saveData();
+    saveNames();
+    renderNameListPreview();
+    showToast('名單已匯入');
   };
   reader.readAsText(file,'UTF-8');
 }
+function renderNameListPreview(){
+  var el=document.getElementById('nameListPreview');
+  if(!el)return;
+  var count=Object.keys(nameList).filter(function(k){return nameList[k].name;}).length;
+  var emailCount=Object.keys(nameList).filter(function(k){return nameList[k].email;}).length;
+  el.textContent=count>0?('已匯入 '+count+' 位姓名，'+emailCount+' 位家長 Email'):'尚未匯入名單';
+}
+var curType='plus', curItem='榮譽班', curCount=1;
+var selNums=new Set(), isAllSelected=false;
+var FIXED_PLUS=['榮譽班','秩序得獎','整潔得獎','常規表現優良'];
+var FIXED_MINUS=['常規表現不佳'];
+var RATIO=6; // 6支 = 1嘉獎/警告
 
-function dlFile(name,content,type){
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([content],{type:type+';charset=utf-8'}));
-  a.download=name;a.click();
+function init(){
+  try{var r=localStorage.getItem(DB);if(r)records=JSON.parse(r);}catch(e){}
+  try{var c=localStorage.getItem(CFG);if(c)cfg=JSON.parse(c);}catch(e){}
+  document.getElementById('rec-date').value=new Date().toLocaleDateString('sv');
+  document.getElementById('today-pill').textContent=new Date().toLocaleDateString('zh-TW',{month:'long',day:'numeric',weekday:'short'});
+  buildNumGrid();
+  buildItemChips();
+  buildFilterNumDropdown();
+  buildCustomLists();
+  renderLog();
+  renderSummary();
+  updateSelCount();
 }
 
-initDateSelects();
-loadData();
-renderItemGrid();
-renderNoGrid();
-renderNameTable();
+function save(){try{localStorage.setItem(DB,JSON.stringify(records));}catch(e){}}
+function saveCfg(){try{localStorage.setItem(CFG,JSON.stringify(cfg));}catch(e){}}
+
+/* 計算嘉獎／警告／餘數（互相抵銷後計算） */
+function calcMerit(num){
+  var sub=records.filter(function(r){return r.num===num;});
+  var net=sub.reduce(function(s,r){return s+r.score;},0); // 正=優點淨值，負=缺點淨值
+  var award=0, warn=0, remain=0, remainType='';
+  if(net>0){
+    award=Math.floor(net/RATIO);
+    remain=net%RATIO;
+    remainType=remain>0?'優點':'';
+  } else if(net<0){
+    var absNet=Math.abs(net);
+    warn=Math.floor(absNet/RATIO);
+    remain=absNet%RATIO;
+    remainType=remain>0?'缺點':'';
+  }
+  return{net:net,award:award,warn:warn,remain:remain,remainType:remainType};
+}
+
+/* Type toggle */
+function setType(type){
+  curType=type;
+  document.getElementById('type-plus').className='type-btn'+(type==='plus'?' sel-plus':'');
+  document.getElementById('type-minus').className='type-btn'+(type==='minus'?' sel-minus':'');
+  document.getElementById('item-card-title').textContent=type==='plus'?'選擇優點項目':'選擇缺點項目';
+  document.getElementById('custom-input').placeholder=type==='plus'?'自行輸入優點項目…':'自行輸入缺點項目…';
+  var fixed=type==='plus'?FIXED_PLUS:FIXED_MINUS;
+  curItem=fixed[0];
+  buildItemChips();
+  updateAllBtn();
+  updateNumBtns();
+}
+
+function buildItemChips(){
+  var el=document.getElementById('item-chips');
+  el.innerHTML='';
+  var fixed=curType==='plus'?FIXED_PLUS:FIXED_MINUS;
+  var custom=curType==='plus'?cfg.customPlus:cfg.customMinus;
+  var all=fixed.concat(custom);
+  if(all.indexOf(curItem)===-1)curItem=all[0];
+  all.forEach(function(item){
+    var d=document.createElement('div');
+    d.className='chip'+(item===curItem?' sel-'+curType:'');
+    d.textContent=item;
+    d.onclick=(function(el2,it){return function(){
+      document.querySelectorAll('#item-chips .chip').forEach(function(x){x.className='chip';});
+      el2.className='chip sel-'+curType;curItem=it;
+    };})(d,item);
+    el.appendChild(d);
+  });
+  var dl=document.getElementById('custom-datalist');
+  dl.innerHTML='';
+  custom.forEach(function(it){var o=document.createElement('option');o.value=it;dl.appendChild(o);});
+}
+
+function addCustomItem(){
+  var val=document.getElementById('custom-input').value.trim();
+  if(!val){showToast('請輸入項目名稱');return;}
+  var arr=curType==='plus'?cfg.customPlus:cfg.customMinus;
+  var fixed=curType==='plus'?FIXED_PLUS:FIXED_MINUS;
+  if(fixed.indexOf(val)!==-1||arr.indexOf(val)!==-1){curItem=val;buildItemChips();document.getElementById('custom-input').value='';showToast('已選取「'+val+'」');return;}
+  arr.push(val);saveCfg();curItem=val;buildItemChips();buildCustomLists();
+  document.getElementById('custom-input').value='';showToast('已新增「'+val+'」');
+}
+
+function changeCount(d){curCount=Math.max(1,curCount+d);document.getElementById('count-display').textContent=curCount;}
+
+function buildNumGrid(){
+  var g=document.getElementById('num-grid');g.innerHTML='';
+  for(var i=1;i<=33;i++){
+
+    var b=document.createElement('button');
+    b.className='num-btn';b.textContent=String(i).padStart(2,'0');b.id='nb-'+i;
+    var n=i;
+    b.onclick=(function(btn,num){return function(){
+      if(isAllSelected){isAllSelected=false;updateAllBtn();}
+      if(selNums.has(num)){selNums.delete(num);btn.className='num-btn';}
+      else{selNums.add(num);btn.className='num-btn sel-'+curType;}
+      updateSelCount();
+    };})(b,n);
+    g.appendChild(b);
+  }
+}
+
+function updateNumBtns(){
+  for(var i=1;i<=33;i++){
+    var b=document.getElementById('nb-'+i);if(!b)continue;
+    b.className='num-btn'+((selNums.has(i)||isAllSelected)?' sel-'+curType:'');
+  }
+}
+
+function toggleAll(){
+  isAllSelected=!isAllSelected;
+  if(isAllSelected)selNums.clear();
+  updateAllBtn();updateNumBtns();updateSelCount();
+}
+
+function updateAllBtn(){
+  var btn=document.getElementById('all-btn');
+  btn.className='all-btn'+(isAllSelected?' sel-'+curType:'');
+  btn.textContent=isAllSelected?'✓ 全班已選取（1–33號）':'👥 全班（1–33號）';
+}
+
+function clearNums(){
+  selNums.clear();isAllSelected=false;
+  updateAllBtn();updateNumBtns();updateSelCount();
+}
+
+function updateSelCount(){
+  var el=document.getElementById('sel-count');
+  if(isAllSelected)el.textContent='（全班 33 人）';
+  else el.textContent=selNums.size>0?'（已選 '+selNums.size+' 人）':'';
+}
+
+function submitRecords(){
+  var nums=[];
+  if(isAllSelected){for(var i=1;i<=33;i++)nums.push(i);}
+  else nums=Array.from(selNums);
+  if(!nums.length){showToast('請選擇座號或全班');return;}
+  var date=document.getElementById('rec-date').value;
+  if(!date){showToast('請選擇日期');return;}
+  var score=curType==='plus'?curCount:-curCount;
+  nums.forEach(function(n){
+    records.push({id:Date.now()+'_'+n+'_'+Math.random().toString(36).slice(2),
+      date:date,num:n,type:curType,item:curItem,score:score});
+  });
+  save();showToast('已新增 '+nums.length+' 筆記錄 ✓');
+  clearNums();renderLog();renderSummary();
+}
+
+/* 記錄 — 依座號展開 */
+function buildFilterNumDropdown(){
+  var sel=document.getElementById('filter-num');
+  sel.innerHTML='<option value="">全部座號</option>';
+  for(var i=1;i<=33;i++){var o=document.createElement('option');o.value=i;o.textContent=String(i).padStart(2,'0')+'號';sel.appendChild(o);}
+}
+
+function getFiltered(){
+  var fn=document.getElementById('filter-num').value;
+  var ft=document.getElementById('filter-type').value;
+  var fd=document.getElementById('filter-date').value;
+  return records.filter(function(r){return(!fn||r.num==fn)&&(!ft||r.type===ft)&&(!fd||r.date===fd);});
+}
+
+function renderLog(){
+  var filtered=getFiltered();
+  var byNum={};
+  filtered.forEach(function(r){
+    if(!byNum[r.num])byNum[r.num]=[];
+    byNum[r.num].push(r);
+  });
+  var nums=Object.keys(byNum).map(Number).sort(function(a,b){return a-b;});
+  var container=document.getElementById('log-container');
+  if(!nums.length){container.innerHTML='<div class="card"><div class="empty">尚無記錄</div></div>';return;}
+  container.innerHTML=nums.map(function(num){
+    var rows=byNum[num].slice().sort(function(a,b){return b.date.localeCompare(a.date);});
+    var m=calcMerit(num);
+    var sumBadge=m.net>0?'<span class="badge badge-plus">淨 +'+m.net+'</span>':m.net<0?'<span class="badge badge-minus">淨 '+m.net+'</span>':'<span class="badge badge-neu">0</span>';
+    var details=rows.map(function(r){
+      var sc=r.score>0?'<span class="badge badge-plus">+'+r.score+'</span>':'<span class="badge badge-minus">'+r.score+'</span>';
+      return '<div class="detail-row">'
+        +'<span style="font-size:12px;color:var(--text3);min-width:76px">'+r.date+'</span>'
+        +'<span style="flex:1">'+r.item+'</span>'
+        +sc
+        +'<button class="btn btn-sm btn-danger" onclick="delRecord(\''+r.id+'\')">✕</button>'
+        +'</div>';
+    }).join('');
+    return '<div class="student-block">'
+      +'<div class="student-block-header" onclick="toggleBlock(this)">'
+      +'<span style="font-family:monospace;font-weight:700;font-size:15px">'+String(num).padStart(2,'0')+'號</span>'
+      +'<div style="display:flex;align-items:center;gap:6px">'+sumBadge
+      +'<span style="font-size:12px;color:var(--text3)">'+rows.length+'筆</span>'
+      +'<span style="color:var(--text3);font-size:16px">›</span>'
+      +'</div></div>'
+      +'<div class="student-block-body">'+details+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function toggleBlock(header){
+  var body=header.nextElementSibling;
+  var arr=header.querySelector('span:last-child');
+  if(body.classList.contains('open')){body.classList.remove('open');if(arr)arr.textContent='›';}
+  else{body.classList.add('open');if(arr)arr.textContent='⌄';}
+}
+
+function delRecord(id){
+  if(!confirm('確定刪除這筆記錄？'))return;
+  records=records.filter(function(r){return r.id!==id;});
+  save();renderLog();renderSummary();
+}
+
+function clearFilters(){
+  document.getElementById('filter-num').value='';
+  document.getElementById('filter-type').value='';
+  document.getElementById('filter-date').value='';
+  renderLog();
+}
+
+/* 統整 */
+function renderSummary(){
+  var numsWithRecords=[];
+  var seen={};
+  records.forEach(function(r){if(!seen[r.num]){seen[r.num]=true;numsWithRecords.push(r.num);}});
+  numsWithRecords.sort(function(a,b){return a-b;});
+
+  var totalPlus=records.filter(function(r){return r.score>0;}).reduce(function(s,r){return s+r.score;},0);
+  var totalMinus=Math.abs(records.filter(function(r){return r.score<0;}).reduce(function(s,r){return s+r.score;},0));
+  var totalAward=0,totalWarn=0;
+  numsWithRecords.forEach(function(n){var m=calcMerit(n);totalAward+=m.award;totalWarn+=m.warn;});
+
+  document.getElementById('sum-metrics').innerHTML=
+    '<div class="metric"><div class="metric-label">優點總計</div><div class="metric-value pos">+'+totalPlus+'</div></div>'
+    +'<div class="metric"><div class="metric-label">缺點總計</div><div class="metric-value neg">-'+totalMinus+'</div></div>'
+    +'<div class="metric"><div class="metric-label">嘉獎總計</div><div class="metric-value pos">'+totalAward+' 支</div></div>'
+    +'<div class="metric"><div class="metric-label">警告總計</div><div class="metric-value neg">'+totalWarn+' 支</div></div>';
+
+  var tb=document.getElementById('sum-body');
+  if(!numsWithRecords.length){tb.innerHTML='<tr><td colspan="5" class="empty">尚無資料</td></tr>';return;}
+  tb.innerHTML=numsWithRecords.map(function(num){
+    var m=calcMerit(num);
+    var netStr=m.net>0?'<span class="pos">+'+m.net+'</span>':m.net<0?'<span class="neg">'+m.net+'</span>':'0';
+    var awardStr=m.award>0?'<span class="badge badge-plus">'+m.award+' 支</span>':'—';
+    var warnStr=m.warn>0?'<span class="badge badge-minus">'+m.warn+' 支</span>':'—';
+    var remStr='—';
+    if(m.remain>0){
+      remStr=m.remainType==='優點'?'<span class="badge badge-plus">+'+m.remain+'</span>':'<span class="badge badge-minus">-'+m.remain+'</span>';
+    }
+    return '<tr>'
+      +'<td style="text-align:center;font-family:monospace;font-weight:700">'+String(num).padStart(2,'0')+'</td>'
+      +'<td style="text-align:center">'+netStr+'</td>'
+      +'<td style="text-align:center">'+awardStr+'</td>'
+      +'<td style="text-align:center">'+warnStr+'</td>'
+      +'<td style="text-align:center">'+remStr+'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+/* 匯出 — 合併列印格式 */
+function exportSummaryCSV(){
+  if(!records.length){showToast('沒有資料可匯出');return;}
+  var rows=[];
+  for(var i=1;i<=33;i++){
+    var m=calcMerit(i);
+    var sub=records.filter(function(r){return r.num===i;}).sort(function(a,b){return a.date.localeCompare(b.date);});
+    // 明細文字（方案B：合併成一欄）
+    var detail=sub.map(function(r){
+      return r.date+' '+r.item+(r.score>0?' +'+r.score:' '+r.score);
+    }).join('；');
+    var remainStr='';
+    if(m.remain>0) remainStr=(m.remainType==='優點'?'+':'-')+m.remain+'支'+m.remainType;
+    rows.push([
+      String(i).padStart(2,'0'),   // 座號
+      m.net,                        // 淨支數
+      m.award,                      // 嘉獎支數
+      m.warn,                       // 警告支數
+      remainStr,                    // 餘數（含正負與類型）
+      sub.length,                   // 記錄筆數
+      '"'+detail+'"'                // 明細（合併文字）
+    ].join(','));
+  }
+  var csv='\uFEFF座號,淨支數,嘉獎支數,警告支數,餘數,記錄筆數,明細\n'+rows.join('\n');
+  dl(csv,'優缺點統整_合併列印_'+new Date().toLocaleDateString('sv')+'.csv');
+  showToast('已匯出合併列印 CSV');
+}
+
+function exportNotifyText(){
+  if(!records.length){showToast('沒有資料可匯出');return;}
+  var today=new Date().toLocaleString('zh-TW');
+  var txt='品德卡優缺點結算通知備案\n匯出時間：'+today+'\n'+'='.repeat(40)+'\n\n';
+
+  for(var i=1;i<=33;i++){
+    var sub=records.filter(function(r){return r.num===i;}).sort(function(a,b){return a.date.localeCompare(b.date);});
+    var m=calcMerit(i);
+    // 找姓名（若有設定）
+    var nameEntry=nameList[i]&&nameList[i].name?nameList[i].name:'';
+    var parentEmail=nameList[i]&&nameList[i].email?nameList[i].email:'';
+    var noStr=String(i).padStart(2,'0');
+    var subject='品德卡優缺點結算通知－'+noStr+'號'+nameEntry+'同學';
+
+    var remainStr='';
+    if(m.remain>0) remainStr=(m.remainType==='優點'?'+':'-')+m.remain+'支'+m.remainType+'（累積至下次結算）';
+
+    var body='貴家長您好：\n\n';
+    body+='貴子弟 【'+noStr+'號】【'+nameEntry+'】同學優缺點紀錄如下：\n\n';
+    if(sub.length===0){
+      body+='本期無優缺點記錄。\n';
+    } else {
+      sub.forEach(function(r){
+        body+=r.date+' '+r.item+(r.score>0?' +'+r.score:' '+r.score)+'；\n';
+      });
+    }
+    body+='\n';
+    if(m.net>0){
+      body+='優缺點互抵後尚有優點 '+m.net+' 支。\n';
+      if(m.award>0) body+='記嘉獎 '+m.award+' 支；';
+      if(m.remain>0) body+='餘數 '+m.remain+' 支優點（累積至下次結算）';
+      if(m.award>0||m.remain>0) body+='\n';
+    } else if(m.net<0){
+      body+='優缺點互抵後尚有缺點 '+Math.abs(m.net)+' 支。\n';
+      if(m.warn>0) body+='記警告 '+m.warn+' 支；';
+      if(m.remain>0) body+='餘數 '+m.remain+' 支缺點（累積至下次結算）';
+      if(m.warn>0||m.remain>0) body+='\n';
+    } else {
+      body+='優缺點互抵後結餘為零。\n';
+    }
+    body+='\n說明：\n';
+    body+='- 品德卡一學期統計兩次，期中期末各一次。\n';
+    body+='- +代表優點；-代表缺點\n';
+    body+='- 累積六支優點可記一支嘉獎；反之亦然。\n';
+    body+='- 警告可至學務處申請後做愛校服務銷除。\n';
+    body+='\n導師 林美吟 敬上';
+
+    txt+='【'+noStr+' '+nameEntry+'】'+(parentEmail?' Email: '+parentEmail:'（無 Email）')+'\n';
+    txt+='主旨：'+subject+'\n';
+    txt+=body+'\n'+'-'.repeat(30)+'\n\n';
+  }
+
+  dl(txt,'品德卡優缺點結算通知備案_'+new Date().toLocaleDateString('sv')+'.txt','text/plain');
+  showToast('已匯出純文字備案');
+}
+
+
+function exportLogCSV(){
+  var rows=getFiltered().sort(function(a,b){return a.num-b.num||b.date.localeCompare(a.date);});
+  if(!rows.length){showToast('沒有資料可匯出');return;}
+  var csv='\uFEFF日期,座號,類型,項目,分數\n'+rows.map(function(r){
+    return r.date+','+String(r.num).padStart(2,'0')+','+(r.type==='plus'?'優點':'缺點')+','+r.item+','+r.score;
+  }).join('\n');
+  dl(csv,'優缺點記錄_'+new Date().toLocaleDateString('sv')+'.csv');
+}
+
+function exportAllCSV(){
+  if(!records.length){showToast('沒有資料可匯出');return;}
+  var csv='\uFEFF日期,座號,類型,項目,分數\n'+records.slice().sort(function(a,b){return a.num-b.num||a.date.localeCompare(b.date);}).map(function(r){
+    return r.date+','+String(r.num).padStart(2,'0')+','+(r.type==='plus'?'優點':'缺點')+','+r.item+','+r.score;
+  }).join('\n');
+  dl(csv,'全部記錄_'+new Date().toLocaleDateString('sv')+'.csv');
+  showToast('已匯出 '+records.length+' 筆資料');
+}
+
+function importCSV(input){
+  var file=input.files[0];if(!file)return;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var lines=e.target.result.replace(/^\uFEFF/,'').split('\n').filter(function(l){return l.trim()&&!l.startsWith('=');});
+    var count=0;
+    lines.slice(1).forEach(function(line){
+      var p=line.split(',');if(p.length<5)return;
+      var date=p[0].trim(),num=parseInt(p[1]),typeStr=p[2].trim(),item=p[3].trim(),score=parseFloat(p[4]);
+      if(!date||isNaN(num)||!item||isNaN(score))return;
+      var type=typeStr==='優點'?'plus':'minus';
+      var exists=records.some(function(r){return r.date===date&&r.num===num&&r.item===item&&r.score===score;});
+      if(!exists){records.push({id:Date.now()+'_'+Math.random().toString(36).slice(2),date:date,num:num,type:type,item:item,score:score});count++;}
+    });
+    save();renderLog();renderSummary();
+    showToast('匯入完成，新增 '+count+' 筆');input.value='';
+  };
+  reader.readAsText(file,'utf-8');
+}
+
+function doTransfer(){
+  if(!records.length){showToast('目前沒有任何記錄可結轉');return;}
+  if(!confirm('確定執行結轉？\n\n系統將自動：\n①匯出合併列印CSV\n②清除所有記錄\n③存入各生餘數\n\n請確認手機已允許下載檔案。'))return;
+
+  // ① 匯出純文字備案
+  exportNotifyText();
+  var today=new Date().toLocaleDateString('sv');
+
+  // ② 計算每人餘數，備好結轉資料
+  var carryOvers=[];
+  for(var j=1;j<=33;j++){
+    var mc=calcMerit(j);
+    if(mc.remain>0){
+      var score=mc.remainType==='優點'?mc.remain:-mc.remain;
+      var type=mc.remainType==='優點'?'plus':'minus';
+      carryOvers.push({
+        id:Date.now()+'_'+j+'_co_'+Math.random().toString(36).slice(2),
+        date:today,num:j,type:type,item:'餘數結轉',score:score
+      });
+    }
+  }
+
+  // ③ 清除記錄，存入餘數
+  records=carryOvers;
+  save();
+  renderLog();
+  renderSummary();
+
+  var msg=carryOvers.length>0
+    ?'結轉完成！已存入 '+carryOvers.length+' 位學生的餘數'
+    :'結轉完成！所有學生餘數為零';
+  showToast(msg);
+}
+
+function clearAll(){
+  if(!confirm('確定清除所有記錄？此操作無法還原。'))return;
+  records=[];save();renderLog();renderSummary();showToast('已清除所有記錄');
+}
+
+function buildCustomLists(){
+  renderCustomList('plus');renderCustomList('minus');
+}
+function renderCustomList(type){
+  var el=document.getElementById('custom-list-'+type);
+  var arr=type==='plus'?cfg.customPlus:cfg.customMinus;
+  var label=type==='plus'?'自訂優點':'自訂缺點';
+  if(!arr.length){el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:4px 0">'+label+'：（尚無自訂項目）</div>';return;}
+  el.innerHTML='<div style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px">'+label+'</div>'
+    +arr.map(function(it,i){
+      return '<div style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border)">'
+        +'<span style="flex:1;font-size:13px">'+it+'</span>'
+        +'<button class="btn btn-sm btn-danger" onclick="removeCustom(\''+type+'\','+i+')">刪除</button></div>';
+    }).join('');
+}
+function removeCustom(type,idx){
+  var arr=type==='plus'?cfg.customPlus:cfg.customMinus;
+  arr.splice(idx,1);saveCfg();buildItemChips();buildCustomLists();showToast('已刪除自訂項目');
+}
+
+function switchTab(name,el){
+  document.querySelectorAll('.tab').forEach(function(t){t.className='tab';});
+  document.querySelectorAll('.panel').forEach(function(p){p.className='panel';});
+  el.className='tab active';
+  document.getElementById('panel-'+name).className='panel active';
+  if(name==='log')renderLog();
+  if(name==='summary')renderSummary();
+  if(name==='settings')buildCustomLists();
+}
+
+function dl(csv,name,mtype){
+  mtype=mtype||'text/csv;charset=utf-8;';
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:mtype}));
+  a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
+
+function showToast(msg){
+  var t=document.getElementById('toast');t.textContent=msg;t.className='toast show';
+  clearTimeout(t._t);t._t=setTimeout(function(){t.className='toast';},2200);
+}
+
+init();
 </script>
 </body>
 </html>
