@@ -543,7 +543,7 @@ function buildFilterDropdowns(){
 }
 
 function changeBase(d){
-  var cur=cfg.baseScore||95;
+  var cur=parseInt(document.getElementById('base-display').textContent)||95;
   var next=Math.min(100,Math.max(80,cur+d));
   document.getElementById('base-display').textContent=next;
 }
