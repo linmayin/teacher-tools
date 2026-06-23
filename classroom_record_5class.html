@@ -490,7 +490,8 @@ function exportCSV(){
 function exportSummaryCSV(){
   var sc=document.getElementById('sum-class').value;
   var sub=records.filter(function(r){return!sc||r.cls===sc;});
-  if(!sub.length){showToast('沒有資料可匯出');return;}
+  var base=cfg.baseScore||95;
+  var classList=sc?[sc]:cfg.classes;
   var map={};
   sub.forEach(function(r){
     var k=r.cls+'__'+r.num;
@@ -499,15 +500,18 @@ function exportSummaryCSV(){
     if(r.item==='功課未交')map[k].hw++;
     if(r.item==='上課講話')map[k].talk++;
   });
-  var rows=Object.values(map).sort(function(a,b){
-    return cfg.classes.indexOf(a.cls)-cfg.classes.indexOf(b.cls)||a.num-b.num;
+  var rows=[];
+  classList.forEach(function(cls){
+    for(var i=1;i<=33;i++){
+      var k=cls+'__'+i;
+      var d=map[k]||{cls:cls,num:i,total:0,count:0,hw:0,talk:0};
+      var finalScore=calcFinalScore(d.total);
+      var deltaStr=d.total>0?'+'+d.total:String(d.total);
+      rows.push(cls+','+String(i).padStart(2,'0')+','+base+','+deltaStr+','+finalScore+','+d.count+','+d.hw+','+d.talk);
+    }
   });
-  var base=cfg.baseScore||95;
-  var csv='\uFEFF班級,座號,基本分,加扣分,課堂分數,記錄次數,功課未交,上課講話\n'+rows.map(function(r){
-    var finalScore=calcFinalScore(r.total);
-    var deltaStr=r.total>0?'+'+r.total:String(r.total);
-    return r.cls+','+String(r.num).padStart(2,'0')+','+base+','+deltaStr+','+finalScore+','+r.count+','+r.hw+','+r.talk;
-  }).join('\n');
+  if(!rows.length){showToast('沒有資料可匯出');return;}
+  var csv='\uFEFF班級,座號,基本分,加扣分,課堂分數,記錄次數,功課未交,上課講話\n'+rows.join('\n');
   dl(csv,'期末統整_'+new Date().toLocaleDateString('sv')+'.csv');
 }
 
