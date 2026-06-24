@@ -360,6 +360,7 @@ var RATIO=6; // 6支 = 1嘉獎/警告
 
 function init(){
   loadNames();
+  renderNameListPreview();
   try{var r=localStorage.getItem(DB);if(r)records=JSON.parse(r);}catch(e){}
   try{var c=localStorage.getItem(CFG);if(c)cfg=JSON.parse(c);}catch(e){}
   document.getElementById('rec-date').value=new Date().toLocaleDateString('sv');
