@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>語音成績登記系統</title>
+<style>
+  :root {
+    --bg: #f0f4f8;
+    --surface: #ffffff;
+    --surface2: #f8fafc;
+    --border: #dde3ea;
+    --accent: #3b6fd4;
+    --accent-light: #e8eefb;
+    --accent-dark: #2a52a8;
+    --red: #e05252;
+    --green: #3aaa6e;
+    --orange: #e8862a;
+    --text: #1a202c;
+    --text2: #4a5568;
+    --text3: #8a9ab0;
+    --mic-active: #e05252;
+    --radius: 12px;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 32px rgba(0,0,0,0.14);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* === TOP HEADER === */
+  .app-header {
+    background: var(--accent);
+    color: white;
+    padding: 14px 20px 10px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px rgba(59,111,212,0.3);
+  }
+  .app-header h1 { font-size: 18px; font-weight: 700; letter-spacing: 0.5px; }
+  .app-header .subtitle { font-size: 11px; opacity: 0.75; margin-top: 1px; }
+  .mic-icon-header { font-size: 24px; }
+
+  /* === TABS === */
+  .tab-bar {
+    background: var(--surface);
+    display: flex;
+    overflow-x: auto;
+    border-bottom: 2px solid var(--border);
+    padding: 0 8px;
+    gap: 4px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .tab-bar::-webkit-scrollbar { display: none; }
+  .tab-btn {
+    flex-shrink: 0;
+    padding: 10px 16px;
+    border: none;
+    background: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text2);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 700;
+  }
+  .tab-btn .tab-count {
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 11px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    margin-left: 4px;
+  }
+
+  /* === MAIN CONTENT === */
+  .main { padding: 16px; max-width: 900px; margin: 0 auto; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+
+  /* === CARDS === */
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+  .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text2);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* === CLASS CONFIG === */
+  .class-config-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .class-config-item {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    background: var(--surface2);
+  }
+  .class-name-input {
+    width: 100%;
+    border: none;
+    background: none;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent);
+    padding: 2px 0;
+    outline: none;
+  }
+  .class-name-input:focus {
+    border-bottom: 2px solid var(--accent);
+  }
+  .class-count-label { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+  /* === ITEMS CONFIG === */
+  .items-section { margin-bottom: 12px; }
+  .items-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .items-label { font-size: 14px; font-weight: 600; color: var(--text); }
+  .item-tag-list { display: flex; flex-wrap: wrap; gap: 6px; min-height: 36px; }
+  .item-tag {
+    background: var(--accent-light);
+    color: var(--accent);
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .item-tag .remove-tag {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: rgba(59,111,212,0.2);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .add-item-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .add-item-input {
+    flex: 1;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 14px;
+    outline: none;
+  }
+  .add-item-input:focus { border-color: var(--accent); }
+
+  /* === BUTTONS === */
+  .btn {
+    padding: 9px 16px;
+    border-radius: 8px;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: var(--accent-dark); }
+  .btn-secondary { background: var(--border); color: var(--text); }
+  .btn-green { background: var(--green); color: white; }
+  .btn-red { background: var(--red); color: white; }
+  .btn-orange { background: var(--orange); color: white; }
+  .btn-sm { padding: 6px 12px; font-size: 13px; }
+  .btn-xs { padding: 4px 10px; font-size: 12px; }
+
+  /* === COPY ITEMS === */
+  .copy-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    padding: 10px;
+    background: var(--accent-light);
+    border-radius: 8px;
+  }
+  .copy-label { font-size: 13px; color: var(--accent); font-weight: 600; }
+
+  /* === GRADE INPUT SECTION === */
+  .grade-class-selector {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .grade-class-btn {
+    flex-shrink: 0;
+    padding: 8px 18px;
+    border-radius: 20px;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text2);
+  }
+  .grade-class-btn.active {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  /* === ITEM SELECTOR === */
+  .item-selector {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .item-select-btn {
+    padding: 6px 14px;
+    border-radius: 16px;
+    border: 1.5px solid var(--border);
+    background: var(--surface2);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text2);
+  }
+  .item-select-btn.active {
+    background: var(--accent-light);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* === MIC BUTTON === */
+  .mic-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 20px;
+  }
+  .mic-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    box-shadow: 0 4px 20px rgba(59,111,212,0.35);
+    transition: all 0.15s;
+    position: relative;
+  }
+  .mic-btn.listening {
+    background: var(--mic-active);
+    box-shadow: 0 0 0 0 rgba(224,82,82,0.4);
+    animation: pulse-ring 1.5s infinite;
+  }
+  .mic-btn.listening::before {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 3px solid rgba(224,82,82,0.4);
+    animation: ripple 1.5s infinite;
+  }
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 rgba(224,82,82,0.5); }
+    70% { box-shadow: 0 0 0 20px rgba(224,82,82,0); }
+    100% { box-shadow: 0 0 0 0 rgba(224,82,82,0); }
+  }
+  @keyframes ripple {
+    0% { transform: scale(1); opacity: 1; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+  .mic-status {
+    font-size: 14px;
+    color: var(--text2);
+    text-align: center;
+    min-height: 20px;
+  }
+  .mic-status.active { color: var(--mic-active); font-weight: 600; }
+  .transcript-box {
+    width: 100%;
+    background: var(--surface2);
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    color: var(--text2);
+    min-height: 48px;
+    line-height: 1.5;
+  }
+  .transcript-box.has-content { border-color: var(--accent); background: var(--accent-light); color: var(--text); }
+
+  /* === GRADE TABLE === */
+  .grade-table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .grade-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+  .grade-table th {
+    background: var(--accent);
+    color: white;
+    padding: 10px 8px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 13px;
+    position: sticky;
+    top: 0;
+  }
+  .grade-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    text-align: center;
+    vertical-align: middle;
+  }
+  .grade-table tr:nth-child(even) td { background: var(--surface2); }
+  .grade-table tr:hover td { background: var(--accent-light); }
+  .grade-input-cell {
+    width: 70px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 8px;
+    font-size: 15px;
+    text-align: center;
+    outline: none;
+    font-weight: 700;
+    color: var(--text);
+    background: white;
+    transition: border-color 0.15s;
+  }
+  .grade-input-cell:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,111,212,0.12); }
+  .grade-input-cell.has-grade { background: #f0f7f0; border-color: var(--green); color: var(--green); }
+  .grade-input-cell.voice-filled { animation: flash-fill 0.5s ease; }
+  @keyframes flash-fill {
+    0% { background: #ffe5b4; border-color: var(--orange); }
+    100% { background: #f0f7f0; border-color: var(--green); }
+  }
+  .seat-no { font-weight: 700; color: var(--accent); }
+  .student-name { color: var(--text2); font-size: 13px; }
+
+  /* === STATS === */
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .stat-card {
+    border-radius: 10px;
+    padding: 12px;
+    text-align: center;
+  }
+  .stat-card .stat-label { font-size: 11px; font-weight: 600; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .stat-card .stat-value { font-size: 24px; font-weight: 800; }
+  .stat-avg { background: #e8eefb; color: var(--accent); }
+  .stat-90 { background: #e8f7ef; color: #2d8a5a; }
+  .stat-80 { background: #e8f4e8; color: #3a8a3a; }
+  .stat-70 { background: #fef8e8; color: #a07020; }
+  .stat-60 { background: #feeee8; color: #c04020; }
+  .stat-fail { background: #fce8e8; color: #a02020; }
+
+  .dist-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+    font-size: 13px;
+  }
+  .dist-bar-label { width: 65px; text-align: right; color: var(--text2); font-size: 12px; }
+  .dist-bar-track { flex: 1; height: 16px; background: var(--border); border-radius: 8px; overflow: hidden; }
+  .dist-bar-fill { height: 100%; border-radius: 8px; transition: width 0.4s ease; }
+  .dist-bar-count { width: 30px; text-align: left; font-weight: 700; font-size: 13px; color: var(--text); }
+
+  /* === IMPORT MODAL === */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    width: 100%;
+    max-width: 480px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+  }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+  .modal-text { font-size: 14px; color: var(--text2); margin-bottom: 12px; line-height: 1.6; }
+  .modal-textarea {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 13px;
+    height: 120px;
+    resize: vertical;
+    outline: none;
+    font-family: monospace;
+  }
+  .modal-textarea:focus { border-color: var(--accent); }
+  .modal-actions { display: flex; gap: 10px; margin-top: 14px; justify-content: flex-end; }
+
+  /* === TOAST === */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: #1a202c;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 24px;
+    font-size: 14px;
+    font-weight: 600;
+    z-index: 300;
+    transition: transform 0.25s ease;
+    white-space: nowrap;
+    max-width: 90vw;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { background: var(--green); }
+  .toast.error { background: var(--red); }
+  .toast.info { background: var(--accent); }
+
+  /* === NOTICE === */
+  .notice {
+    background: #fff8e8;
+    border: 1px solid #f0d070;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 13px;
+    color: #7a5a10;
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  .notice strong { color: #5a3a00; }
+
+  /* === MISC === */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 14px 0;
+    color: var(--text3);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .section-divider::before, .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .spacer { flex: 1; }
+  .badge {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 700;
+  }
+  .badge-orange { background: #fff0d8; color: #c07000; }
+  .text-muted { color: var(--text3); font-size: 13px; }
+  .empty-state {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--text3);
+  }
+  .empty-state .empty-icon { font-size: 40px; margin-bottom: 8px; }
+  .empty-state p { font-size: 14px; }
+
+  /* iOS adjustments */
+  @supports (-webkit-overflow-scrolling: touch) {
+    .mic-btn { -webkit-user-select: none; }
+    input, textarea { font-size: 16px !important; } /* prevent zoom */
+  }
+  @media (max-width: 500px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .class-config-grid { grid-template-columns: 1fr; }
+    .main { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-header">
+  <div class="mic-icon-header">🎙️</div>
+  <div>
+    <h1>語音成績登記系統</h1>
+    <div class="subtitle">支援 Safari / iPad 語音辨識</div>
+  </div>
+</div>
+
+<div class="tab-bar" id="mainTabBar">
+  <button class="tab-btn active" onclick="switchTab('settings')">⚙️ 班級設定</button>
+  <button class="tab-btn" onclick="switchTab('grade')">✏️ 成績登記</button>
+  <button class="tab-btn" onclick="switchTab('stats')">📊 統計分析</button>
+  <button class="tab-btn" onclick="switchTab('export')">📤 匯出</button>
+</div>
+
+<div class="main">
+
+  <!-- ==================== SETTINGS PANEL ==================== -->
+  <div class="panel active" id="panel-settings">
+
+    <div class="card">
+      <div class="card-title">🏫 班級名稱設定</div>
+      <div class="class-config-grid" id="classConfigGrid"></div>
+    </div>
+
+    <div class="card" id="itemsConfigCard">
+      <div class="card-title">📋 成績項目設定</div>
+
+      <div class="notice">
+        <strong>提示：</strong>各班可設定不同項目，也可從A班一鍵複製到其他班。
+      </div>
+
+      <!-- Per-class tabs for items -->
+      <div style="display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;-webkit-overflow-scrolling:touch;" id="itemClassTabs"></div>
+
+      <div id="itemsEditorArea"></div>
+
+      <div class="section-divider">複製功能</div>
+      <div class="copy-row" id="copyRow">
+        <span class="copy-label">📋 複製</span>
+        <select id="copyFromSelect" style="padding:6px 10px;border-radius:8px;border:1.5px solid var(--accent);background:white;font-size:14px;color:var(--accent);font-weight:600;">
+        </select>
+        <span class="copy-label">的所有項目到</span>
+        <select id="copyToSelect" style="padding:6px 10px;border-radius:8px;border:1.5px solid var(--accent);background:white;font-size:14px;color:var(--accent);font-weight:600;">
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="copyItems()">複製</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">👥 班級名單匯入</div>
+      <div class="notice">
+        <strong>格式：</strong>每行一位學生，「座號,姓名」或僅「姓名」（自動編號）。<br>
+        不匯入名單時系統將自動產生空白座位。
+      </div>
+      <div style="display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;" id="importClassTabs"></div>
+      <div id="importArea">
+        <button class="btn btn-secondary" onclick="openImportModal()">📂 匯入名單</button>
+        <button class="btn btn-red btn-sm" style="margin-left:8px;" onclick="clearClassList()">清除名單</button>
+        <div id="listPreview" style="margin-top:10px;font-size:13px;color:var(--text2);"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== GRADE PANEL ==================== -->
+  <div class="panel" id="panel-grade">
+    <div class="card">
+      <div class="card-title">選擇班級與項目</div>
+      <div class="grade-class-selector" id="gradeClassSelector"></div>
+      <div style="margin-top:10px;">
+        <div class="text-muted" style="margin-bottom:6px;font-size:12px;">成績項目</div>
+        <div class="item-selector" id="gradeItemSelector"></div>
+      </div>
+    </div>
+
+    <!-- Voice Section -->
+    <div class="card">
+      <div class="card-title">🎙️ 語音輸入</div>
+      <div class="notice" id="voiceNotice">
+        <strong>使用說明：</strong>說出「1號95」「18號79」等，系統自動辨識並填入。支援連續輸入，無需按 Enter。
+      </div>
+
+      <div class="mic-area">
+        <button class="mic-btn" id="micBtn" onclick="toggleMic()">🎙️</button>
+        <div class="mic-status" id="micStatus">點擊麥克風開始語音輸入</div>
+      </div>
+
+      <div class="transcript-box" id="transcriptBox">語音辨識結果將顯示於此…</div>
+
+      <div style="margin-top:10px;" id="recentFilledArea"></div>
+    </div>
+
+    <!-- Grade Table -->
+    <div class="card">
+      <div class="row" style="margin-bottom:12px;">
+        <div class="card-title" style="margin-bottom:0;">成績表格</div>
+        <div class="spacer"></div>
+        <button class="btn btn-secondary btn-xs" onclick="clearCurrentGrades()">清除本表</button>
+      </div>
+      <div class="grade-table-wrapper">
+        <table class="grade-table" id="gradeTable">
+          <thead>
+            <tr>
+              <th>座號</th>
+              <th>姓名</th>
+              <th>成績</th>
+            </tr>
+          </thead>
+          <tbody id="gradeTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== STATS PANEL ==================== -->
+  <div class="panel" id="panel-stats">
+    <div class="card">
+      <div class="card-title">選擇班級</div>
+      <div class="grade-class-selector" id="statsClassSelector"></div>
+      <div style="margin-top:10px;">
+        <div class="item-selector" id="statsItemSelector"></div>
+      </div>
+    </div>
+
+    <div id="statsContent">
+      <div class="empty-state">
+        <div class="empty-icon">📊</div>
+        <p>請先選擇班級與項目</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== EXPORT PANEL ==================== -->
+  <div class="panel" id="panel-export">
+    <div class="card">
+      <div class="card-title">📤 匯出 CSV</div>
+      <div class="notice">
+        CSV 檔案可用 Excel / Numbers 開啟，包含座號、姓名、各項目成績。
+      </div>
+      <div id="exportClassList"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">📥 匯出全部班級</div>
+      <button class="btn btn-green" onclick="exportAll()">📥 下載全部班級成績 (ZIP)</button>
+      <span class="text-muted" style="margin-left:8px;font-size:12px;">各班一份 CSV</span>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ==================== IMPORT MODAL ==================== -->
+<div class="modal-overlay" id="importModal">
+  <div class="modal">
+    <div class="modal-title">匯入班級名單</div>
+    <div class="modal-text">
+      格式範例：<br>
+      <code>1,王小明</code><br>
+      <code>2,李小花</code><br>
+      或每行只有姓名（自動從1號編起）。
+    </div>
+    <textarea class="modal-textarea" id="importTextarea" placeholder="在此貼上名單…"></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeImportModal()">取消</button>
+      <button class="btn btn-primary" onclick="confirmImport()">確認匯入</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===============================
+//  STATE
+// ===============================
+const NUM_CLASSES = 5;
+const DEFAULT_NAMES = ['甲班', '乙班', '丙班', '丁班', '戊班'];
+const DEFAULT_SEATS = 40;
+
+let state = {
+  classes: Array.from({length: NUM_CLASSES}, (_, i) => ({
+    name: DEFAULT_NAMES[i],
+    seats: DEFAULT_SEATS,
+    students: [],   // [{seat, name}]
+    items: [],      // strings
+  })),
+  grades: {},       // grades[classIdx][itemName][seat] = score (number|'')
+  // UI state
+  settingsItemClass: 0,
+  importClassIdx: 0,
+  gradeClass: 0,
+  gradeItem: '',
+  statsClass: 0,
+  statsItem: '',
+};
+
+function getGrades(c, item) {
+  if (!state.grades[c]) state.grades[c] = {};
+  if (!state.grades[c][item]) state.grades[c][item] = {};
+  return state.grades[c][item];
+}
+
+function getStudents(c) {
+  const cls = state.classes[c];
+  if (cls.students && cls.students.length > 0) return cls.students;
+  return Array.from({length: cls.seats}, (_, i) => ({seat: i+1, name: ''}));
+}
+
+// ===============================
+//  INIT
+// ===============================
+window.addEventListener('DOMContentLoaded', () => {
+  renderClassConfig();
+  renderItemClassTabs();
+  renderImportClassTabs();
+  renderItemsEditor();
+  renderCopySelects();
+  renderGradeClassSelector();
+  renderGradeItemSelector();
+  renderGradeTable();
+  renderStatsClassSelector();
+  renderExportList();
+  checkSpeechSupport();
+});
+
+// ===============================
+//  TAB SWITCHING
+// ===============================
+function switchTab(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (name === 'stats') renderStats();
+  if (name === 'export') renderExportList();
+  if (name === 'grade') { renderGradeClassSelector(); renderGradeItemSelector(); renderGradeTable(); }
+}
+
+// ===============================
+//  CLASS CONFIG
+// ===============================
+function renderClassConfig() {
+  const grid = document.getElementById('classConfigGrid');
+  grid.innerHTML = state.classes.map((cls, i) => `
+    <div class="class-config-item">
+      <input class="class-name-input" value="${cls.name}" 
+        onchange="renameClass(${i}, this.value)" 
+        onblur="renameClass(${i}, this.value)"
+        placeholder="班級名稱">
+      <div class="class-count-label">
+        ${getStudents(i).length} 位學生 · ${cls.items.length} 個項目
+      </div>
+    </div>
+  `).join('');
+}
+
+function renameClass(idx, name) {
+  state.classes[idx].name = name.trim() || DEFAULT_NAMES[idx];
+  renderClassConfig();
+  renderItemClassTabs();
+  renderImportClassTabs();
+  renderGradeClassSelector();
+  renderStatsClassSelector();
+  renderCopySelects();
+  renderExportList();
+}
+
+// ===============================
+//  ITEMS EDITOR
+// ===============================
+function renderItemClassTabs() {
+  const tabs = document.getElementById('itemClassTabs');
+  tabs.innerHTML = state.classes.map((cls, i) => `
+    <button style="padding:6px 14px;border-radius:16px;border:1.5px solid ${i===state.settingsItemClass?'var(--accent)':'var(--border)'};background:${i===state.settingsItemClass?'var(--accent)':'var(--surface2)'};color:${i===state.settingsItemClass?'white':'var(--text2)'};font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0;"
+      onclick="selectItemClass(${i})">${cls.name}</button>
+  `).join('');
+}
+
+function selectItemClass(idx) {
+  state.settingsItemClass = idx;
+  renderItemClassTabs();
+  renderItemsEditor();
+}
+
+function renderItemsEditor() {
+  const area = document.getElementById('itemsEditorArea');
+  const cls = state.classes[state.settingsItemClass];
+  area.innerHTML = `
+    <div class="items-section">
+      <div class="items-header">
+        <div class="items-label">${cls.name} 的成績項目</div>
+      </div>
+      <div class="item-tag-list" id="itemTagList">
+        ${cls.items.length === 0 ? '<span class="text-muted" style="font-size:13px;">尚未新增項目</span>' :
+          cls.items.map((item,i) => `
+          <div class="item-tag">
+            ${item}
+            <button class="remove-tag" onclick="removeItem(${state.settingsItemClass},${i})">✕</button>
+          </div>`).join('')}
+      </div>
+      <div class="add-item-row">
+        <input class="add-item-input" id="newItemInput" placeholder="輸入項目名稱（如：第一次段考）" 
+          onkeydown="if(event.key==='Enter'){addItem(${state.settingsItemClass});}" maxlength="30">
+        <button class="btn btn-primary btn-sm" onclick="addItem(${state.settingsItemClass})">新增</button>
+      </div>
+    </div>
+  `;
+}
+
+function addItem(classIdx) {
+  const input = document.getElementById('newItemInput');
+  const name = input.value.trim();
+  if (!name) return;
+  if (state.classes[classIdx].items.includes(name)) { showToast('此項目已存在', 'error'); return; }
+  state.classes[classIdx].items.push(name);
+  input.value = '';
+  renderItemsEditor();
+  renderClassConfig();
+  renderGradeItemSelector();
+  renderStatsItemSelector();
+  showToast('已新增項目：' + name, 'success');
+}
+
+function removeItem(classIdx, itemIdx) {
+  const item = state.classes[classIdx].items[itemIdx];
+  if (!confirm(`確定刪除「${item}」？此項目的所有成績資料將被刪除。`)) return;
+  state.classes[classIdx].items.splice(itemIdx, 1);
+  if (state.grades[classIdx]) delete state.grades[classIdx][item];
+  renderItemsEditor();
+  renderClassConfig();
+  renderGradeItemSelector();
+  renderStatsItemSelector();
+}
+
+function renderCopySelects() {
+  const from = document.getElementById('copyFromSelect');
+  const to = document.getElementById('copyToSelect');
+  const opts = state.classes.map((c,i) => `<option value="${i}">${c.name}</option>`).join('');
+  from.innerHTML = opts;
+  to.innerHTML = opts;
+  if (to.options.length > 1) to.selectedIndex = 1;
+}
+
+function copyItems() {
+  const from = parseInt(document.getElementById('copyFromSelect').value);
+  const to = parseInt(document.getElementById('copyToSelect').value);
+  if (from === to) { showToast('來源與目標不能相同', 'error'); return; }
+  const items = [...state.classes[from].items];
+  if (items.length === 0) { showToast(`${state.classes[from].name} 尚未設定項目`, 'error'); return; }
+  if (!confirm(`確定將「${state.classes[from].name}」的 ${items.length} 個項目複製到「${state.classes[to].name}」？\n目標班級現有項目將被合併。`)) return;
+  items.forEach(item => {
+    if (!state.classes[to].items.includes(item)) state.classes[to].items.push(item);
+  });
+  renderItemsEditor();
+  renderClassConfig();
+  renderGradeItemSelector();
+  showToast(`已複製 ${items.length} 個項目到 ${state.classes[to].name}`, 'success');
+}
+
+// ===============================
+//  IMPORT
+// ===============================
+function renderImportClassTabs() {
+  const tabs = document.getElementById('importClassTabs');
+  tabs.innerHTML = state.classes.map((cls, i) => `
+    <button style="padding:6px 14px;border-radius:16px;border:1.5px solid ${i===state.importClassIdx?'var(--accent)':'var(--border)'};background:${i===state.importClassIdx?'var(--accent)':'var(--surface2)'};color:${i===state.importClassIdx?'white':'var(--text2)'};font-size:13px;font-weight:600;cursor:pointer;flex-shrink:0;"
+      onclick="selectImportClass(${i})">${cls.name}</button>
+  `).join('');
+  renderListPreview();
+}
+
+function selectImportClass(idx) {
+  state.importClassIdx = idx;
+  renderImportClassTabs();
+}
+
+function renderListPreview() {
+  const preview = document.getElementById('listPreview');
+  const cls = state.classes[state.importClassIdx];
+  if (cls.students && cls.students.length > 0) {
+    preview.innerHTML = `<span style="color:var(--green);font-weight:600;">✓ ${cls.name} 已匯入 ${cls.students.length} 位學生</span>`;
+  } else {
+    preview.innerHTML = `<span style="color:var(--text3);">（${cls.name} 尚未匯入名單，使用空白座位）</span>`;
+  }
+}
+
+function openImportModal() {
+  document.getElementById('importModal').classList.add('active');
+  document.getElementById('importTextarea').focus();
+}
+
+function closeImportModal() {
+  document.getElementById('importModal').classList.remove('active');
+}
+
+function confirmImport() {
+  const text = document.getElementById('importTextarea').value.trim();
+  if (!text) { showToast('請輸入名單', 'error'); return; }
+  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+  const students = [];
+  lines.forEach((line, idx) => {
+    const parts = line.split(',').map(s => s.trim());
+    if (parts.length >= 2) {
+      const seat = parseInt(parts[0]);
+      if (!isNaN(seat)) students.push({seat, name: parts.slice(1).join(',')});
+      else students.push({seat: idx+1, name: parts[0]});
+    } else {
+      students.push({seat: idx+1, name: parts[0]});
+    }
+  });
+  students.sort((a,b) => a.seat - b.seat);
+  state.classes[state.importClassIdx].students = students;
+  state.classes[state.importClassIdx].seats = students.length;
+  document.getElementById('importTextarea').value = '';
+  closeImportModal();
+  renderClassConfig();
+  renderListPreview();
+  renderGradeTable();
+  showToast(`已匯入 ${students.length} 位學生`, 'success');
+}
+
+function clearClassList() {
+  if (!confirm(`確定清除 ${state.classes[state.importClassIdx].name} 的名單？`)) return;
+  state.classes[state.importClassIdx].students = [];
+  state.classes[state.importClassIdx].seats = DEFAULT_SEATS;
+  renderClassConfig();
+  renderListPreview();
+  renderGradeTable();
+  showToast('已清除名單', 'info');
+}
+
+// ===============================
+//  GRADE TABLE
+// ===============================
+function renderGradeClassSelector() {
+  const sel = document.getElementById('gradeClassSelector');
+  sel.innerHTML = state.classes.map((cls, i) => `
+    <button class="grade-class-btn ${i===state.gradeClass?'active':''}" onclick="selectGradeClass(${i})">${cls.name}</button>
+  `).join('');
+}
+
+function selectGradeClass(idx) {
+  state.gradeClass = idx;
+  if (!state.classes[idx].items.includes(state.gradeItem)) {
+    state.gradeItem = state.classes[idx].items[0] || '';
+  }
+  renderGradeClassSelector();
+  renderGradeItemSelector();
+  renderGradeTable();
+}
+
+function renderGradeItemSelector() {
+  const sel = document.getElementById('gradeItemSelector');
+  const items = state.classes[state.gradeClass].items;
+  if (items.length === 0) {
+    sel.innerHTML = '<span class="text-muted">請先在「班級設定」新增項目</span>';
+    return;
+  }
+  if (!items.includes(state.gradeItem)) state.gradeItem = items[0];
+  sel.innerHTML = items.map(item => `
+    <button class="item-select-btn ${item===state.gradeItem?'active':''}" onclick="selectGradeItem('${item}')">${item}</button>
+  `).join('');
+}
+
+function selectGradeItem(item) {
+  state.gradeItem = item;
+  renderGradeItemSelector();
+  renderGradeTable();
+}
+
+function renderGradeTable() {
+  const tbody = document.getElementById('gradeTableBody');
+  if (!state.gradeItem) { tbody.innerHTML = '<tr><td colspan="3" class="empty-state">請先設定成績項目</td></tr>'; return; }
+  const students = getStudents(state.gradeClass);
+  const grades = getGrades(state.gradeClass, state.gradeItem);
+  tbody.innerHTML = students.map(s => {
+    const val = grades[s.seat] !== undefined ? grades[s.seat] : '';
+    return `
+      <tr>
+        <td><span class="seat-no">${s.seat}</span></td>
+        <td><span class="student-name">${s.name || '-'}</span></td>
+        <td>
+          <input class="grade-input-cell ${val!==''?'has-grade':''}" 
+            id="grade-cell-${s.seat}"
+            type="number" min="0" max="100" step="1"
+            value="${val}"
+            inputmode="decimal"
+            onchange="setGrade(${s.seat}, this.value)"
+            oninput="setGrade(${s.seat}, this.value)"
+            placeholder="—">
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function setGrade(seat, val) {
+  const v = val === '' ? '' : parseFloat(val);
+  getGrades(state.gradeClass, state.gradeItem)[seat] = v;
+  const cell = document.getElementById('grade-cell-'+seat);
+  if (cell) {
+    cell.classList.toggle('has-grade', val !== '');
+  }
+}
+
+function clearCurrentGrades() {
+  if (!state.gradeItem) return;
+  if (!confirm(`確定清除「${state.classes[state.gradeClass].name}」的「${state.gradeItem}」所有成績？`)) return;
+  state.grades[state.gradeClass] = state.grades[state.gradeClass] || {};
+  state.grades[state.gradeClass][state.gradeItem] = {};
+  renderGradeTable();
+  showToast('已清除', 'info');
+}
+
+// ===============================
+//  SPEECH RECOGNITION
+// ===============================
+let recognition = null;
+let isListening = false;
+let silenceTimer = null;
+const SILENCE_MS = 2000; // restart after 2s silence (continuous feel)
+
+function checkSpeechSupport() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    document.getElementById('voiceNotice').innerHTML = `
+      <strong>⚠️ 語音辨識不可用：</strong>您的瀏覽器不支援語音辨識。請使用 Safari 14+ 或 Chrome。<br>
+      您仍可手動在表格中輸入成績。
+    `;
+    document.getElementById('micBtn').disabled = true;
+    document.getElementById('micBtn').style.opacity = '0.4';
+    return;
+  }
+  initRecognition();
+}
+
+function initRecognition() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SpeechRecognition();
+  recognition.lang = 'zh-TW';
+  recognition.continuous = false; // Safari workaround: use false + auto-restart
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 3;
+
+  recognition.onstart = () => {
+    isListening = true;
+    document.getElementById('micBtn').classList.add('listening');
+    document.getElementById('micStatus').textContent = '🔴 聆聽中，請說出成績…';
+    document.getElementById('micStatus').classList.add('active');
+  };
+
+  recognition.onresult = (event) => {
+    clearTimeout(silenceTimer);
+    let finalText = '';
+    let interimText = '';
+    for (let i = event.resultIndex; i < event.results.length; i++) {
+      const t = event.results[i][0].transcript;
+      if (event.results[i].isFinal) finalText += t;
+      else interimText += t;
+    }
+
+    const display = finalText || interimText;
+    const box = document.getElementById('transcriptBox');
+    box.textContent = display;
+    box.className = 'transcript-box' + (display ? ' has-content' : '');
+
+    if (finalText) {
+      parseAndFillGrades(finalText);
+      // auto-restart after short pause
+      silenceTimer = setTimeout(() => {
+        if (isListening) {
+          try { recognition.start(); } catch(e) {}
+        }
+      }, 300);
+    }
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error === 'no-speech') {
+      // restart silently
+      if (isListening) {
+        try { recognition.start(); } catch(err) {}
+      }
+      return;
+    }
+    if (e.error === 'not-allowed') {
+      showToast('請允許麥克風存取權限', 'error');
+      stopMic();
+    }
+  };
+
+  recognition.onend = () => {
+    if (isListening) {
+      // auto-restart for continuous feel
+      silenceTimer = setTimeout(() => {
+        try { recognition.start(); } catch(e) { stopMic(); }
+      }, 200);
+    } else {
+      updateMicUI(false);
+    }
+  };
+}
+
+function toggleMic() {
+  if (!recognition) { showToast('語音辨識不可用', 'error'); return; }
+  if (!state.gradeItem) { showToast('請先選擇成績項目', 'error'); return; }
+  if (isListening) stopMic();
+  else startMic();
+}
+
+function startMic() {
+  isListening = true;
+  try { recognition.start(); }
+  catch(e) {
+    // Already started
+  }
+}
+
+function stopMic() {
+  isListening = false;
+  clearTimeout(silenceTimer);
+  try { recognition.stop(); } catch(e) {}
+  updateMicUI(false);
+}
+
+function updateMicUI(active) {
+  const btn = document.getElementById('micBtn');
+  const status = document.getElementById('micStatus');
+  if (active) {
+    btn.classList.add('listening');
+    status.textContent = '🔴 聆聽中，請說出成績…';
+    status.classList.add('active');
+  } else {
+    btn.classList.remove('listening');
+    status.textContent = '點擊麥克風開始語音輸入';
+    status.classList.remove('active');
+  }
+}
+
+// ===============================
+//  GRADE PARSING
+// ===============================
+/*
+  Patterns supported:
+  - "1號95" / "1號 95分"
+  - "第1號95" / "第一號95"
+  - "1,95" / "1：95"
+  - Chinese numbers: 一號九十五
+*/
+const CN_NUM = {'零':0,'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10,
+  '十一':11,'十二':12,'十三':13,'十四':14,'十五':15,'十六':16,'十七':17,'十八':18,'十九':19,
+  '二十':20,'二十一':21,'二十二':22,'二十三':23,'二十四':24,'二十五':25,'二十六':26,'二十七':27,'二十八':28,'二十九':29,
+  '三十':30,'三十一':31,'三十二':32,'三十三':33,'三十四':34,'三十五':35,'三十六':36,'三十七':37,'三十八':38,'三十九':39,'四十':40,
+  '百':100,'零分':0};
+
+function parseCN(s) {
+  if (CN_NUM[s] !== undefined) return CN_NUM[s];
+  // try to evaluate like "九十五" -> 90+5
+  let n = 0;
+  if (/^[零一二三四五六七八九十百]+$/.test(s)) {
+    // handle 九十五 pattern
+    if (s.includes('百')) {
+      const parts = s.split('百');
+      n = (parseCN(parts[0])||1) * 100;
+      if (parts[1]) n += parseCN(parts[1]);
+    } else if (s.includes('十')) {
+      const idx = s.indexOf('十');
+      const tens = idx === 0 ? 1 : parseCN(s.substring(0, idx));
+      const ones = idx === s.length-1 ? 0 : parseCN(s.substring(idx+1));
+      n = tens * 10 + ones;
+    } else {
+      n = CN_NUM[s] || 0;
+    }
+    return n;
+  }
+  return NaN;
+}
+
+let recentFilled = [];
+
+function parseAndFillGrades(text) {
+  if (!state.gradeItem) return;
+
+  // Normalize: replace full-width to half-width
+  text = text.replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
+  text = text.replace(/[，。、；：]/g, ' ');
+
+  const students = getStudents(state.gradeClass);
+  const maxSeat = Math.max(...students.map(s => s.seat));
+  const grades = getGrades(state.gradeClass, state.gradeItem);
+  const filled = [];
+
+  // Pattern 1: digits "1號95" / "1 號 95" / "1號95分"
+  // Also handles: "第1號95", Chinese seat: "一號九十五"
+  const pat1 = /(?:第\s*)?([0-9]{1,2}|[零一二三四五六七八九十]+)\s*[號号]\s*([0-9]{1,3}|[零一二三四五六七八九十百]+)\s*分?/g;
+  let m;
+  while ((m = pat1.exec(text)) !== null) {
+    const seat = /[0-9]/.test(m[1]) ? parseInt(m[1]) : parseCN(m[1]);
+    const score = /[0-9]/.test(m[2]) ? parseFloat(m[2]) : parseCN(m[2]);
+    if (!isNaN(seat) && !isNaN(score) && seat >= 1 && seat <= maxSeat && score >= 0 && score <= 100) {
+      grades[seat] = score;
+      filled.push({seat, score});
+    }
+  }
+
+  // Pattern 2: "座號,成績" like "3,85"
+  const pat2 = /\b([0-9]{1,2})\s*[,，、:：]\s*([0-9]{2,3})\b/g;
+  while ((m = pat2.exec(text)) !== null) {
+    const seat = parseInt(m[1]);
+    const score = parseFloat(m[2]);
+    if (!isNaN(seat) && !isNaN(score) && seat >= 1 && seat <= maxSeat && score >= 0 && score <= 100) {
+      grades[seat] = score;
+      filled.push({seat, score});
+    }
+  }
+
+  if (filled.length === 0) return;
+
+  // Update cells
+  filled.forEach(({seat, score}) => {
+    const cell = document.getElementById('grade-cell-'+seat);
+    if (cell) {
+      cell.value = score;
+      cell.classList.add('has-grade');
+      cell.classList.remove('voice-filled');
+      void cell.offsetWidth; // reflow
+      cell.classList.add('voice-filled');
+    }
+  });
+
+  // Recent log
+  recentFilled.unshift(...filled.reverse());
+  recentFilled = recentFilled.slice(0, 10);
+  renderRecentFilled();
+
+  showToast(`已填入 ${filled.length} 筆：${filled.map(f => `${f.seat}號→${f.score}`).join('、')}`, 'success');
+}
+
+function renderRecentFilled() {
+  const area = document.getElementById('recentFilledArea');
+  if (recentFilled.length === 0) { area.innerHTML = ''; return; }
+  area.innerHTML = `
+    <div style="font-size:12px;color:var(--text3);margin-bottom:4px;font-weight:600;">最近填入</div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;">
+      ${recentFilled.map(f => `
+        <span style="background:var(--accent-light);color:var(--accent);padding:3px 8px;border-radius:10px;font-size:12px;font-weight:700;">
+          ${f.seat}號 ${f.score}分
+        </span>
+      `).join('')}
+    </div>
+  `;
+}
+
+// ===============================
+//  STATS
+// ===============================
+function renderStatsClassSelector() {
+  const sel = document.getElementById('statsClassSelector');
+  sel.innerHTML = state.classes.map((cls, i) => `
+    <button class="grade-class-btn ${i===state.statsClass?'active':''}" onclick="selectStatsClass(${i})">${cls.name}</button>
+  `).join('');
+}
+
+function selectStatsClass(idx) {
+  state.statsClass = idx;
+  if (!state.classes[idx].items.includes(state.statsItem)) {
+    state.statsItem = state.classes[idx].items[0] || '';
+  }
+  renderStatsClassSelector();
+  renderStatsItemSelector();
+  renderStats();
+}
+
+function renderStatsItemSelector() {
+  const sel = document.getElementById('statsItemSelector');
+  const items = state.classes[state.statsClass].items;
+  if (!sel) return;
+  if (!items.includes(state.statsItem)) state.statsItem = items[0] || '';
+  sel.innerHTML = items.map(item => `
+    <button class="item-select-btn ${item===state.statsItem?'active':''}" onclick="selectStatsItem('${item}')">${item}</button>
+  `).join('');
+}
+
+function selectStatsItem(item) {
+  state.statsItem = item;
+  renderStatsItemSelector();
+  renderStats();
+}
+
+function renderStats() {
+  const content = document.getElementById('statsContent');
+  if (!state.statsItem) {
+    content.innerHTML = '<div class="empty-state"><div class="empty-icon">📊</div><p>請先設定並選擇成績項目</p></div>';
+    return;
+  }
+  const grades = getGrades(state.statsClass, state.statsItem);
+  const scores = Object.values(grades).filter(v => v !== '' && v !== null && v !== undefined && !isNaN(v)).map(Number);
+
+  if (scores.length === 0) {
+    content.innerHTML = '<div class="empty-state"><div class="empty-icon">📝</div><p>尚無成績資料</p></div>';
+    return;
+  }
+
+  const avg = (scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1);
+  const max = Math.max(...scores);
+  const min = Math.min(...scores);
+  const cnt = s => scores.filter(v=>v>=s[0]&&v<=s[1]).length;
+  const n90 = scores.filter(v=>v>=90).length;
+  const n80 = cnt([80,89]);
+  const n70 = cnt([70,79]);
+  const n60 = cnt([60,69]);
+  const nFail = scores.filter(v=>v<60).length;
+  const total = scores.length;
+  const pct = n => total > 0 ? Math.round(n/total*100) : 0;
+
+  content.innerHTML = `
+    <div class="card">
+      <div class="card-title">📊 ${state.classes[state.statsClass].name} ‧ ${state.statsItem}</div>
+      <div class="stats-grid">
+        <div class="stat-card stat-avg">
+          <div class="stat-label">平均分數</div>
+          <div class="stat-value">${avg}</div>
+        </div>
+        <div class="stat-card stat-90">
+          <div class="stat-label">最高分</div>
+          <div class="stat-value">${max}</div>
+        </div>
+        <div class="stat-card stat-fail">
+          <div class="stat-label">最低分</div>
+          <div class="stat-value">${min}</div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:12px;">共 ${total} 位學生有成績</div>
+
+      <div class="card-title" style="margin-bottom:10px;">分數分布</div>
+      ${distBar('90分以上', n90, total, '#3aaa6e')}
+      ${distBar('80～89', n80, total, '#5aaa5a')}
+      ${distBar('70～79', n70, total, '#c0a030')}
+      ${distBar('60～69', n60, total, '#c06030')}
+      ${distBar('60分以下', nFail, total, '#c03030')}
+    </div>
+
+    <div class="card">
+      <div class="card-title">各分段人數</div>
+      <table style="width:100%;border-collapse:collapse;font-size:14px;">
+        <tr style="background:var(--surface2);">
+          <th style="padding:8px;text-align:left;border-bottom:1px solid var(--border);">分數段</th>
+          <th style="padding:8px;text-align:center;border-bottom:1px solid var(--border);">人數</th>
+          <th style="padding:8px;text-align:center;border-bottom:1px solid var(--border);">佔比</th>
+        </tr>
+        ${statsRow('90 分以上', n90, pct(n90), 'var(--green)')}
+        ${statsRow('80～89 分', n80, pct(n80), '#5aaa5a')}
+        ${statsRow('70～79 分', n70, pct(n70), '#c0a030')}
+        ${statsRow('60～69 分', n60, pct(n60), '#c06030')}
+        ${statsRow('60 分以下', nFail, pct(nFail), 'var(--red)')}
+        <tr style="font-weight:700;background:var(--accent-light);">
+          <td style="padding:8px;border-top:2px solid var(--border);">合計</td>
+          <td style="padding:8px;text-align:center;border-top:2px solid var(--border);">${total}</td>
+          <td style="padding:8px;text-align:center;border-top:2px solid var(--border);">100%</td>
+        </tr>
+      </table>
+    </div>
+  `;
+}
+
+function distBar(label, count, total, color) {
+  const pct = total > 0 ? Math.round(count/total*100) : 0;
+  return `
+    <div class="dist-bar-row">
+      <div class="dist-bar-label">${label}</div>
+      <div class="dist-bar-track">
+        <div class="dist-bar-fill" style="width:${pct}%;background:${color};"></div>
+      </div>
+      <div class="dist-bar-count">${count}</div>
+    </div>
+  `;
+}
+
+function statsRow(label, count, pct, color) {
+  return `
+    <tr>
+      <td style="padding:8px;border-bottom:1px solid var(--border);color:${color};font-weight:600;">${label}</td>
+      <td style="padding:8px;text-align:center;border-bottom:1px solid var(--border);font-weight:700;">${count}</td>
+      <td style="padding:8px;text-align:center;border-bottom:1px solid var(--border);color:var(--text2);">${pct}%</td>
+    </tr>
+  `;
+}
+
+// ===============================
+//  EXPORT
+// ===============================
+function renderExportList() {
+  const list = document.getElementById('exportClassList');
+  list.innerHTML = state.classes.map((cls, i) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div style="flex:1;">
+        <div style="font-weight:700;">${cls.name}</div>
+        <div style="font-size:12px;color:var(--text3);">${cls.items.length} 個項目 ‧ ${getStudents(i).length} 位學生</div>
+      </div>
+      ${cls.items.map(item => `
+        <button class="btn btn-primary btn-xs" onclick="exportClass(${i},'${item}')">⬇ ${item}</button>
+      `).join('')}
+      <button class="btn btn-secondary btn-xs" onclick="exportClass(${i})">⬇ 全部項目</button>
+    </div>
+  `).join('');
+}
+
+function exportClass(classIdx, specificItem) {
+  const cls = state.classes[classIdx];
+  const students = getStudents(classIdx);
+  const items = specificItem ? [specificItem] : cls.items;
+
+  if (items.length === 0) { showToast('此班級尚未設定項目', 'error'); return; }
+
+  let csv = '\uFEFF'; // BOM for Excel
+  csv += '座號,姓名,' + items.join(',') + '\n';
+  students.forEach(s => {
+    const row = [s.seat, s.name];
+    items.forEach(item => {
+      const g = getGrades(classIdx, item);
+      row.push(g[s.seat] !== undefined && g[s.seat] !== '' ? g[s.seat] : '');
+    });
+    csv += row.join(',') + '\n';
+  });
+
+  const filename = `${cls.name}_${specificItem||'全部成績'}_${today()}.csv`;
+  downloadText(csv, filename, 'text/csv;charset=utf-8');
+  showToast('已下載：' + filename, 'success');
+}
+
+function exportAll() {
+  state.classes.forEach((cls, i) => {
+    if (cls.items.length > 0) exportClass(i);
+  });
+}
+
+function downloadText(text, filename, mime) {
+  const blob = new Blob([text], {type: mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+}
+
+function today() {
+  const d = new Date();
+  return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}`;
+}
+
+// ===============================
+//  TOAST
+// ===============================
+let toastTimer;
+function showToast(msg, type='info') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.classList.remove('show'); }, 2800);
+}
+</script>
+</body>
+</html>
