@@ -40,6 +40,7 @@ html,body{min-height:100%;background:#f5f4f0;font-family:'PingFang TC','Noto San
 .s-green{background:#1e7e4a;}
 .s-amber{background:#b45309;}
 .s-slate{background:#5c6bc0;}
+.s-rose{background:#be185d;}
 
 .card-body{padding:14px 16px 16px;}
 .card-header{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
@@ -62,6 +63,7 @@ html,body{min-height:100%;background:#f5f4f0;font-family:'PingFang TC','Noto San
 .t-green{background:#edf7f2;color:#1e7e4a;}
 .t-amber{background:#fef3c7;color:#b45309;}
 .t-slate{background:#eef0fb;color:#5c6bc0;}
+.t-rose{background:#fdf2f8;color:#be185d;}
 
 .btn{
   display:flex;align-items:center;justify-content:center;gap:6px;
@@ -74,6 +76,7 @@ html,body{min-height:100%;background:#f5f4f0;font-family:'PingFang TC','Noto San
 .btn-green{background:#1e7e4a;}
 .btn-amber{background:#b45309;}
 .btn-slate{background:#5c6bc0;}
+.btn-rose{background:#be185d;}
 
 .footer{text-align:center;font-size:11px;color:#a09a93;line-height:1.9;padding-top:4px;}
 </style>
@@ -85,10 +88,11 @@ html,body{min-height:100%;background:#f5f4f0;font-family:'PingFang TC','Noto San
     <span class="topbar-icon">🌻</span>
     <div>
       <div class="topbar-title">教師工具箱</div>
-      <div class="topbar-sub">課堂表現記錄 ＆ 導師班管理</div>
+      <div class="topbar-sub">課堂記錄 · 導師班管理 · 成績登記</div>
     </div>
   </div>
 
+  <!-- 課堂表現記錄 -->
   <div class="section-label">課堂表現記錄</div>
 
   <a class="card" href="classroom_record.html">
@@ -135,6 +139,7 @@ html,body{min-height:100%;background:#f5f4f0;font-family:'PingFang TC','Noto San
     </div>
   </a>
 
+  <!-- 導師班管理 -->
   <div class="section-label section-gap">導師班管理</div>
 
   <a class="card" href="merit_record_v2.html">
@@ -181,6 +186,37 @@ html,body{min-height:100%;background:#f5f4f0;font-family:'PingFang TC','Noto San
       <div class="btn btn-amber">開啟工具 →</div>
     </div>
   </a>
+
+  <!-- 成績管理 -->
+  <div class="section-label section-gap">成績管理</div>
+
+  <a class="card" href="grade_voice_system.html">
+    <div class="card-stripe s-rose"></div>
+    <div class="card-body">
+      <div class="card-header"><span class="card-emoji">🎙️</span><span class="card-name">語音成績登記系統</span></div>
+      <span class="device-badge badge-phone">📱 適合以手機開啟</span>
+      <div class="card-desc">以語音輸入方式快速登記各班學生成績，支援多班級、多科目，自動辨識座號與分數，期末匯出 CSV。</div>
+      <div class="note-box">
+        <b>使用說明</b><br>
+        先在「設定」頁設定好班級名稱、人數與評量科目。登記時選擇班級與科目後，按麥克風鍵依序念出「座號 分數」（例如「1號 85」），系統會自動辨識並填入。全班念完後可逐一確認再儲存。<br><br>
+        <b>注意事項</b><br>
+        • 需允許瀏覽器使用麥克風權限，建議使用 Chrome<br>
+        • 語音辨識需要網路連線（使用裝置內建語音辨識服務）<br>
+        • 建議在安靜環境使用，避免背景噪音影響辨識準確度<br>
+        • 資料儲存於本機瀏覽器，定期匯出 CSV 備份
+      </div>
+      <div class="tag-row">
+        <span class="tag t-rose">語音輸入</span>
+        <span class="tag t-rose">多班級</span>
+        <span class="tag t-rose">多科目</span>
+        <span class="tag t-rose">匯出 CSV</span>
+      </div>
+      <div class="btn btn-rose">開啟工具 →</div>
+    </div>
+  </a>
+
+  <!-- 段考看板 -->
+  <div class="section-label section-gap">考試輔助</div>
 
   <a class="card" href="exam_dashboard.html">
     <div class="card-stripe s-slate"></div>
