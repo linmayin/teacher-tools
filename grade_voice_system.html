@@ -745,8 +745,8 @@
     </div>
     <div class="card">
       <div class="card-title">📥 匯出全部班級</div>
-      <button class="btn btn-green" onclick="exportAll()">📥 下載全部班級成績</button>
-      <span class="text-muted" style="margin-left:8px;font-size:12px;">各班依序下載一份 CSV（共 0.8 秒間隔）</span>
+      <button class="btn btn-green" onclick="exportAll()">📥 下載全部班級成績 (.xlsx)</button>
+      <span class="text-muted" style="margin-left:8px;font-size:12px;">一個檔案，各班各一個分頁</span>
     </div>
   </div>
 
@@ -1709,17 +1709,63 @@ function exportClass(classIdx, specificItem) {
   showToast('已下載：' + filename, 'success');
 }
 
-function exportAll() {
-  const toExport = state.classes.filter((cls, i) => cls.items.length > 0);
+async function exportAll() {
+  const toExport = state.classes
+    .map((cls, i) => ({cls, i}))
+    .filter(({cls}) => cls.items.length > 0);
   if (toExport.length === 0) { showToast('尚無可匯出的成績', 'error'); return; }
-  // Safari cannot handle simultaneous downloads — stagger with delay
-  toExport.forEach((cls, i) => {
-    const classIdx = state.classes.indexOf(cls);
-    setTimeout(() => {
-      exportClass(classIdx);
-    }, i * 800); // 0.8s between each download
+
+  showToast('準備匯出 Excel…', 'info');
+
+  // Load SheetJS dynamically
+  if (!window.XLSX) {
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+      s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+
+  const wb = XLSX.utils.book_new();
+
+  toExport.forEach(({cls, i: classIdx}) => {
+    const students = getStudents(classIdx);
+    const items = cls.items;
+
+    // Only rows with name or at least one score
+    const hasAnyScore = (s) => items.some(item => {
+      const g = getGrades(classIdx, item);
+      return g[s.seat] !== undefined && g[s.seat] !== '';
+    });
+    const activeStudents = students.filter(s => s.name || hasAnyScore(s));
+
+    // Build 2D array
+    const header = ['座號', '姓名', ...items];
+    const rows = activeStudents.map(s => {
+      const row = [s.seat, s.name || ''];
+      items.forEach(item => {
+        const g = getGrades(classIdx, item);
+        const v = g[s.seat];
+        row.push(v !== undefined && v !== '' ? v : '');
+      });
+      return row;
+    });
+
+    const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
+
+    // Column widths
+    ws['!cols'] = [
+      {wch: 6}, {wch: 10},
+      ...items.map(() => ({wch: 8}))
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, cls.name);
   });
-  showToast(`將依序下載 ${toExport.length} 個班級的 CSV`, 'info');
+
+  const filename = `全班成績_${today()}.xlsx`;
+  XLSX.writeFile(wb, filename);
+  showToast(`✅ 已下載 ${filename}（${toExport.length} 個分頁）`, 'success');
 }
 
 function downloadText(text, filename, mime) {
