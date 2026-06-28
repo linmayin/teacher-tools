@@ -1342,17 +1342,10 @@ function parseCN(s) {
   return NaN;
 }
 
-// When score parses to a single digit (1-9) from a single Chinese character,
-// it's almost certainly a decade (八→80, 七→70) unless the digit is 0.
-// Context: classroom scores; single-digit real scores are theoretically possible
-// but extremely rare and would look like "1號零分". We'll be conservative:
-// only upgrade to ×10 when the raw captured group is exactly one CN char AND digit ≥ 1.
+// Single CN digit after 號 = Safari dropped the repeat syllable: 八→88, 七→77, 九→99
 function interpretScore(rawStr, parsed) {
-  if (!isNaN(parsed) && parsed >= 1 && parsed <= 9) {
-    // rawStr was a single Chinese character (like 八), likely means N×10
-    if (/^[零一二三四五六七八九]$/.test(rawStr.trim())) {
-      return parsed * 10;
-    }
+  if (/^[一二三四五六七八九]$/.test(rawStr.trim()) && !isNaN(parsed) && parsed >= 1 && parsed <= 9) {
+    return parsed * 10 + parsed; // 八→88, 七→77, 九→99
   }
   return parsed;
 }
