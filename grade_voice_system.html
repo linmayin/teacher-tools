@@ -644,60 +644,52 @@
 
 
 
-    <!-- Photo OCR Section -->
+
+    <!-- Photo Import Section -->
     <div class="card" id="photoCard">
       <div class="card-title">📷 照片辨識匯入</div>
+
       <div class="notice">
-        <strong>使用說明：</strong>拍下成績表格（含多科目），AI 辨識後可一次填入多個項目。<br>
-        辨識後請對照原始照片確認，有錯誤可直接修改再匯入。
+        <strong>操作流程：</strong><br>
+        ① 拍照後上傳到此對話視窗，請 Claude 辨識成績表格<br>
+        ② Claude 會輸出 JSON 格式結果<br>
+        ③ 複製 JSON，貼到下方欄位，點「匯入」即可自動填入
       </div>
 
-      <div style="display:flex;flex-direction:column;gap:14px;">
-
-        <!-- Step 1: 欄位設定 -->
-        <div>
-          <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:8px;">① 設定欄位對應（按照成績單欄位順序）</div>
-          <div id="columnMappingArea">
-            <div class="text-muted" style="font-size:13px;">請先在「班級設定」新增成績項目，再回來設定欄位。</div>
-          </div>
-          <button class="btn btn-secondary btn-xs" style="margin-top:8px;" onclick="addColumnSlot()">＋ 新增欄位</button>
-        </div>
-
-        <!-- Step 2: 拍照 -->
-        <div>
-          <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:8px;">② 選擇照片</div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-            <label style="display:inline-flex;align-items:center;gap:6px;padding:10px 18px;background:var(--accent);color:white;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">
-              📷 拍照 / 選圖
-              <input type="file" accept="image/*" id="photoInput" style="display:none;" onchange="handlePhotoSelected(this)">
-            </label>
-            <button class="btn btn-secondary btn-sm" onclick="clearPhotoPreview()">清除</button>
-          </div>
-          <div id="photoPreviewArea" style="display:none;margin-top:10px;">
-            <img id="photoPreview" style="max-width:100%;max-height:260px;border-radius:8px;border:2px solid var(--border);object-fit:contain;" alt="預覽">
-          </div>
-        </div>
-
-        <!-- Step 3: 辨識 -->
-        <div id="photoRecognizeBtn" style="display:none;">
-          <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:8px;">③ 開始辨識</div>
-          <button class="btn btn-green" onclick="startOCR()" id="recognizeBtn">🔍 開始辨識</button>
-          <div id="photoStatus" style="margin-top:8px;font-size:13px;color:var(--text2);min-height:18px;"></div>
-        </div>
-
-        <!-- Result -->
-        <div id="photoResultArea" style="display:none;">
-          <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:8px;">辨識結果（可編輯後確認匯入）</div>
-          <!-- Column headers -->
-          <div id="photoResultHeader" style="display:flex;gap:6px;padding:6px 10px;background:var(--accent);border-radius:8px 8px 0 0;color:white;font-size:12px;font-weight:700;"></div>
-          <div id="photoResultList" style="display:flex;flex-direction:column;gap:4px;max-height:320px;overflow-y:auto;border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;padding:6px;"></div>
-          <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;">
-            <button class="btn btn-primary" onclick="confirmPhotoImport()">✅ 確認全部匯入</button>
-            <button class="btn btn-secondary btn-sm" onclick="cancelPhotoImport()">取消</button>
-          </div>
-        </div>
-
+      <!-- Step 1: Claude prompt helper -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:6px;">① 複製以下提示詞，連同照片一起發給 Claude</div>
+        <div id="claudePromptBox" style="background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--text);line-height:1.7;font-family:monospace;white-space:pre-wrap;"></div>
+        <button class="btn btn-secondary btn-sm" style="margin-top:8px;" onclick="copyClaudePrompt()">📋 複製提示詞</button>
       </div>
+
+      <!-- Step 2: Paste JSON -->
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:6px;">② 將 Claude 回覆的 JSON 貼在此處</div>
+        <textarea id="jsonPasteArea"
+          style="width:100%;height:120px;border:1.5px solid var(--border);border-radius:8px;padding:10px;font-size:13px;font-family:monospace;outline:none;resize:vertical;"
+          placeholder='貼上 JSON，例如：{"items":["國文","英語"],"grades":[{"seat":1,"name":"王小明","scores":[85,92]},...]}'
+          onfocus="this.style.borderColor='var(--accent)'"
+          onblur="this.style.borderColor='var(--border)'"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="parseAndPreviewJSON()">🔍 解析預覽</button>
+          <button class="btn btn-secondary btn-sm" onclick="document.getElementById('jsonPasteArea').value=''">清除</button>
+        </div>
+      </div>
+
+      <!-- Preview before import -->
+      <div id="jsonPreviewArea" style="display:none;margin-top:14px;">
+        <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:6px;">預覽（可修改後匯入）</div>
+        <div id="jsonPreviewHeader" style="display:flex;gap:4px;padding:7px 10px;background:var(--accent);border-radius:8px 8px 0 0;color:white;font-size:12px;font-weight:700;"></div>
+        <div id="jsonPreviewList" style="border:1px solid var(--border);border-top:none;border-radius:0 0 8px 8px;max-height:340px;overflow-y:auto;"></div>
+        <div style="margin-top:10px;font-size:12px;color:var(--text3);" id="jsonNewItemsNotice"></div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="confirmJSONImport()">✅ 確認匯入</button>
+          <button class="btn btn-secondary btn-sm" onclick="cancelJSONImport()">取消</button>
+        </div>
+      </div>
+
+      <div id="photoStatus" style="margin-top:8px;font-size:13px;color:var(--text2);min-height:18px;"></div>
     </div>
 
 
@@ -890,7 +882,7 @@ function switchTab(name) {
   event.currentTarget.classList.add('active');
   if (name === 'stats') renderStats();
   if (name === 'export') renderExportList();
-  if (name === 'grade') { renderGradeClassSelector(); renderGradeItemSelector(); renderGradeTable(); renderColumnMapping(); }
+  if (name === 'grade') { renderGradeClassSelector(); renderGradeItemSelector(); renderGradeTable(); renderClaudePrompt(); }
 }
 
 // ===============================
@@ -1110,6 +1102,7 @@ function selectGradeClass(idx) {
   renderGradeClassSelector();
   renderGradeItemSelector();
   renderGradeTable();
+  renderClaudePrompt();
 }
 
 function renderGradeItemSelector() {
@@ -1748,311 +1741,156 @@ function showToast(msg, type='info') {
 
 
 
+
+
 // ===============================
-//  PHOTO OCR — Multi-subject table
+//  PHOTO IMPORT via Claude JSON paste
 // ===============================
-let photoBase64 = '';
-let photoMime   = 'image/jpeg';
-let pendingPhotoResults = []; // [{seat, scores:{itemName:value}}]
-let columnSlots = [];          // [{item: itemName|'ignore'|'name'}]
+let pendingJSONData = null; // {items:[], grades:[{seat,name,scores:[]}]}
 
-// ── Column mapping UI ──────────────────────────────────────────────────────
-function renderColumnMapping() {
-  const area = document.getElementById('columnMappingArea');
-  if (!area) return;
-  const items = state.classes[state.gradeClass].items;
-  if (items.length === 0) {
-    area.innerHTML = '<div class="text-muted" style="font-size:13px;">請先在「班級設定」新增成績項目，再回來設定欄位。</div>';
-    return;
-  }
-  if (columnSlots.length === 0) {
-    // Auto-init: 座號 + 姓名 + one slot per item
-    columnSlots = [{item:'__seat__'}, {item:'__name__'}, ...items.map(i => ({item:i}))];
-  }
-  const opts = ['__seat__','__name__','__ignore__',...items].map(i => {
-    const label = i==='__seat__'?'座號':i==='__name__'?'姓名':i==='__ignore__'?'（略過）':i;
-    return `<option value="${i}">${label}</option>`;
-  }).join('');
+function renderClaudePrompt() {
+  const box = document.getElementById('claudePromptBox');
+  if (!box) return;
+  const cls = state.classes[state.gradeClass];
+  const students = getStudents(state.gradeClass);
+  const maxSeat = Math.max(...students.map(s => s.seat));
+  box.textContent =
+`請辨識這張成績表格圖片，輸出以下 JSON 格式（只輸出 JSON，不要其他文字）：
 
-  area.innerHTML = `
-    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;">
-      ${columnSlots.map((slot,idx) => `
-        <div style="display:flex;flex-direction:column;gap:4px;align-items:center;">
-          <div style="font-size:11px;color:var(--text3);">第${idx+1}欄</div>
-          <select onchange="columnSlots[${idx}].item=this.value"
-            style="border:1.5px solid var(--border);border-radius:6px;padding:5px 6px;font-size:13px;background:white;font-weight:600;color:var(--accent);">
-            ${opts.replace(`value="${slot.item}"`,`value="${slot.item}" selected`)}
-          </select>
-          <button onclick="removeColumnSlot(${idx})"
-            style="background:none;border:none;color:var(--red);font-size:13px;cursor:pointer;">✕</button>
-        </div>
-      `).join('')}
-    </div>
-    <div style="margin-top:6px;font-size:12px;color:var(--text3);">欄位順序對應成績單由左至右的欄位。</div>
-  `;
+{"items":["欄位1","欄位2",...],"grades":[{"seat":座號,"name":"姓名","scores":[分數1,分數2,...]},...]}
+
+注意：
+- 座號為 1 到 ${maxSeat} 的整數
+- 分數為 0 到 100 的整數，看不清楚請填 null
+- items 為成績欄位名稱（例如「國文」「英語」「數學」）
+- 依照表格實際欄位填寫，不要假設`;
 }
 
-function addColumnSlot() {
-  const items = state.classes[state.gradeClass].items;
-  const usedItems = columnSlots.map(s=>s.item);
-  const unused = items.find(i => !usedItems.includes(i)) || '__ignore__';
-  columnSlots.push({item: unused});
-  renderColumnMapping();
+function copyClaudePrompt() {
+  const box = document.getElementById('claudePromptBox');
+  if (!box) return;
+  navigator.clipboard.writeText(box.textContent)
+    .then(() => showToast('已複製提示詞', 'success'))
+    .catch(() => {
+      // Fallback for older Safari
+      const ta = document.createElement('textarea');
+      ta.value = box.textContent;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+      showToast('已複製提示詞', 'success');
+    });
 }
 
-function removeColumnSlot(idx) {
-  columnSlots.splice(idx, 1);
-  renderColumnMapping();
-}
+function parseAndPreviewJSON() {
+  const raw = document.getElementById('jsonPasteArea').value.trim();
+  if (!raw) { showToast('請先貼上 JSON', 'error'); return; }
 
-// Re-render when grade panel becomes active
-const _origSelectGradeClass = selectGradeClass;
-function selectGradeClass(idx) {
-  _origSelectGradeClass(idx);
-  columnSlots = [];
-  renderColumnMapping();
-}
-
-// ── Photo handling ──────────────────────────────────────────────────────────
-function handlePhotoSelected(input) {
-  const file = input.files[0];
-  if (!file) return;
-  photoMime = file.type || 'image/jpeg';
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const dataUrl = e.target.result;
-    photoBase64 = dataUrl.split(',')[1];
-    document.getElementById('photoPreview').src = dataUrl;
-    document.getElementById('photoPreviewArea').style.display = 'block';
-    document.getElementById('photoRecognizeBtn').style.display = 'block';
-    document.getElementById('photoResultArea').style.display   = 'none';
-    document.getElementById('photoStatus').textContent = '已選取，點擊「開始辨識」';
-    pendingPhotoResults = [];
-  };
-  reader.readAsDataURL(file);
-}
-
-function clearPhotoPreview() {
-  photoBase64 = '';
-  pendingPhotoResults = [];
-  const ids = ['photoPreviewArea','photoRecognizeBtn','photoResultArea'];
-  ids.forEach(id => { const el=document.getElementById(id); if(el) el.style.display='none'; });
-  const st = document.getElementById('photoStatus');
-  if (st) st.textContent = '';
-  const pi = document.getElementById('photoInput');
-  if (pi) pi.value = '';
-}
-
-// ── OCR using Tesseract via CDN with canvas preprocessing ──────────────────
-async function startOCR() {
-  if (!photoBase64) { showToast('請先選取照片','error'); return; }
-
-  const btn = document.getElementById('recognizeBtn');
-  const setStatus = t => { const el=document.getElementById('photoStatus'); if(el) el.textContent=t; };
-  btn.disabled = true;
-  btn.textContent = '⏳ 辨識中…';
+  const setStatus = t => { document.getElementById('photoStatus').textContent = t; };
 
   try {
-    const students = getStudents(state.gradeClass);
-    const maxSeat  = Math.max(...students.map(s=>s.seat));
+    // Extract JSON from text (in case Claude added surrounding text)
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('找不到有效的 JSON 格式');
+    const data = JSON.parse(match[0]);
+    if (!data.items || !Array.isArray(data.items)) throw new Error('缺少 items 欄位');
+    if (!data.grades || !Array.isArray(data.grades)) throw new Error('缺少 grades 欄位');
 
-    // Preprocess image
-    setStatus('處理圖片中…');
-    const canvas = await preprocessPhoto('data:'+photoMime+';base64,'+photoBase64);
-
-    // Load Tesseract dynamically (avoids Safari crash on initial load)
-    setStatus('載入辨識引擎…（首次需 10~30 秒）');
-    if (!window.Tesseract) {
-      await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js');
-    }
-
-    setStatus('辨識中…');
-    const result = await Tesseract.recognize(canvas, 'chi_tra+eng', {
-      logger: m => {
-        if (m.status==='recognizing text')
-          setStatus('辨識中 '+Math.round((m.progress||0)*100)+'%…');
-      }
-    });
-
-    const rawText = result.data.text;
-    console.log('OCR raw:', rawText);
-
-    // Parse table rows
-    const parsed = parseTableOCR(rawText, maxSeat, students);
-
-    if (parsed.length === 0) {
-      setStatus('⚠️ 未辨識到資料，請確認照片清晰度與欄位設定');
-      return;
-    }
-
-    pendingPhotoResults = parsed;
-    renderPhotoResults();
-    document.getElementById('photoResultArea').style.display = 'block';
-    setStatus(`辨識完成，共 ${parsed.length} 筆，請確認後匯入`);
+    pendingJSONData = data;
+    renderJSONPreview();
+    document.getElementById('jsonPreviewArea').style.display = 'block';
+    setStatus(`解析成功：${data.grades.length} 位學生，${data.items.length} 個項目`);
 
   } catch(e) {
-    console.error(e);
-    setStatus('❌ 辨識失敗：'+(e.message||e));
-    showToast('辨識失敗','error');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '🔍 重新辨識';
+    setStatus('❌ 解析失敗：' + e.message);
+    showToast('JSON 格式錯誤', 'error');
   }
 }
 
-function loadScript(src) {
-  return new Promise((res,rej) => {
-    const s = document.createElement('script');
-    s.src = src; s.onload = res; s.onerror = rej;
-    document.head.appendChild(s);
-  });
-}
-
-function preprocessPhoto(dataUrl) {
-  return new Promise((res,rej) => {
-    const img = new Image();
-    img.onload = () => {
-      const SCALE = Math.min(3, 2400/Math.max(img.naturalWidth,img.naturalHeight));
-      const c = document.createElement('canvas');
-      c.width  = img.naturalWidth  * SCALE;
-      c.height = img.naturalHeight * SCALE;
-      const ctx = c.getContext('2d');
-      ctx.drawImage(img, 0, 0, c.width, c.height);
-      // Grayscale + contrast boost
-      const d = ctx.getImageData(0,0,c.width,c.height);
-      for (let i=0; i<d.data.length; i+=4) {
-        const lum = 0.299*d.data[i]+0.587*d.data[i+1]+0.114*d.data[i+2];
-        const v = lum<128 ? Math.max(0,lum-30) : Math.min(255,lum+30);
-        d.data[i]=d.data[i+1]=d.data[i+2]=v;
-      }
-      ctx.putImageData(d,0,0);
-      res(c);
-    };
-    img.onerror = rej;
-    img.src = dataUrl;
-  });
-}
-
-// ── Table OCR parser ────────────────────────────────────────────────────────
-// columnSlots tells us which column index maps to which item
-// Returns [{seat, scores:{itemName:score}, name}]
-function parseTableOCR(text, maxSeat, students) {
-  const results = [];
-  const seen = new Set();
-
-  // Determine which column indices are scores vs seat vs name
-  const seatCol   = columnSlots.findIndex(s=>s.item==='__seat__');
-  const nameCol   = columnSlots.findIndex(s=>s.item==='__name__');
-  const scoreCols = columnSlots.map((s,i)=>({idx:i, item:s.item}))
-                               .filter(s=>s.item!=='__seat__'&&s.item!=='__name__'&&s.item!=='__ignore__');
-
-  const lines = text.split('\n').map(l=>l.trim()).filter(Boolean);
-
-  for (const line of lines) {
-    // Tokenize: split on spaces and common separators, keep numbers and Chinese chars
-    const tokens = line.split(/[\s\t|｜]+/).filter(Boolean);
-    if (tokens.length < 2) continue;
-
-    // Try to find seat number
-    let seat = NaN;
-    // First numeric token that's a valid seat
-    for (let i=0; i<Math.min(tokens.length, seatCol>=0?seatCol+2:3); i++) {
-      const n = parseInt(tokens[i]);
-      if (!isNaN(n) && n>=1 && n<=maxSeat) { seat=n; break; }
-    }
-    if (isNaN(seat)) continue;
-    if (seen.has(seat)) continue;
-
-    // Collect score tokens: skip the seat (and name col if present)
-    const skipCols = new Set([seatCol>=0?seatCol:0]);
-    if (nameCol>=0) skipCols.add(nameCol);
-
-    const scoreTokens = tokens.filter((_,i) => !skipCols.has(i))
-                               .map(t=>t.replace(/[oO]/g,'0')); // OCR: O→0
-
-    const scores = {};
-    scoreCols.forEach((col,scoreIdx) => {
-      const tok = scoreTokens[scoreIdx];
-      if (!tok) return;
-      // Parse: handle xx=score, ignore non-numeric
-      const n = parseFloat(tok.replace(/[^0-9.]/g,''));
-      if (!isNaN(n) && n>=0 && n<=100) scores[col.item] = Math.round(n);
-    });
-
-    if (Object.keys(scores).length > 0) {
-      const studentName = students.find(s=>s.seat===seat)?.name || '';
-      seen.add(seat);
-      results.push({seat, name:studentName, scores});
-    }
-  }
-
-  results.sort((a,b)=>a.seat-b.seat);
-  return results;
-}
-
-// ── Result rendering ─────────────────────────────────────────────────────────
-function renderPhotoResults() {
-  const header = document.getElementById('photoResultHeader');
-  const list   = document.getElementById('photoResultList');
-  if (!header||!list) return;
-
-  const scoreItems = columnSlots.filter(s=>s.item!=='__seat__'&&s.item!=='__name__'&&s.item!=='__ignore__')
-                                 .map(s=>s.item);
-
-  // Header row
-  header.innerHTML = `
-    <span style="min-width:52px;">座號</span>
-    <span style="min-width:80px;">姓名</span>
-    ${scoreItems.map(item=>`<span style="flex:1;text-align:center;">${item}</span>`).join('')}
-    <span style="width:28px;"></span>
-  `;
-
-  if (pendingPhotoResults.length===0) {
-    list.innerHTML='<div class="text-muted" style="padding:8px;">無辨識結果</div>';
-    return;
-  }
-
-  list.innerHTML = pendingPhotoResults.map((row,ri)=>`
-    <div style="display:flex;align-items:center;gap:6px;padding:5px 6px;background:${ri%2?'white':'var(--surface2)'};border-radius:6px;">
-      <span style="min-width:52px;font-weight:700;color:var(--accent);">${row.seat}號</span>
-      <span style="min-width:80px;font-size:12px;color:var(--text2);">${row.name||'-'}</span>
-      ${scoreItems.map((item,si)=>`
-        <input type="number" min="0" max="100"
-          value="${row.scores[item]!==undefined?row.scores[item]:''}"
-          placeholder="—"
-          style="flex:1;min-width:52px;border:1.5px solid var(--border);border-radius:6px;padding:4px 6px;font-size:14px;font-weight:700;text-align:center;outline:none;"
-          oninput="pendingPhotoResults[${ri}].scores['${item}']=this.value===''?undefined:parseInt(this.value)"
-          onfocus="this.style.borderColor='var(--accent)'"
-          onblur="this.style.borderColor='var(--border)'">
-      `).join('')}
-      <button onclick="removePendingRow(${ri})"
-        style="width:28px;background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;flex-shrink:0;">✕</button>
-    </div>
-  `).join('');
-}
-
-function removePendingRow(idx) {
-  pendingPhotoResults.splice(idx,1);
-  renderPhotoResults();
-}
-
-// ── Import ────────────────────────────────────────────────────────────────────
-function confirmPhotoImport() {
-  if (pendingPhotoResults.length===0) { showToast('沒有資料可匯入','error'); return; }
+function renderJSONPreview() {
+  if (!pendingJSONData) return;
+  const {items, grades} = pendingJSONData;
   const cls = state.classes[state.gradeClass];
+  const students = getStudents(state.gradeClass);
 
-  let totalCount = 0;
-  pendingPhotoResults.forEach(row => {
-    Object.entries(row.scores).forEach(([item, score]) => {
-      if (!cls.items.includes(item)) return;  // item not in this class
-      if (score===undefined||score===''||isNaN(score)) return;
-      getGrades(state.gradeClass, item)[row.seat] = score;
-      totalCount++;
-      // Update cell if currently viewing this item
-      if (state.gradeItem===item) {
-        const cell = document.getElementById('grade-cell-'+row.seat);
+  // Header
+  const header = document.getElementById('jsonPreviewHeader');
+  header.innerHTML =
+    `<span style="min-width:52px;">座號</span>` +
+    `<span style="min-width:72px;">姓名</span>` +
+    items.map(item => {
+      const isNew = !cls.items.includes(item);
+      return `<span style="flex:1;text-align:center;">${item}${isNew ? ' <span style="font-size:10px;background:rgba(255,255,255,0.3);padding:1px 4px;border-radius:4px;">新</span>' : ''}</span>`;
+    }).join('') +
+    `<span style="width:28px;"></span>`;
+
+  // New items notice
+  const newItems = items.filter(item => !cls.items.includes(item));
+  const notice = document.getElementById('jsonNewItemsNotice');
+  if (newItems.length > 0) {
+    notice.innerHTML = `⚠️ 以下為新項目，匯入時將自動建立：<strong>${newItems.join('、')}</strong>`;
+  } else {
+    notice.textContent = '';
+  }
+
+  // Rows
+  const list = document.getElementById('jsonPreviewList');
+  grades.sort((a,b) => a.seat - b.seat);
+  list.innerHTML = grades.map((row, ri) => {
+    const studentName = row.name || students.find(s => s.seat === row.seat)?.name || '';
+    return `
+      <div style="display:flex;align-items:center;gap:4px;padding:5px 8px;background:${ri%2?'white':'var(--surface2)'};">
+        <span style="min-width:52px;font-weight:700;color:var(--accent);">${row.seat}號</span>
+        <span style="min-width:72px;font-size:12px;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${studentName||'-'}</span>
+        ${items.map((item, si) => {
+          const val = row.scores && row.scores[si] != null ? row.scores[si] : '';
+          return `<input type="number" min="0" max="100" value="${val}" placeholder="—"
+            style="flex:1;min-width:48px;border:1.5px solid var(--border);border-radius:6px;padding:4px 4px;font-size:14px;font-weight:700;text-align:center;outline:none;"
+            oninput="if(!pendingJSONData.grades[${ri}].scores)pendingJSONData.grades[${ri}].scores=[];pendingJSONData.grades[${ri}].scores[${si}]=this.value===''?null:parseInt(this.value)"
+            onfocus="this.style.borderColor='var(--accent)'"
+            onblur="this.style.borderColor='var(--border)'">`;
+        }).join('')}
+        <button onclick="removeJSONRow(${ri})"
+          style="width:28px;background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;flex-shrink:0;">✕</button>
+      </div>`;
+  }).join('');
+}
+
+function removeJSONRow(idx) {
+  pendingJSONData.grades.splice(idx, 1);
+  renderJSONPreview();
+}
+
+function confirmJSONImport() {
+  if (!pendingJSONData) { showToast('沒有資料可匯入', 'error'); return; }
+  const {items, grades} = pendingJSONData;
+  const cls = state.classes[state.gradeClass];
+  const students = getStudents(state.gradeClass);
+  const maxSeat = Math.max(...students.map(s => s.seat));
+
+  // Auto-create new items
+  items.forEach(item => {
+    if (!cls.items.includes(item)) {
+      cls.items.push(item);
+    }
+  });
+
+  let totalFilled = 0;
+  grades.forEach(row => {
+    if (!row.seat || row.seat < 1 || row.seat > maxSeat) return;
+    items.forEach((item, si) => {
+      const score = row.scores && row.scores[si];
+      if (score === null || score === undefined || score === '') return;
+      const v = parseInt(score);
+      if (isNaN(v) || v < 0 || v > 100) return;
+      getGrades(state.gradeClass, item)[row.seat] = v;
+      totalFilled++;
+      // Live update cell if viewing this item
+      if (state.gradeItem === item) {
+        const cell = document.getElementById('grade-cell-' + row.seat);
         if (cell) {
-          cell.value = score;
+          cell.value = v;
           cell.classList.add('has-grade');
           cell.classList.remove('voice-filled');
           void cell.offsetWidth;
@@ -2063,20 +1901,24 @@ function confirmPhotoImport() {
   });
 
   saveState();
-  clearPhotoPreview();
-  document.getElementById('photoInput').value='';
-  document.getElementById('photoResultArea').style.display='none';
-  showToast(`✅ 已匯入 ${pendingPhotoResults.length} 位學生，共 ${totalCount} 筆成績`,'success');
-  pendingPhotoResults=[];
-  // Refresh grade table
+  pendingJSONData = null;
+  document.getElementById('jsonPasteArea').value = '';
+  document.getElementById('jsonPreviewArea').style.display = 'none';
+  document.getElementById('photoStatus').textContent = '';
+
+  // Refresh UI
+  renderGradeItemSelector();
+  renderStatsItemSelector();
+  renderClassConfig();
   renderGradeTable();
+
+  showToast(`✅ 已匯入 ${grades.length} 位學生，共 ${totalFilled} 筆成績`, 'success');
 }
 
-function cancelPhotoImport() {
-  pendingPhotoResults=[];
-  document.getElementById('photoResultArea').style.display='none';
-  const st=document.getElementById('photoStatus');
-  if(st) st.textContent='已取消';
+function cancelJSONImport() {
+  pendingJSONData = null;
+  document.getElementById('jsonPreviewArea').style.display = 'none';
+  document.getElementById('photoStatus').textContent = '已取消';
 }
 
 </script>
