@@ -1433,7 +1433,7 @@ function parseAndFillGrades(text) {
   // ── Pattern 1: "[第][座號][號] [成績][分]"
   const CN_CHARS = '[零一二三四五六七八九十百○]';
   const pat1 = new RegExp(
-    `(?:第\\s*)?([0-9]{1,2}|${CN_CHARS}{1,3})\\s*[號号]\\s*([0-9]{1,3}|${CN_CHARS}{1,4})\\s*(分)?`,
+    `(?<![0-9])(?:第\\s*)?([0-9]{1,2}|${CN_CHARS}{1,3})\\s*[號号]\\s*(100|[1-9][0-9]|[0-9]|${CN_CHARS}{1,4})(?![0-9])\\s*(分)?`,
     'g'
   );
   let m;
@@ -1444,11 +1444,12 @@ function parseAndFillGrades(text) {
     const seat = /^[0-9]+$/.test(seatRaw) ? parseInt(seatRaw) : parseCN(seatRaw);
     let score = /^[0-9]+$/.test(scoreRaw) ? parseFloat(scoreRaw) : parseCN(scoreRaw);
     score = interpretScore(scoreRaw, hasFen, score);
-    if (!isNaN(seat) && !isNaN(score) && seat >= 1 && seat <= maxSeat && score >= 0 && score <= 100) {
+    if (!isNaN(seat) && !isNaN(score) && seat >= 1 && seat <= maxSeat && score >= 0) {
+      const finalScore = score > 100 ? 100 : score;  // 加分題超過100截為100
       if (!seenSeats.has(seat)) {
         seenSeats.add(seat);
-        grades[seat] = score;
-        filled.push({seat, score});
+        grades[seat] = finalScore;
+        filled.push({seat, score: finalScore});
       }
     }
   }
