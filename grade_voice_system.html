@@ -559,10 +559,10 @@
 </div>
 
 <div class="tab-bar" id="mainTabBar">
-  <button class="tab-btn active" onclick="switchTab('settings')">⚙️ 班級設定</button>
-  <button class="tab-btn" onclick="switchTab('grade')">✏️ 成績登記</button>
-  <button class="tab-btn" onclick="switchTab('stats')">📊 統計分析</button>
-  <button class="tab-btn" onclick="switchTab('export')">📤 匯出</button>
+  <button class="tab-btn active" onclick="switchTab('settings',this)">⚙️ 班級設定</button>
+  <button class="tab-btn" onclick="switchTab('grade',this)">✏️ 成績登記</button>
+  <button class="tab-btn" onclick="switchTab('stats',this)">📊 統計分析</button>
+  <button class="tab-btn" onclick="switchTab('export',this)">📤 匯出</button>
 </div>
 
 <div class="main">
@@ -874,11 +874,11 @@ window.addEventListener('DOMContentLoaded', () => {
 // ===============================
 //  TAB SWITCHING
 // ===============================
-function switchTab(name) {
+function switchTab(name, el) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
-  event.currentTarget.classList.add('active');
+  if (el) el.classList.add('active');
   if (name === 'stats') renderStats();
   if (name === 'export') renderExportList();
   if (name === 'grade') { renderGradeClassSelector(); renderGradeItemSelector(); renderGradeTable(); renderClaudePrompt(); }
