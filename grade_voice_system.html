@@ -1343,9 +1343,10 @@ function parseCN(s) {
 }
 
 // Single CN digit after 號 = Safari dropped the repeat syllable: 八→88, 七→77, 九→99
-function interpretScore(rawStr, parsed) {
+function interpretScore(rawStr, hasFen, parsed) {
   if (/^[一二三四五六七八九]$/.test(rawStr.trim()) && !isNaN(parsed) && parsed >= 1 && parsed <= 9) {
-    return parsed * 10 + parsed; // 八→88, 七→77, 九→99
+    if (hasFen) return parsed;      // 明確說「N分」→ 個位數
+    return parsed * 10 + parsed;    // 八→88, 七→77, 九→99
   }
   return parsed;
 }
@@ -1379,17 +1380,17 @@ function parseAndFillGrades(text) {
   // ── Pattern 1: "[第][座號][號] [成績][分]"
   const CN_CHARS = '[零一二三四五六七八九十百○]';
   const pat1 = new RegExp(
-    `(?:第\\s*)?([0-9]{1,2}|${CN_CHARS}{1,3})\\s*[號号]\\s*([0-9]{1,3}|${CN_CHARS}{1,4})\\s*分?`,
+    `(?:第\\s*)?([0-9]{1,2}|${CN_CHARS}{1,3})\\s*[號号]\\s*([0-9]{1,3}|${CN_CHARS}{1,4})\\s*(分)?`,
     'g'
   );
   let m;
   while ((m = pat1.exec(text)) !== null) {
     const seatRaw = m[1];
     const scoreRaw = m[2].trim();
+    const hasFen = !!m[3];             // 有「分」字 → 個位數
     const seat = /^[0-9]+$/.test(seatRaw) ? parseInt(seatRaw) : parseCN(seatRaw);
     let score = /^[0-9]+$/.test(scoreRaw) ? parseFloat(scoreRaw) : parseCN(scoreRaw);
-    // Upgrade single-char CN score (八→80)
-    score = interpretScore(scoreRaw, score);
+    score = interpretScore(scoreRaw, hasFen, score);
     if (!isNaN(seat) && !isNaN(score) && seat >= 1 && seat <= maxSeat && score >= 0 && score <= 100) {
       if (!seenSeats.has(seat)) {
         seenSeats.add(seat);
