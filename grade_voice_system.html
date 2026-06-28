@@ -612,6 +612,22 @@
         <div id="listPreview" style="margin-top:10px;font-size:13px;color:var(--text2);"></div>
       </div>
     </div>
+
+    <div class="card">
+      <div class="card-title">🔑 Claude API 設定（照片辨識用）</div>
+      <div class="notice">
+        API Key 僅儲存於本裝置，不會上傳。取得方式：<a href="https://console.anthropic.com/account/keys" target="_blank" style="color:var(--accent);">console.anthropic.com</a>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <input type="password" id="apiKeyInput" placeholder="sk-ant-..." 
+          style="flex:1;min-width:200px;border:1.5px solid var(--border);border-radius:8px;padding:9px 12px;font-size:14px;outline:none;font-family:monospace;"
+          oninput="document.getElementById('apiKeyInput').style.borderColor='var(--border)'"
+          onfocus="this.style.borderColor='var(--accent)'">
+        <button class="btn btn-primary btn-sm" onclick="saveApiKey()">儲存</button>
+        <button class="btn btn-secondary btn-sm" onclick="clearApiKey()">清除</button>
+      </div>
+      <div id="apiKeyStatus" style="margin-top:8px;font-size:13px;"></div>
+    </div>
   </div>
 
   <!-- ==================== GRADE PANEL ==================== -->
@@ -640,6 +656,52 @@
       <div class="transcript-box" id="transcriptBox">語音辨識結果將顯示於此…</div>
 
       <div style="margin-top:10px;" id="recentFilledArea"></div>
+    </div>
+
+
+    <!-- Photo OCR Section -->
+    <div class="card">
+      <div class="card-title">📷 照片辨識匯入</div>
+      <div class="notice" id="photoNotice">
+        <strong>使用說明：</strong>拍下學生手寫成績單，AI 自動辨識座號與分數並填入表格。<br>
+        格式不限，散亂手寫也可辨識。
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <!-- Camera / file input -->
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <label style="display:inline-flex;align-items:center;gap:6px;padding:10px 18px;background:var(--accent);color:white;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">
+            📷 拍照 / 選圖
+            <input type="file" accept="image/*" capture="environment" id="photoInput" style="display:none;" onchange="handlePhotoSelected(this)">
+          </label>
+          <button class="btn btn-secondary btn-sm" onclick="document.getElementById('photoInput').value='';clearPhotoPreview()">清除</button>
+        </div>
+
+        <!-- Preview -->
+        <div id="photoPreviewArea" style="display:none;">
+          <img id="photoPreview" style="max-width:100%;max-height:240px;border-radius:8px;border:2px solid var(--border);object-fit:contain;" alt="預覽">
+        </div>
+
+        <!-- Recognize button -->
+        <div id="photoRecognizeBtn" style="display:none;">
+          <button class="btn btn-green" onclick="recognizePhoto()" id="recognizeBtn">
+            🔍 開始辨識
+          </button>
+        </div>
+
+        <!-- Result preview before confirm -->
+        <div id="photoResultArea" style="display:none;">
+          <div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:8px;">辨識結果（可編輯後確認匯入）</div>
+          <div id="photoResultList" style="display:flex;flex-direction:column;gap:6px;max-height:280px;overflow-y:auto;"></div>
+          <div style="display:flex;gap:8px;margin-top:12px;">
+            <button class="btn btn-primary" onclick="confirmPhotoImport()">✅ 確認匯入</button>
+            <button class="btn btn-secondary btn-sm" onclick="cancelPhotoImport()">取消</button>
+          </div>
+        </div>
+
+        <!-- Status -->
+        <div id="photoStatus" style="font-size:13px;color:var(--text2);min-height:18px;"></div>
+      </div>
     </div>
 
     <!-- Grade Table -->
@@ -809,6 +871,7 @@ window.addEventListener('DOMContentLoaded', () => {
   renderStatsClassSelector();
   renderExportList();
   checkSpeechSupport();
+  updateApiKeyStatus();
   // Show restore notice if data was found
   const saved = localStorage.getItem(STORAGE_KEY);
   if (saved) {
@@ -1683,6 +1746,244 @@ function showToast(msg, type='info') {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => { el.classList.remove('show'); }, 2800);
 }
+
+// ===============================
+//  API KEY MANAGEMENT
+// ===============================
+const API_KEY_STORAGE = 'grade_ocr_api_key';
+
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key.startsWith('sk-ant-')) {
+    showToast('API Key 格式不正確，應以 sk-ant- 開頭', 'error');
+    return;
+  }
+  localStorage.setItem(API_KEY_STORAGE, key);
+  document.getElementById('apiKeyInput').value = '';
+  updateApiKeyStatus();
+  showToast('API Key 已儲存', 'success');
+}
+
+function clearApiKey() {
+  if (!confirm('確定清除已儲存的 API Key？')) return;
+  localStorage.removeItem(API_KEY_STORAGE);
+  updateApiKeyStatus();
+  showToast('已清除', 'info');
+}
+
+function getApiKey() {
+  return localStorage.getItem(API_KEY_STORAGE) || '';
+}
+
+function updateApiKeyStatus() {
+  const el = document.getElementById('apiKeyStatus');
+  if (!el) return;
+  const key = getApiKey();
+  if (key) {
+    el.innerHTML = `<span style="color:var(--green);font-weight:600;">✓ 已設定 API Key（${key.slice(0,12)}…）</span>`;
+  } else {
+    el.innerHTML = `<span style="color:var(--text3);">尚未設定 API Key，照片辨識功能無法使用。</span>`;
+  }
+}
+
+// ===============================
+//  PHOTO OCR
+// ===============================
+let photoBase64 = '';
+let photoMime = '';
+let pendingPhotoResults = []; // [{seat, score}]
+
+function handlePhotoSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+  photoMime = file.type || 'image/jpeg';
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    photoBase64 = dataUrl.split(',')[1]; // strip data:...;base64,
+
+    // Show preview
+    document.getElementById('photoPreview').src = dataUrl;
+    document.getElementById('photoPreviewArea').style.display = 'block';
+    document.getElementById('photoRecognizeBtn').style.display = 'block';
+    document.getElementById('photoResultArea').style.display = 'none';
+    document.getElementById('photoStatus').textContent = '已選取圖片，點擊「開始辨識」';
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearPhotoPreview() {
+  photoBase64 = '';
+  photoMime = '';
+  pendingPhotoResults = [];
+  document.getElementById('photoPreviewArea').style.display = 'none';
+  document.getElementById('photoRecognizeBtn').style.display = 'none';
+  document.getElementById('photoResultArea').style.display = 'none';
+  document.getElementById('photoStatus').textContent = '';
+}
+
+async function recognizePhoto() {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    showToast('請先在「班級設定」中設定 Claude API Key', 'error');
+    return;
+  }
+  if (!photoBase64) {
+    showToast('請先選取照片', 'error');
+    return;
+  }
+  if (!state.gradeItem) {
+    showToast('請先選擇成績項目', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('recognizeBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ 辨識中…';
+  document.getElementById('photoStatus').textContent = '正在呼叫 Claude AI 辨識，請稍候…';
+
+  const students = getStudents(state.gradeClass);
+  const maxSeat = Math.max(...students.map(s => s.seat));
+
+  const prompt = `這是一張學生手寫的成績單照片。請辨識圖中所有「座號」和「分數」的對應關係。
+
+注意事項：
+- 座號是 1 到 ${maxSeat} 的整數
+- 分數是 0 到 100 的整數
+- 字跡可能潦草、順序散亂，請盡力辨識
+- 只輸出 JSON，格式如下，不要有其他文字：
+
+{"grades":[{"seat":1,"score":85},{"seat":3,"score":92}]}
+
+如果某個座號的分數看不清楚，就不要包含在結果中。`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 1024,
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: { type: 'base64', media_type: photoMime, data: photoBase64 }
+            },
+            { type: 'text', text: prompt }
+          ]
+        }]
+      })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json();
+      throw new Error(err.error?.message || `HTTP ${resp.status}`);
+    }
+
+    const data = await resp.json();
+    const rawText = data.content?.[0]?.text || '';
+
+    // Extract JSON from response
+    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) throw new Error('AI 回應格式錯誤：' + rawText.slice(0, 80));
+
+    const parsed = JSON.parse(jsonMatch[0]);
+    const grades = parsed.grades || [];
+
+    if (grades.length === 0) {
+      document.getElementById('photoStatus').textContent = '⚠️ 未辨識到任何成績，請確認照片清晰度';
+      btn.disabled = false;
+      btn.textContent = '🔍 重新辨識';
+      return;
+    }
+
+    // Show editable result list
+    pendingPhotoResults = grades.filter(g =>
+      Number.isInteger(g.seat) && g.seat >= 1 && g.seat <= maxSeat &&
+      Number.isInteger(g.score) && g.score >= 0 && g.score <= 100
+    );
+    renderPhotoResults();
+    document.getElementById('photoResultArea').style.display = 'block';
+    document.getElementById('photoStatus').textContent = `共辨識 ${pendingPhotoResults.length} 筆，請確認後匯入`;
+
+  } catch (e) {
+    document.getElementById('photoStatus').innerHTML = `<span style="color:var(--red);">❌ 辨識失敗：${e.message}</span>`;
+    showToast('辨識失敗：' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔍 重新辨識';
+  }
+}
+
+function renderPhotoResults() {
+  const list = document.getElementById('photoResultList');
+  if (pendingPhotoResults.length === 0) {
+    list.innerHTML = '<div class="text-muted">無辨識結果</div>';
+    return;
+  }
+  // Sort by seat
+  pendingPhotoResults.sort((a, b) => a.seat - b.seat);
+  list.innerHTML = pendingPhotoResults.map((g, idx) => `
+    <div style="display:flex;align-items:center;gap:10px;padding:6px 10px;background:var(--surface2);border-radius:8px;border:1px solid var(--border);">
+      <span style="font-weight:700;color:var(--accent);min-width:48px;">${g.seat} 號</span>
+      <input type="number" min="0" max="100"
+        value="${g.score}"
+        style="width:72px;border:1.5px solid var(--border);border-radius:6px;padding:4px 8px;font-size:15px;font-weight:700;text-align:center;"
+        oninput="pendingPhotoResults[${idx}].score=parseInt(this.value)||0"
+        onfocus="this.style.borderColor='var(--accent)'"
+        onblur="this.style.borderColor='var(--border)'">
+      <span style="font-size:13px;color:var(--text2);">分</span>
+      <button onclick="removePhotoResult(${idx})" style="margin-left:auto;background:none;border:none;color:var(--red);font-size:16px;cursor:pointer;padding:0 4px;">✕</button>
+    </div>
+  `).join('');
+}
+
+function removePhotoResult(idx) {
+  pendingPhotoResults.splice(idx, 1);
+  renderPhotoResults();
+  document.getElementById('photoStatus').textContent = `共 ${pendingPhotoResults.length} 筆`;
+}
+
+function confirmPhotoImport() {
+  if (pendingPhotoResults.length === 0) { showToast('沒有可匯入的資料', 'error'); return; }
+  if (!state.gradeItem) { showToast('請先選擇成績項目', 'error'); return; }
+
+  const grades = getGrades(state.gradeClass, state.gradeItem);
+  let count = 0;
+  pendingPhotoResults.forEach(({seat, score}) => {
+    grades[seat] = score;
+    const cell = document.getElementById('grade-cell-' + seat);
+    if (cell) {
+      cell.value = score;
+      cell.classList.add('has-grade');
+      cell.classList.remove('voice-filled');
+      void cell.offsetWidth;
+      cell.classList.add('voice-filled');
+    }
+    count++;
+  });
+
+  saveState();
+  clearPhotoPreview();
+  document.getElementById('photoInput').value = '';
+  showToast(`✅ 已匯入 ${count} 筆成績`, 'success');
+  document.getElementById('photoStatus').textContent = '';
+}
+
+function cancelPhotoImport() {
+  pendingPhotoResults = [];
+  document.getElementById('photoResultArea').style.display = 'none';
+  document.getElementById('photoStatus').textContent = '已取消';
+}
+
 </script>
 </body>
 </html>
