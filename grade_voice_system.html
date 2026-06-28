@@ -745,8 +745,8 @@
     </div>
     <div class="card">
       <div class="card-title">📥 匯出全部班級</div>
-      <button class="btn btn-green" onclick="exportAll()">📥 下載全部班級成績 (ZIP)</button>
-      <span class="text-muted" style="margin-left:8px;font-size:12px;">各班一份 CSV</span>
+      <button class="btn btn-green" onclick="exportAll()">📥 下載全部班級成績</button>
+      <span class="text-muted" style="margin-left:8px;font-size:12px;">各班依序下載一份 CSV（共 0.8 秒間隔）</span>
     </div>
   </div>
 
@@ -1686,9 +1686,16 @@ function exportClass(classIdx, specificItem) {
 
   if (items.length === 0) { showToast('此班級尚未設定項目', 'error'); return; }
 
+  // Only export rows that have at least one score (skip empty seats)
+  const hasAnyScore = (s) => items.some(item => {
+    const g = getGrades(classIdx, item);
+    return g[s.seat] !== undefined && g[s.seat] !== '';
+  });
+  const activeStudents = students.filter(s => s.name || hasAnyScore(s));
+
   let csv = '\uFEFF'; // BOM for Excel
   csv += '座號,姓名,' + items.join(',') + '\n';
-  students.forEach(s => {
+  activeStudents.forEach(s => {
     const row = [s.seat, s.name];
     items.forEach(item => {
       const g = getGrades(classIdx, item);
@@ -1703,9 +1710,16 @@ function exportClass(classIdx, specificItem) {
 }
 
 function exportAll() {
-  state.classes.forEach((cls, i) => {
-    if (cls.items.length > 0) exportClass(i);
+  const toExport = state.classes.filter((cls, i) => cls.items.length > 0);
+  if (toExport.length === 0) { showToast('尚無可匯出的成績', 'error'); return; }
+  // Safari cannot handle simultaneous downloads — stagger with delay
+  toExport.forEach((cls, i) => {
+    const classIdx = state.classes.indexOf(cls);
+    setTimeout(() => {
+      exportClass(classIdx);
+    }, i * 800); // 0.8s between each download
   });
+  showToast(`將依序下載 ${toExport.length} 個班級的 CSV`, 'info');
 }
 
 function downloadText(text, filename, mime) {
