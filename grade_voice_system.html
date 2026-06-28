@@ -1209,21 +1209,25 @@ function initRecognition() {
 
   recognition.onresult = (event) => {
     clearTimeout(silenceTimer);
-    let finalText = '';
+
+    // Only process NEW final results (from resultIndex onward)
+    // This prevents Safari's re-transcription from overwriting already-filled grades
+    let newFinalText = '';
     let interimText = '';
     for (let i = event.resultIndex; i < event.results.length; i++) {
       const t = event.results[i][0].transcript;
-      if (event.results[i].isFinal) finalText += t;
+      if (event.results[i].isFinal) newFinalText += t;
       else interimText += t;
     }
 
-    const display = finalText || interimText;
+    // Display: show new final or interim
+    const display = newFinalText || interimText;
     const box = document.getElementById('transcriptBox');
     box.textContent = display;
     box.className = 'transcript-box' + (display ? ' has-content' : '');
 
-    if (finalText) {
-      parseAndFillGrades(finalText);
+    if (newFinalText) {
+      parseAndFillGrades(newFinalText);  // only parse the NEW segment
       // auto-restart after short pause
       silenceTimer = setTimeout(() => {
         if (isListening) {
