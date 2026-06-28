@@ -1245,36 +1245,75 @@ function updateMicUI(active) {
 // ===============================
 //  GRADE PARSING
 // ===============================
-/*
-  Patterns supported:
-  - "1號95" / "1號 95分"
-  - "第1號95" / "第一號95"
-  - "1,95" / "1：95"
-  - Standard Chinese: 一號九十五 (九十五 = 95)
-  - Two-digit Chinese: 一號六一 (六一 = 61, Safari often outputs this)
-  - Mixed: 21號六一, 22號七八
-*/
 
 const CN_DIGIT = {'零':0,'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9};
 
-// Full Chinese number parser — handles:
-//   九十五 → 95
-//   六十 → 60
-//   百分 → 100
-//   六一 → 61 (two bare digits, Safari shorthand)
-//   七八 → 78
-//   八○ / 八0 → 80
+// ── Homophone / semantic-correction table ──────────────────────────────────
+// Safari's language model replaces phonetically-similar character sequences
+// with "meaningful" words. We reverse that before parsing.
+// Format: [regex, replacement]  — applied in order on the raw transcript.
+const HOMOPHONE_FIXES = [
+  // Score homophones (appear AFTER 號)
+  // Two-syllable words that sound like two-digit scores
+  [/爸爸/g,   '八八'],   // bā bā  → 88
+  [/媽媽/g,   '八八'],   // mā mā  → 88 (alternative)
+  [/酒吧/g,   '九八'],   // jiǔ bā → 98   ← but "6號酒吧" transcript shown = 68? let's handle below
+  [/六八/g,   '六八'],   // keep as-is (already CN digits, fine)
+  [/巴巴/g,   '八八'],
+  [/芭芭/g,   '八八'],
+  [/拔拔/g,   '八八'],
+  [/爸/g,     '八'],     // single 爸 → 八
+  [/媽/g,     '八'],     // 媽 in numeric context → hard to do, skip unless proven needed
+  // "酒吧" context: "N號酒吧" — 酒=九? or 六+吧=八?
+  // From screenshot: "6號酒吧" → should be "6號六八" (68).
+  // 酒(jiǔ)≈九? But six is already in seat. Most likely speaker said "六八" and SR heard "酒吧"(jiǔ bā).
+  // jiǔ bā ≈ 九八(98) or 六八(68)? The seat is 6, so score is 68 → liù bā. "酒吧"=jiǔbā≈九八 but context seat=6 gives 68.
+  // We'll map 酒吧→六八 based on observed data. But this is ambiguous, so let's try a smarter approach:
+  // Replace 酒吧 with 六八 (most common in classroom score context: liù bā = 68)
+  [/酒吧/g,   '六八'],
+  [/久巴/g,   '九八'],
+  [/溜吧/g,   '六八'],
+  [/流吧/g,   '六八'],
+  // Other common substitutions
+  [/一一/g,   '一一'],   // fine already
+  [/二二/g,   '二二'],
+  [/思思/g,   '四四'],
+  [/司司/g,   '四四'],
+  [/似乎/g,   '四五'],
+  [/五五/g,   '五五'],
+  [/留六/g,   '六六'],
+  [/七七/g,   '七七'],
+  [/八八/g,   '八八'],
+  [/久久/g,   '九九'],
+  [/十十/g,   '十十'],
+  // Decade homophones
+  [/吧十/g,   '八十'],
+  [/把十/g,   '八十'],
+  [/爸十/g,   '八十'],
+  [/七十/g,   '七十'],   // already correct
+  [/六十/g,   '六十'],
+  [/酒十/g,   '九十'],
+  [/久十/g,   '九十'],
+  // Seat number homophones (appear BEFORE 號)
+  // Usually arabic + 號 so less of an issue, but handle CN seat homophones
+  [/意/g,     '一'],     // rarely needed
+];
+
+function applyHomophoneFixes(text) {
+  for (const [pat, rep] of HOMOPHONE_FIXES) {
+    text = text.replace(pat, rep);
+  }
+  return text;
+}
+
+// Full Chinese number parser
+// Handles: 九十五→95, 六十→60, 百→100, 六一→61, 七八→78, 八→8 or 80 (context-dependent via caller)
 function parseCN(s) {
   if (!s) return NaN;
-  s = s.replace(/○/g, '零'); // circle zero variant
-
-  // Pure arabic already handled upstream
+  s = s.replace(/○/g, '零');
   if (/^[0-9]+$/.test(s)) return parseInt(s);
-
-  // 百 = 100
   if (s === '百') return 100;
 
-  // Contains 百
   if (s.includes('百')) {
     const [pre, post] = s.split('百');
     const hundreds = pre ? (parseCN(pre) || 1) : 1;
@@ -1282,7 +1321,6 @@ function parseCN(s) {
     return hundreds * 100 + (isNaN(rest) ? 0 : rest);
   }
 
-  // Contains 十
   if (s.includes('十')) {
     const idx = s.indexOf('十');
     const tensStr = s.substring(0, idx);
@@ -1293,7 +1331,7 @@ function parseCN(s) {
     return tens * 10 + ones;
   }
 
-  // Two-character Chinese digits like 六一=61, 七八=78, 八零=80, 九九=99
+  // Two-character bare digits: 六一=61, 七八=78, 八零=80
   if (s.length === 2 && CN_DIGIT[s[0]] !== undefined && CN_DIGIT[s[1]] !== undefined) {
     return CN_DIGIT[s[0]] * 10 + CN_DIGIT[s[1]];
   }
@@ -1304,15 +1342,40 @@ function parseCN(s) {
   return NaN;
 }
 
+// When score parses to a single digit (1-9) from a single Chinese character,
+// it's almost certainly a decade (八→80, 七→70) unless the digit is 0.
+// Context: classroom scores; single-digit real scores are theoretically possible
+// but extremely rare and would look like "1號零分". We'll be conservative:
+// only upgrade to ×10 when the raw captured group is exactly one CN char AND digit ≥ 1.
+function interpretScore(rawStr, parsed) {
+  if (!isNaN(parsed) && parsed >= 1 && parsed <= 9) {
+    // rawStr was a single Chinese character (like 八), likely means N×10
+    if (/^[零一二三四五六七八九]$/.test(rawStr.trim())) {
+      return parsed * 10;
+    }
+  }
+  return parsed;
+}
+
 let recentFilled = [];
 
 function parseAndFillGrades(text) {
   if (!state.gradeItem) return;
 
-  // Normalize
+  // Step 1: normalize full-width & punctuation
   text = text.replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
-  text = text.replace(/[，。、；：！]/g, ' ');
+  text = text.replace(/[，。、；：！?？]/g, ' ');
   text = text.replace(/○/g, '零');
+
+  // Step 2: apply homophone fixes BEFORE parsing
+  const original = text;
+  text = applyHomophoneFixes(text);
+
+  // Show corrected text in transcript if it changed
+  if (text !== original) {
+    const box = document.getElementById('transcriptBox');
+    if (box) box.textContent = text + '  【已自動校正】';
+  }
 
   const students = getStudents(state.gradeClass);
   const maxSeat = Math.max(...students.map(s => s.seat));
@@ -1321,8 +1384,6 @@ function parseAndFillGrades(text) {
   const seenSeats = new Set();
 
   // ── Pattern 1: "[第][座號][號] [成績][分]"
-  // seat: arabic or CN; score: arabic or CN (including 2-digit bare CN like 六一)
-  // CN score group: matches up to 4 CN chars (百九十五, 九十五, 六一, 八○...)
   const CN_CHARS = '[零一二三四五六七八九十百○]';
   const pat1 = new RegExp(
     `(?:第\\s*)?([0-9]{1,2}|${CN_CHARS}{1,3})\\s*[號号]\\s*([0-9]{1,3}|${CN_CHARS}{1,4})\\s*分?`,
@@ -1331,9 +1392,11 @@ function parseAndFillGrades(text) {
   let m;
   while ((m = pat1.exec(text)) !== null) {
     const seatRaw = m[1];
-    const scoreRaw = m[2];
+    const scoreRaw = m[2].trim();
     const seat = /^[0-9]+$/.test(seatRaw) ? parseInt(seatRaw) : parseCN(seatRaw);
-    const score = /^[0-9]+$/.test(scoreRaw) ? parseFloat(scoreRaw) : parseCN(scoreRaw);
+    let score = /^[0-9]+$/.test(scoreRaw) ? parseFloat(scoreRaw) : parseCN(scoreRaw);
+    // Upgrade single-char CN score (八→80)
+    score = interpretScore(scoreRaw, score);
     if (!isNaN(seat) && !isNaN(score) && seat >= 1 && seat <= maxSeat && score >= 0 && score <= 100) {
       if (!seenSeats.has(seat)) {
         seenSeats.add(seat);
@@ -1343,7 +1406,7 @@ function parseAndFillGrades(text) {
     }
   }
 
-  // ── Pattern 2: "座號,成績" like "3,85"
+  // ── Pattern 2: "座號,成績"
   const pat2 = /\b([0-9]{1,2})\s*[,，:：]\s*([0-9]{2,3})\b/g;
   while ((m = pat2.exec(text)) !== null) {
     const seat = parseInt(m[1]);
@@ -1361,7 +1424,6 @@ function parseAndFillGrades(text) {
 
   saveState();
 
-  // Update cells
   filled.forEach(({seat, score}) => {
     const cell = document.getElementById('grade-cell-'+seat);
     if (cell) {
@@ -1373,7 +1435,6 @@ function parseAndFillGrades(text) {
     }
   });
 
-  // Recent log
   recentFilled.unshift(...[...filled].reverse());
   recentFilled = recentFilled.slice(0, 12);
   renderRecentFilled();
@@ -1385,15 +1446,31 @@ function renderRecentFilled() {
   const area = document.getElementById('recentFilledArea');
   if (recentFilled.length === 0) { area.innerHTML = ''; return; }
   area.innerHTML = `
-    <div style="font-size:12px;color:var(--text3);margin-bottom:4px;font-weight:600;">最近填入</div>
-    <div style="display:flex;flex-wrap:wrap;gap:4px;">
-      ${recentFilled.map(f => `
-        <span style="background:var(--accent-light);color:var(--accent);padding:3px 8px;border-radius:10px;font-size:12px;font-weight:700;">
-          ${f.seat}號 ${f.score}分
-        </span>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:6px;font-weight:600;">最近填入（點擊可修正）</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+      ${recentFilled.map((f, idx) => `
+        <button onclick="correctEntry(${idx})"
+          style="background:var(--accent-light);color:var(--accent);padding:4px 10px;border-radius:10px;font-size:12px;font-weight:700;border:1.5px solid var(--accent);cursor:pointer;">
+          ${f.seat}號 ${f.score}分 ✏️
+        </button>
       `).join('')}
     </div>
   `;
+}
+
+function correctEntry(idx) {
+  const entry = recentFilled[idx];
+  const newScore = prompt(`修正 ${entry.seat} 號的成績（目前：${entry.score}）：`);
+  if (newScore === null) return;
+  const v = parseFloat(newScore);
+  if (isNaN(v) || v < 0 || v > 100) { showToast('請輸入 0~100 的數字', 'error'); return; }
+  recentFilled[idx].score = v;
+  getGrades(state.gradeClass, state.gradeItem)[entry.seat] = v;
+  const cell = document.getElementById('grade-cell-'+entry.seat);
+  if (cell) { cell.value = v; cell.classList.add('has-grade'); }
+  saveState();
+  renderRecentFilled();
+  showToast(`已修正 ${entry.seat} 號 → ${v} 分`, 'success');
 }
 
 // ===============================
