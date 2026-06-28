@@ -1882,7 +1882,7 @@ function confirmJSONImport() {
     items.forEach((item, si) => {
       const score = row.scores && row.scores[si];
       if (score === null || score === undefined || score === '') return;
-      const v = parseInt(score);
+      let v = parseInt(score);
       if (isNaN(v) || v < 0) return;
       if (v > 100) v = 100;  // 加分題超過100分登記為100
       getGrades(state.gradeClass, item)[row.seat] = v;
