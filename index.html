@@ -194,22 +194,24 @@ html,body{min-height:100%;background:#f5f4f0;font-family:'PingFang TC','Noto San
     <div class="card-stripe s-rose"></div>
     <div class="card-body">
       <div class="card-header"><span class="card-emoji">🎙️</span><span class="card-name">語音成績登記系統</span></div>
-      <span class="device-badge badge-phone">📱 適合以手機開啟</span>
-      <div class="card-desc">以語音輸入方式快速登記各班學生成績，支援多班級、多科目，自動辨識座號與分數，期末匯出 CSV。</div>
+      <span class="device-badge badge-phone">📱 適合以手機／平板開啟</span>
+      <div class="card-desc">語音輸入或照片辨識，快速登記各班學生成績，支援多班級、多科目，統計分析，匯出 Excel。</div>
       <div class="note-box">
         <b>使用說明</b><br>
-        先在「設定」頁設定好班級名稱、人數與評量科目。登記時選擇班級與科目後，按麥克風鍵依序念出「座號 分數」（例如「1號 85」），系統會自動辨識並填入。全班念完後可逐一確認再儲存。<br><br>
+        先在「班級設定」設定好班級名稱與評量科目。登記時選擇班級與科目，點擊麥克風後依序說出「座號 分數」（例如「1號85」）；每說完一筆，稍作停頓並確認畫面已填入後，再繼續念下一筆，以確保辨識準確。<br><br>
+        亦可拍下手寫成績表，複製畫面提示詞連同照片發給 Claude，將回傳的 JSON 貼入工具即可一次匯入多科成績。<br><br>
         <b>注意事項</b><br>
-        • 需允許瀏覽器使用麥克風權限，建議使用 Chrome<br>
-        • 語音辨識需要網路連線（使用裝置內建語音辨識服務）<br>
-        • 建議在安靜環境使用，避免背景噪音影響辨識準確度<br>
-        • 資料儲存於本機瀏覽器，定期匯出 CSV 備份
+        • 語音輸入速度不宜過快，每筆之間請稍作停頓，並即時確認分數是否正確填入<br>
+        • 若遇辨識有誤，可點擊「最近填入」標籤直接修正，或手動點擊表格格子輸入<br>
+        • 加分題超過 100 分，系統自動登記為 100 分<br>
+        • 資料自動儲存於裝置本機，重新整理後仍會保留；建議定期匯出 Excel 備份
       </div>
       <div class="tag-row">
         <span class="tag t-rose">語音輸入</span>
-        <span class="tag t-rose">多班級</span>
-        <span class="tag t-rose">多科目</span>
-        <span class="tag t-rose">匯出 CSV</span>
+        <span class="tag t-rose">照片辨識匯入</span>
+        <span class="tag t-rose">多班級多科目</span>
+        <span class="tag t-rose">統計分析</span>
+        <span class="tag t-rose">匯出 Excel</span>
       </div>
       <div class="btn btn-rose">開啟工具 →</div>
     </div>
@@ -243,7 +245,7 @@ html,body{min-height:100%;background:#f5f4f0;font-family:'PingFang TC','Noto San
 
   <div class="footer">
     資料儲存於本機瀏覽器，不會上傳至伺服器<br>
-    建議定期匯出 CSV 備份以防資料遺失
+    建議定期匯出備份以防資料遺失
   </div>
 
 </div>
