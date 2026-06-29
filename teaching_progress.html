@@ -423,12 +423,7 @@
             <option value="2">週三</option><option value="3">週四</option>
             <option value="4">週五</option>
           </select></div>
-        <div class="form-row"><label>節次類型</label>
-          <select class="form-input" id="rs-src-variant">
-            <option value="n">一般節</option>
-            <option value="flex">彈性</option>
-            <option value="8">第八節</option>
-          </select></div>
+        <div class="form-row" id="rs-src-variant-row" style="font-size:12px;color:var(--ink-light)">節次類型將依課表自動對應</div>
       </div>
       <div class="rs-col">
         <h4>目標（調到的日期）</h4>
@@ -598,8 +593,51 @@ function renderMain(){
       if(!ds){
         html+=`<div class="period-block no-class"><div class="no-class-dash">—</div></div>`;
       } else {
-        if(ds.period || ds.isFlex) html+=makePeriodBlock(di,ci,ds,spType,"n");
-        if(ds.hasEighth) html+=makePeriodBlock(di,ci,ds,spType,"8");
+        // Check if this slot is a reschedule source (locked)
+        const srcRsN=state.reschedules.some(r=>r.ci===ci&&r.srcWeek===state.currentWeek&&r.srcDi===di&&r.srcVariant!=='8');
+        const srcRs8=state.reschedules.some(r=>r.ci===ci&&r.srcWeek===state.currentWeek&&r.srcDi===di&&r.srcVariant==='8');
+        // Check for reschedule destinations arriving at this slot
+        const dstRsList=state.reschedules.filter(r=>r.ci===ci&&r.dstWeek===state.currentWeek&&r.dstDi===di);
+
+        if(ds.period || ds.isFlex){
+          if(srcRsN){
+            html+=`<div class="reschedule-src">${makePeriodBlock(di,ci,ds,spType,'n')}</div>`;
+          } else {
+            html+=makePeriodBlock(di,ci,ds,spType,'n');
+          }
+        }
+        if(ds.hasEighth){
+          if(srcRs8){
+            html+=`<div class="reschedule-src">${makePeriodBlock(di,ci,ds,spType,'8')}</div>`;
+          } else {
+            html+=makePeriodBlock(di,ci,ds,spType,'8');
+          }
+        }
+        // Render reschedule destination blocks
+        dstRsList.forEach(r=>{
+          const rKey=`rs_${r.id}_f`;
+          const srcDs=state.classes[ci]?.schedule[r.srcDi];
+          const isRsFlex=srcDs?.isFlex||false;
+          const blockCls=r.srcVariant==='8'?'period-block eighth-block reschedule-block':
+                         isRsFlex?'period-block flex-block reschedule-block':
+                         'period-block reschedule-block';
+          const hdrLabel=r.srcVariant==='8'?'🔄 調課補課（第8節）':
+                         isRsFlex?'🔄 調課補課（彈性）':'🔄 調課補課';
+          html+=`<div class="${blockCls}">
+            <div class="period-block-header">${hdrLabel}${r.note?' ·'+esc(r.note):''}
+              <div class="block-actions"><button class="copy-btn" onclick="removeReschedule('${r.id}')">✕</button></div>
+            </div>
+            <div class="fields-grid">`;
+          FIELD_LABELS.forEach((lbl,fi)=>{
+            const fkey=`${rKey}${fi}`;
+            const val=state.data[fkey]||'';
+            html+=`<div class="field-row">
+              <div class="field-lbl ${fi===0?'exam-lbl':''}">${lbl}</div>
+              <textarea class="field-ta" oninput="saveField('${fkey}',this.value);autoResize(this)" onfocus="autoResize(this)">${esc(val)}</textarea>
+            </div>`;
+          });
+          html+=`</div></div>`;
+        });
       }
       html+=`</div></td>`;
     });
@@ -839,15 +877,16 @@ function toggleDst(i){
 // Build ordered lesson sequence for a class in a week
 // Returns array of {di, variant} in day order
 function getClassSequence(ci, copyNormal, copyFlex, copyEighth){
-  const seq=[];
+  // Returns three independent sequences: normal, flex, eighth
+  const normal=[], flex=[], eighth=[];
   for(let di=0;di<5;di++){
     const ds=state.classes[ci]?.schedule[di];
     if(!ds)continue;
-    if(copyNormal&&!ds.isFlex&&ds.period) seq.push({di,variant:"n"});
-    if(copyFlex&&ds.isFlex) seq.push({di,variant:"n"});
-    if(copyEighth&&ds.hasEighth) seq.push({di,variant:'8'});
+    if(copyNormal&&!ds.isFlex&&ds.period) normal.push({di,variant:'n'});
+    if(copyFlex&&ds.isFlex) flex.push({di,variant:'n'});
+    if(copyEighth&&ds.hasEighth) eighth.push({di,variant:'8'});
   }
-  return seq;
+  return {normal, flex, eighth};
 }
 
 function executeBatchCopy(){
@@ -866,21 +905,23 @@ function executeBatchCopy(){
 
   let count=0;
   for(let w=wStart;w<=wEnd;w++){
-    const srcSeq=getClassSequence(srcCi,copyNormal,copyFlex,copyEighth);
+    const srcSeqs=getClassSequence(srcCi,copyNormal,copyFlex,copyEighth);
 
     dstCis.forEach(dstCi=>{
-      const dstSeq=getClassSequence(dstCi,copyNormal,copyFlex,copyEighth);
-      // Pair up by index; stop at shorter sequence
-      const len=Math.min(srcSeq.length,dstSeq.length);
-      for(let i=0;i<len;i++){
-        const src=srcSeq[i];
-        const dst=dstSeq[i];
-        FIELD_LABELS.forEach((_,fi)=>{
-          const srcKey=`w${w}_d${src.di}_c${srcCi}_${src.variant}_f${fi}`;
-          const dstKey=`w${w}_d${dst.di}_c${dstCi}_${dst.variant}_f${fi}`;
-          if(state.data[srcKey]!==undefined){state.data[dstKey]=state.data[srcKey];count++;}
-        });
-      }
+      const dstSeqs=getClassSequence(dstCi,copyNormal,copyFlex,copyEighth);
+      // Pair each type independently
+      ['normal','flex','eighth'].forEach(type=>{
+        const src=srcSeqs[type];
+        const dst=dstSeqs[type];
+        const len=Math.min(src.length,dst.length);
+        for(let i=0;i<len;i++){
+          FIELD_LABELS.forEach((_,fi)=>{
+            const srcKey=`w${w}_d${src[i].di}_c${srcCi}_${src[i].variant}_f${fi}`;
+            const dstKey=`w${w}_d${dst[i].di}_c${dstCi}_${dst[i].variant}_f${fi}`;
+            if(state.data[srcKey]!==undefined){state.data[dstKey]=state.data[srcKey];count++;}
+          });
+        }
+      });
     });
   }
 
@@ -1078,12 +1119,16 @@ function addReschedule(){
   const ci=parseInt(document.getElementById('rs-src-class').value);
   const srcWeek=parseInt(document.getElementById('rs-src-week').value);
   const srcDi=parseInt(document.getElementById('rs-src-day').value);
-  const srcVariant=document.getElementById('rs-src-variant').value;
   const dstWeek=parseInt(document.getElementById('rs-dst-week').value);
   const dstDi=parseInt(document.getElementById('rs-dst-day').value);
   const note=document.getElementById('rs-note').value.trim();
 
   if(isNaN(ci)||isNaN(srcWeek)||isNaN(dstWeek)){alert('請填寫所有欄位');return;}
+
+  // Auto-detect srcVariant from schedule
+  const srcDs=state.classes[ci]?.schedule[srcDi];
+  if(!srcDs){alert('來源班級該天沒有課');return;}
+  const srcVariant=srcDs.hasEighth&&!srcDs.period&&!srcDs.isFlex?'8':'n';
 
   const id='rs_'+Date.now();
   state.reschedules.push({id,ci,srcWeek,srcDi,srcVariant,dstWeek,dstDi,note});
@@ -1113,7 +1158,7 @@ function renderRescheduleList(){
     return`<div class="special-item">
       <div style="font-size:13px">
         <span class="type-badge" style="background:#fff8f0;color:#b45309;border:1px solid #f0b86e">調課</span>
-        ${cls}　第${r.srcWeek}週${['週一','週二','週三','週四','週五'][r.srcDi]}(${varLabel[r.srcVariant]||r.srcVariant})
+        ${cls}　第${r.srcWeek}週${['週一','週二','週三','週四','週五'][r.srcDi]}
         → 第${r.dstWeek}週${['週一','週二','週三','週四','週五'][r.dstDi]}
         ${r.note?'　'+r.note:''}
       </div>
