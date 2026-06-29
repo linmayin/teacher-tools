@@ -823,7 +823,7 @@ function buildClassCard(cls,ci){
   const days=['一','二','三','四','五'];
   const dHtml=days.map((dl,di)=>{
     const ds=cls.schedule[di];
-    const pVal=ds?ds.period.replace('第','').replace('節',''):'0';
+    const pVal=ds&&ds.period?ds.period.replace('第','').replace('節',''):'0';
     return`<div class="day-col">
       <label>週${dl}</label>
       <select id="cs${ci}d${di}p" onchange="updateSched(${ci},${di})">
