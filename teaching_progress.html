@@ -376,7 +376,33 @@ let state={year:'115',semester:'上',startDate:'2025-09-01',totalWeeks:20,curren
 let dragSrc=null; // {week,di,ci,blockType}
 
 function loadState(){
-  try{const s=localStorage.getItem('teachingProgress_v5');if(s)Object.assign(state,JSON.parse(s));}catch(e){}
+  try{
+    const s=localStorage.getItem('teachingProgress_v5');
+    if(s){
+      const parsed=JSON.parse(s);
+      // Sanitize classes: fix any corrupted schedule entries
+      if(parsed.classes && Array.isArray(parsed.classes)){
+        parsed.classes=parsed.classes.map(cls=>{
+          if(!cls||!Array.isArray(cls.schedule))return cls;
+          cls.schedule=cls.schedule.map(ds=>{
+            if(!ds)return null;
+            // period must be a string like "第N節" or null
+            if(ds.period!==null && ds.period!==undefined && typeof ds.period!=='string')ds.period=null;
+            if(typeof ds.isFlex!=='boolean')ds.isFlex=false;
+            if(typeof ds.hasEighth!=='boolean')ds.hasEighth=false;
+            // If no period and no eighth, treat as null (no class)
+            if(!ds.period && !ds.hasEighth)return null;
+            return ds;
+          });
+          return cls;
+        });
+      }
+      Object.assign(state,parsed);
+    }
+  }catch(e){
+    console.warn('Failed to load state, resetting:',e);
+    localStorage.removeItem('teachingProgress_v5');
+  }
 }
 function saveState(){
   localStorage.setItem('teachingProgress_v5',JSON.stringify(state));
