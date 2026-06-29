@@ -205,12 +205,12 @@
 
   /* Holiday row */
   .holiday-row td { pointer-events:none; }
+  .holiday-row .class-cell { background: var(--holiday-bg); border-radius:8px; }
   .holiday-cell {
     background: var(--holiday-bg) !important;
-    border-color: var(--holiday-border) !important;
+    border: 1.5px solid var(--holiday-border);
     display:flex; align-items:center; justify-content:center;
     min-height:100px; border-radius:8px;
-    border: 1px solid var(--holiday-border);
     color: var(--holiday-text); font-size:13px; font-weight:600;
   }
   .holiday-row .day-cell { pointer-events:auto; }
@@ -621,7 +621,7 @@ function makePeriodBlock(di,ci,ds,spType,variant){
   else if(spType==='exam'){blockCls+=' exam-block';hdrCls+=' exam-hdr';}
   else if(spType==='review'){blockCls+=' review-block';hdrCls+=' review-hdr';}
 
-  const hdrLabel=isEighth?'第8節（補課）':isFlex?`${ds.period}（彈性）`:(ds.period||'');
+  const hdrLabel=isEighth?'第8節（補課）':isFlex?(ds.period?`${ds.period}（彈性）`:'彈性課程'):(ds.period||'');
   const w=state.currentWeek;
 
   let fields='';
@@ -893,7 +893,8 @@ function executeBatchCopy(){
 function openModal(id){
   if(id==='settings-modal')populateSettings();
   if(id==='special-modal')renderSpecialList();
-  if(id!=='reschedule-modal') document.getElementById(id).classList.add('open');
+  if(id==='reschedule-modal'){openRescheduleModal();return;}
+  document.getElementById(id).classList.add('open');
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.modal-overlay').forEach(el=>{
