@@ -480,8 +480,8 @@ function loadState(){
             if(ds.period!==null && ds.period!==undefined && typeof ds.period!=='string')ds.period=null;
             if(typeof ds.isFlex!=='boolean')ds.isFlex=false;
             if(typeof ds.hasEighth!=='boolean')ds.hasEighth=false;
-            // If no period and no eighth, treat as null (no class)
-            if(!ds.period && !ds.hasEighth)return null;
+            // If no period, no eighth, and not flex, treat as null (no class)
+            if(!ds.period && !ds.hasEighth && !ds.isFlex)return null;
             return ds;
           });
           return cls;
