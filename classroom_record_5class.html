@@ -43,7 +43,8 @@ body{font-family:'PingFang TC','Noto Sans TC',sans-serif;background:var(--bg);co
 .chip.sel-plus{background:var(--plus);border-color:var(--plus);color:#fff;}
 
 .num-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin-bottom:10px;}
-.num-btn{aspect-ratio:1;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;user-select:none;font-family:'SF Mono','Fira Mono',monospace;}
+.num-btn{aspect-ratio:1;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;font-weight:500;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;user-select:none;font-family:'SF Mono','Fira Mono',monospace;line-height:1.2;padding:2px;}
+.num-btn .nb-name{font-family:'PingFang TC','Noto Sans TC',sans-serif;font-size:9px;font-weight:400;opacity:0.75;overflow:hidden;max-width:100%;text-overflow:ellipsis;white-space:nowrap;}
 .num-btn.sel{background:var(--accent);border-color:var(--accent);color:#fff;}
 .num-row-sep{grid-column:1/-1;height:1px;background:var(--border);margin:2px 0;}
 
@@ -146,6 +147,26 @@ tr:hover td{background:var(--surface2);}
       <div class="num-grid" id="num-grid"></div>
       <button class="btn btn-primary btn-full" onclick="submitRecords()">✓ 新增記錄</button>
     </div>
+    <div class="card">
+      <div class="card-title">特殊班級記事</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:8px">每日一則，記錄缺席座號、特殊事件等</div>
+      <div id="note-date-row" style="display:flex;gap:8px;align-items:flex-end;margin-bottom:8px">
+        <div class="f1">
+          <label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:4px">班級</label>
+          <select id="note-cls" style="height:38px;font-size:13px"></select>
+        </div>
+        <div class="f1">
+          <label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:4px">日期</label>
+          <input type="date" id="note-date" style="height:38px;font-size:13px">
+        </div>
+      </div>
+      <textarea id="note-text" placeholder="例：缺席：03、15號；第三節有消防演習" style="width:100%;height:80px;padding:10px;border:1.5px solid var(--border);border-radius:9px;background:var(--surface2);font-size:13px;color:var(--text);font-family:inherit;resize:none;"></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn btn-primary f1" onclick="saveNote()">💾 儲存記事</button>
+        <button class="btn f1" onclick="renderNoteList()">📋 查看記事</button>
+      </div>
+      <div id="note-list" style="margin-top:10px"></div>
+    </div>
   </div>
 
   <!-- 記錄 -->
@@ -224,6 +245,18 @@ tr:hover td{background:var(--surface2);}
       <div style="font-size:11px;color:var(--text3);margin-top:8px">基本分為全班共用，更改後立即套用至統整計算</div>
     </div>
     <div class="card">
+      <div class="card-title">班級名單匯入</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:8px">CSV 格式：座號,姓名（第一列為標題）<br>匯入後座號按鈕將顯示姓名</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select id="roster-cls-sel" style="flex:1;height:38px;font-size:13px;border:1.5px solid var(--border);border-radius:9px;background:var(--surface2);color:var(--text);padding:0 10px"></select>
+        <label class="btn" style="cursor:pointer;flex:1;justify-content:center">
+          ⬆ 匯入名單
+          <input type="file" accept=".csv" style="display:none" onchange="importRoster(this)">
+        </label>
+      </div>
+      <div id="roster-preview" style="margin-top:8px;font-size:12px;color:var(--text3)"></div>
+    </div>
+    <div class="card">
       <div class="card-title">班級名稱設定</div>
       <div id="class-name-list"></div>
     </div>
@@ -245,22 +278,29 @@ tr:hover td{background:var(--surface2);}
 <div class="toast" id="toast"></div>
 
 <script>
-var DB='cr5_records_v1', CFG='cr5_config_v1';
+var DB='cr5_records_v1', CFG='cr5_config_v1', NOTES_DB='cr5_notes_v1', ROSTER_DB='cr5_roster_v1';
 var records=[];
+var notes=[]; // [{id,date,cls,text}]
+var roster={}; // {cls: {num: name}}
 var cfg={classes:['班級一','班級二','班級三','班級四','班級五'],baseScore:95};
 var selClass='', curItem='功課未交', curScore=-1, selNums=new Set();
 
 function init(){
   try{var r=localStorage.getItem(DB);if(r)records=JSON.parse(r);}catch(e){}
   try{var c=localStorage.getItem(CFG);if(c)cfg=JSON.parse(c);}catch(e){}
+  try{var n=localStorage.getItem(NOTES_DB);if(n)notes=JSON.parse(n);}catch(e){}
+  try{var ro=localStorage.getItem(ROSTER_DB);if(ro)roster=JSON.parse(ro);}catch(e){}
   if(!cfg.baseScore)cfg.baseScore=95;
   selClass=cfg.classes[0]||'';
   document.getElementById('rec-date').value=new Date().toLocaleDateString('sv');
+  document.getElementById('note-date').value=new Date().toLocaleDateString('sv');
   document.getElementById('today-pill').textContent=new Date().toLocaleDateString('zh-TW',{month:'long',day:'numeric',weekday:'short'});
   document.getElementById('base-display').textContent=cfg.baseScore;
   buildClassChips();
   buildNumGrid();
   buildDropdowns();
+  buildNoteClsDropdown();
+  buildRosterClsDropdown();
   buildSettings();
   renderLog();
   renderSummary();
@@ -269,6 +309,12 @@ function init(){
 
 function save(){try{localStorage.setItem(DB,JSON.stringify(records));}catch(e){}}
 function saveCfg(){try{localStorage.setItem(CFG,JSON.stringify(cfg));}catch(e){}}
+function saveNotes(){try{localStorage.setItem(NOTES_DB,JSON.stringify(notes));}catch(e){}}
+function saveRoster(){try{localStorage.setItem(ROSTER_DB,JSON.stringify(roster));}catch(e){}}
+
+function getStudentName(cls,num){
+  return (roster[cls]&&roster[cls][num])||'';
+}
 
 function buildClassChips(){
   var el=document.getElementById('class-chips');
@@ -280,6 +326,7 @@ function buildClassChips(){
     d.onclick=(function(el2,c){return function(){
       document.querySelectorAll('#class-chips .chip').forEach(function(x){x.className='chip';});
       el2.className='chip sel';selClass=c;
+      buildNumGrid(); // 切班級時重建座號格（顯示對應班級名單）
     };})(d,cls);
     el.appendChild(d);
   });
@@ -294,7 +341,8 @@ function buildNumGrid(){
     }
     var b=document.createElement('button');
     b.className='num-btn'+(selNums.has(i)?' sel':'');
-    b.textContent=String(i).padStart(2,'0');
+    var name=getStudentName(selClass,i);
+    b.innerHTML='<span>'+String(i).padStart(2,'0')+'</span>'+(name?'<span class="nb-name">'+name+'</span>':'');
     b.id='nb-'+i;
     var n=i;
     b.onclick=(function(btn,num){return function(){
@@ -337,6 +385,104 @@ function submitRecords(){
   save();
   showToast('已新增 '+selNums.size+' 筆記錄 ✓');
   clearNums();renderLog();renderSummary();
+}
+
+function buildNoteClsDropdown(){
+  var sel=document.getElementById('note-cls');
+  sel.innerHTML='';
+  cfg.classes.forEach(function(cls){
+    var o=document.createElement('option');o.value=cls;o.textContent=cls;sel.appendChild(o);
+  });
+  if(selClass)sel.value=selClass;
+}
+
+function buildRosterClsDropdown(){
+  var sel=document.getElementById('roster-cls-sel');
+  sel.innerHTML='';
+  cfg.classes.forEach(function(cls){
+    var o=document.createElement('option');o.value=cls;o.textContent=cls;sel.appendChild(o);
+  });
+}
+
+function importRoster(input){
+  var file=input.files[0];if(!file)return;
+  var cls=document.getElementById('roster-cls-sel').value;
+  var reader=new FileReader();
+  reader.onload=function(e){
+    var lines=e.target.result.replace(/^\uFEFF/,'').split('\n').filter(function(l){return l.trim();});
+    if(!roster[cls])roster[cls]={};
+    var count=0;
+    lines.slice(1).forEach(function(line){
+      var p=line.split(',');
+      if(p.length<2)return;
+      var num=parseInt(p[0].trim());
+      var name=(p[1]||'').trim();
+      if(isNaN(num)||!name)return;
+      roster[cls][num]=name;
+      count++;
+    });
+    saveRoster();
+    buildNumGrid();
+    var preview=document.getElementById('roster-preview');
+    preview.textContent='已匯入「'+cls+'」名單，共 '+count+' 位學生';
+    showToast('名單匯入完成 ✓');
+    input.value='';
+  };
+  reader.readAsText(file,'utf-8');
+}
+
+function saveNote(){
+  var cls=document.getElementById('note-cls').value;
+  var date=document.getElementById('note-date').value;
+  var text=document.getElementById('note-text').value.trim();
+  if(!date){showToast('請選擇日期');return;}
+  if(!text){showToast('請輸入記事內容');return;}
+  // 同班同日只保留一則，有則更新
+  var idx=notes.findIndex(function(n){return n.cls===cls&&n.date===date;});
+  if(idx>=0){
+    notes[idx].text=text;
+    showToast('記事已更新 ✓');
+  } else {
+    notes.push({id:Date.now()+'_'+Math.random().toString(36).slice(2),date:date,cls:cls,text:text});
+    showToast('記事已儲存 ✓');
+  }
+  saveNotes();
+  renderNoteList();
+}
+
+function renderNoteList(){
+  var cls=document.getElementById('note-cls').value;
+  var el=document.getElementById('note-list');
+  var clsNotes=notes.filter(function(n){return n.cls===cls;}).sort(function(a,b){return b.date.localeCompare(a.date);});
+  if(!clsNotes.length){el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:6px 0">尚無記事</div>';return;}
+  el.innerHTML=clsNotes.map(function(n){
+    return '<div style="border:1px solid var(--border);border-radius:9px;padding:10px;margin-bottom:8px;background:var(--surface2)">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+      +'<span style="font-size:12px;font-weight:600;color:var(--text2)">'+n.date+'</span>'
+      +'<div style="display:flex;gap:6px">'
+      +'<button class="btn btn-sm" onclick="editNote(\''+n.id+'\')">編輯</button>'
+      +'<button class="btn btn-sm btn-danger" onclick="deleteNote(\''+n.id+'\')">刪除</button>'
+      +'</div></div>'
+      +'<div style="font-size:13px;color:var(--text);white-space:pre-wrap">'+n.text+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function editNote(id){
+  var n=notes.find(function(x){return x.id===id;});
+  if(!n)return;
+  document.getElementById('note-date').value=n.date;
+  document.getElementById('note-cls').value=n.cls;
+  document.getElementById('note-text').value=n.text;
+  document.getElementById('note-text').focus();
+  showToast('已載入，修改後按儲存');
+}
+
+function deleteNote(id){
+  if(!confirm('確定刪除此筆記事？'))return;
+  notes=notes.filter(function(n){return n.id!==id;});
+  saveNotes();
+  renderNoteList();
 }
 
 function buildDropdowns(){
@@ -507,12 +653,22 @@ function exportSummaryCSV(){
       var d=map[k]||{cls:cls,num:i,total:0,count:0,hw:0,talk:0};
       var finalScore=calcFinalScore(d.total);
       var deltaStr=d.total>0?'+'+d.total:String(d.total);
-      rows.push(cls+','+String(i).padStart(2,'0')+','+base+','+deltaStr+','+finalScore+','+d.count+','+d.hw+','+d.talk);
+      var name=getStudentName(cls,i);
+      rows.push(cls+','+String(i).padStart(2,'0')+','+(name||'')+','+base+','+deltaStr+','+finalScore+','+d.count+','+d.hw+','+d.talk);
     }
   });
   if(!rows.length){showToast('沒有資料可匯出');return;}
-  var csv='\uFEFF班級,座號,基本分,加扣分,課堂分數,記錄次數,功課未交,上課講話\n'+rows.join('\n');
+  // 加入特殊記事區塊
+  var noteRows=['\n=== 特殊班級記事 ===','班級,日期,記事內容'];
+  var noteSubset=sc?notes.filter(function(n){return n.cls===sc;}):notes;
+  noteSubset.sort(function(a,b){return a.cls.localeCompare(b.cls)||b.date.localeCompare(a.date);}).forEach(function(n){
+    noteRows.push(n.cls+','+n.date+',"'+n.text.replace(/"/g,'""')+'"');
+  });
+  var csv='\uFEFF班級,座號,姓名,基本分,加扣分,課堂分數,記錄次數,功課未交,上課講話\n'
+    +rows.join('\n')
+    +noteRows.join('\n');
   dl(csv,'期末統整_'+new Date().toLocaleDateString('sv')+'.csv');
+  showToast('已匯出統整與記事');
 }
 
 function exportAllCSV(){
