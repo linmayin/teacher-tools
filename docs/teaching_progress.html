@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>教學進度表</title>
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --ink-light: #4a4a6a;
+    --paper: #fafaf8;
+    --paper-warm: #f5f4f0;
+    --rule: #dddbd5;
+    --rule-strong: #b8b5ad;
+    --accent: #2d6a4f;
+    --accent-light: #e8f4ee;
+    --flex: #4a6fa5;
+    --flex-light: #e8eef7;
+    --exam: #c0392b;
+    --exam-light: #fdecea;
+    --holiday: #8b5e3c;
+    --holiday-light: #fdf3ea;
+    --eighth: #6b4c8a;
+    --eighth-light: #f0eaf7;
+    --tab-active: #2d6a4f;
+    --shadow: 0 2px 12px rgba(0,0,0,0.08);
+    --radius: 10px;
+    --font: 'Helvetica Neue', 'PingFang TC', 'Microsoft YaHei', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--font);
+    background: var(--paper-warm);
+    color: var(--ink);
+    min-height: 100vh;
+    font-size: 14px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* ── HEADER ── */
+  #header {
+    background: var(--ink);
+    color: white;
+    padding: 12px 16px 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+  #header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  #title-block h1 {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  #title-block h2 {
+    font-size: 12px;
+    font-weight: 400;
+    opacity: 0.7;
+    margin-top: 2px;
+  }
+  #week-nav {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  #week-nav button {
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s;
+  }
+  #week-nav button:hover { background: rgba(255,255,255,0.28); }
+  #week-label {
+    font-size: 15px;
+    font-weight: 600;
+    min-width: 60px;
+    text-align: center;
+  }
+  #header-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .hdr-btn {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .hdr-btn:hover { background: rgba(255,255,255,0.28); }
+  .hdr-btn.danger { border-color: #e74c3c; color: #ff8a7a; }
+
+  /* ── DAY TABS ── */
+  #day-tabs {
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 0;
+  }
+  #day-tabs::-webkit-scrollbar { display: none; }
+  .day-tab {
+    flex: 1;
+    min-width: 60px;
+    padding: 8px 4px 10px;
+    text-align: center;
+    cursor: pointer;
+    border-radius: 8px 8px 0 0;
+    font-size: 12px;
+    color: rgba(255,255,255,0.6);
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .day-tab.active {
+    background: var(--paper-warm);
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .day-tab .tab-date { font-size: 11px; margin-top: 1px; opacity: 0.8; }
+  .day-tab.holiday { color: #ff9f7a; }
+  .day-tab.holiday.active { color: var(--holiday); }
+
+  /* ── MAIN CONTENT ── */
+  #main {
+    padding: 0;
+    overflow-x: auto;
+  }
+
+  /* ── DAY VIEW ── */
+  .day-view { display: none; padding: 12px 12px 80px; }
+  .day-view.active { display: block; }
+
+  /* Special day banners */
+  .special-banner {
+    border-radius: var(--radius);
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .special-banner.exam { background: var(--exam-light); color: var(--exam); border: 1.5px solid #f5b7b1; }
+  .special-banner.holiday { background: var(--holiday-light); color: var(--holiday); border: 1.5px solid #f0c999; }
+  .special-banner-note {
+    font-weight: 400;
+    font-size: 12px;
+    margin-top: 4px;
+    color: var(--ink-light);
+  }
+
+  /* ── GRID ── */
+  .day-grid {
+    display: grid;
+    grid-template-columns: 44px repeat(4, 1fr);
+    gap: 2px;
+    min-width: 480px;
+  }
+
+  /* Header row */
+  .grid-class-header {
+    background: var(--ink);
+    color: white;
+    border-radius: 8px 8px 0 0;
+    padding: 8px 4px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .grid-class-header .class-name { font-size: 14px; }
+  .grid-class-header .class-sub { font-size: 10px; opacity: 0.65; margin-top: 2px; }
+  .grid-corner { background: transparent; }
+
+  /* Period label */
+  .period-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--ink-light);
+    font-weight: 600;
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    padding: 4px 2px;
+  }
+  .period-label.eighth { background: var(--eighth-light); color: var(--eighth); }
+
+  /* Period cell */
+  .period-cell {
+    background: white;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 0;
+    min-height: 90px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: box-shadow 0.15s;
+  }
+  .period-cell:focus-within { box-shadow: 0 0 0 2px var(--accent); border-color: var(--accent); }
+  .period-cell.no-class { background: var(--paper-warm); border-style: dashed; border-color: var(--rule); }
+  .period-cell.flex-class { background: var(--flex-light); border-color: #c5d5ea; }
+  .period-cell.flex-class:focus-within { box-shadow: 0 0 0 2px var(--flex); border-color: var(--flex); }
+  .period-cell.eighth-class { background: var(--eighth-light); border-color: #c9b8de; }
+  .period-cell.eighth-class:focus-within { box-shadow: 0 0 0 2px var(--eighth); border-color: var(--eighth); }
+  .period-cell.exam-class { background: var(--exam-light); border-color: #f5b7b1; }
+
+  .cell-badge {
+    padding: 3px 6px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    display: flex;
+    gap: 4px;
+  }
+  .badge-flex { color: var(--flex); }
+  .badge-eighth { color: var(--eighth); }
+  .badge-exam { color: var(--exam); }
+
+  .cell-fields {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .cell-field {
+    display: flex;
+    align-items: stretch;
+    border-top: 1px solid var(--rule);
+    flex: 1;
+  }
+  .cell-field:first-child { border-top: none; }
+  .field-label {
+    font-size: 9px;
+    color: var(--ink-light);
+    font-weight: 600;
+    width: 22px;
+    min-width: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid var(--rule);
+    background: rgba(0,0,0,0.02);
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    letter-spacing: 0.3px;
+  }
+  .field-label.exam-label { color: var(--exam); }
+  .field-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: var(--font);
+    font-size: 12px;
+    color: var(--ink);
+    padding: 4px 5px;
+    resize: none;
+    line-height: 1.4;
+    outline: none;
+    width: 100%;
+    min-height: 28px;
+  }
+  .field-input::placeholder { color: #bbb; font-size: 11px; }
+  .period-cell.no-class .field-input { display: none; }
+  .no-class-text {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--rule-strong);
+    font-size: 11px;
+  }
+
+  /* ── BOTTOM NAV ── */
+  #bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0; right: 0;
+    background: var(--ink);
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0 20px;
+    z-index: 100;
+  }
+  .bottom-btn {
+    color: rgba(255,255,255,0.6);
+    border: none;
+    background: none;
+    font-size: 11px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    cursor: pointer;
+    padding: 4px 12px;
+    border-radius: 8px;
+    transition: color 0.15s;
+  }
+  .bottom-btn:hover, .bottom-btn.active { color: white; }
+  .bottom-btn .icon { font-size: 20px; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--paper);
+    border-radius: 20px 20px 0 0;
+    padding: 20px 20px 40px;
+    width: 100%;
+    max-width: 700px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 -4px 30px rgba(0,0,0,0.2);
+  }
+  .modal h3 {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-close {
+    background: var(--rule);
+    border: none;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* Settings form */
+  .setting-section {
+    margin-bottom: 20px;
+  }
+  .setting-section h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink-light);
+    margin-bottom: 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--rule);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .form-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .form-row label { font-size: 13px; min-width: 80px; color: var(--ink-light); }
+  .form-input {
+    border: 1.5px solid var(--rule);
+    border-radius: 7px;
+    padding: 7px 10px;
+    font-family: var(--font);
+    font-size: 13px;
+    color: var(--ink);
+    background: white;
+    flex: 1;
+    min-width: 120px;
+  }
+  .form-input:focus { outline: none; border-color: var(--accent); }
+
+  .class-setup-card {
+    background: white;
+    border: 1.5px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+  .class-setup-card h5 {
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: var(--accent);
+  }
+  .day-schedule {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .day-col label { font-size: 11px; font-weight: 600; color: var(--ink-light); display: block; margin-bottom: 4px; text-align: center; }
+  .day-col select, .day-col input[type="checkbox"] {
+    width: 100%;
+  }
+  .day-col select {
+    border: 1px solid var(--rule);
+    border-radius: 5px;
+    padding: 4px;
+    font-size: 12px;
+    text-align: center;
+  }
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 4px;
+    font-size: 11px;
+  }
+
+  .save-btn {
+    width: 100%;
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: opacity 0.15s;
+  }
+  .save-btn:hover { opacity: 0.9; }
+
+  /* Special day marker modal */
+  .special-list { margin-top: 10px; }
+  .special-item {
+    background: white;
+    border: 1.5px solid var(--rule);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .special-item-info { flex: 1; }
+  .special-item-info .type-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-bottom: 3px;
+  }
+  .type-badge.exam { background: var(--exam-light); color: var(--exam); }
+  .type-badge.holiday { background: var(--holiday-light); color: var(--holiday); }
+  .type-badge.review { background: #fff3cd; color: #856404; }
+  .special-item-info .date-text { font-size: 12px; color: var(--ink-light); }
+  .del-btn {
+    background: none; border: none; color: var(--rule-strong);
+    font-size: 18px; cursor: pointer; padding: 2px 6px;
+  }
+  .del-btn:hover { color: var(--exam); }
+
+  .special-form {
+    background: white;
+    border: 1.5px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+
+  /* Floating save indicator */
+  #save-toast {
+    position: fixed;
+    top: 70px;
+    right: 16px;
+    background: var(--accent);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 300;
+    pointer-events: none;
+  }
+  #save-toast.show { opacity: 1; }
+
+  /* Legend */
+  .legend {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: white;
+    border-radius: var(--radius);
+    border: 1px solid var(--rule);
+  }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+  .legend-dot.flex { background: var(--flex-light); border: 1.5px solid var(--flex); }
+  .legend-dot.eighth { background: var(--eighth-light); border: 1.5px solid var(--eighth); }
+  .legend-dot.exam { background: var(--exam-light); border: 1.5px solid var(--exam); }
+  .legend-dot.holiday { background: var(--holiday-light); border: 1.5px solid var(--holiday); }
+
+  .week-note-row {
+    background: white;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .week-note-row label { font-size: 12px; color: var(--ink-light); min-width: 60px; font-weight: 600; }
+  .week-note-row input {
+    flex: 1;
+    border: none;
+    font-family: var(--font);
+    font-size: 13px;
+    color: var(--ink);
+    outline: none;
+    background: transparent;
+  }
+
+  @media (min-width: 768px) {
+    .day-grid { grid-template-columns: 44px repeat(4, 1fr); }
+    .modal { border-radius: 20px; margin: auto; margin-bottom: 20px; }
+    .modal-overlay { align-items: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+  <div id="header-top">
+    <div id="title-block">
+      <h1 id="year-title">115學年度 上學期</h1>
+      <h2 id="week-subtitle">第 1 週</h2>
+    </div>
+    <div id="week-nav">
+      <button onclick="changeWeek(-1)">‹</button>
+      <span id="week-label">第1週</span>
+      <button onclick="changeWeek(1)">›</button>
+    </div>
+    <div id="header-actions">
+      <button class="hdr-btn" onclick="openModal('settings-modal')">⚙ 設定</button>
+      <button class="hdr-btn" onclick="openModal('special-modal')">📅 特殊日</button>
+      <button class="hdr-btn" onclick="exportWord()">↓ 匯出</button>
+    </div>
+  </div>
+  <div id="day-tabs">
+    <div class="day-tab active" data-day="0" onclick="switchDay(0)">
+      週一<div class="tab-date" id="tab-date-0"></div>
+    </div>
+    <div class="day-tab" data-day="1" onclick="switchDay(1)">
+      週二<div class="tab-date" id="tab-date-1"></div>
+    </div>
+    <div class="day-tab" data-day="2" onclick="switchDay(2)">
+      週三<div class="tab-date" id="tab-date-2"></div>
+    </div>
+    <div class="day-tab" data-day="3" onclick="switchDay(3)">
+      週四<div class="tab-date" id="tab-date-3"></div>
+    </div>
+    <div class="day-tab" data-day="4" onclick="switchDay(4)">
+      週五<div class="tab-date" id="tab-date-4"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+  <div id="day-0" class="day-view active"></div>
+  <div id="day-1" class="day-view"></div>
+  <div id="day-2" class="day-view"></div>
+  <div id="day-3" class="day-view"></div>
+  <div id="day-4" class="day-view"></div>
+</div>
+
+<!-- TOAST -->
+<div id="save-toast">已儲存 ✓</div>
+
+<!-- BOTTOM BAR -->
+<div id="bottom-bar">
+  <button class="bottom-btn" onclick="changeWeek(-1)">
+    <span class="icon">‹</span>上一週
+  </button>
+  <button class="bottom-btn" onclick="openModal('settings-modal')">
+    <span class="icon">⚙</span>設定
+  </button>
+  <button class="bottom-btn" onclick="openModal('special-modal')">
+    <span class="icon">📅</span>特殊日
+  </button>
+  <button class="bottom-btn" onclick="changeWeek(1)">
+    <span class="icon">›</span>下一週
+  </button>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal">
+    <h3>設定 <button class="modal-close" onclick="closeModal('settings-modal')">✕</button></h3>
+
+    <div class="setting-section">
+      <h4>學期資訊</h4>
+      <div class="form-row">
+        <label>學年度</label>
+        <input class="form-input" id="set-year" placeholder="115" style="max-width:80px">
+        <label>學期</label>
+        <select class="form-input" id="set-sem" style="max-width:100px">
+          <option value="上">上學期</option>
+          <option value="下">下學期</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>學期開始日期</label>
+        <input class="form-input" type="date" id="set-start" style="max-width:180px">
+      </div>
+      <div class="form-row">
+        <label>總週數</label>
+        <input class="form-input" type="number" id="set-weeks" placeholder="20" min="1" max="25" style="max-width:80px">
+      </div>
+    </div>
+
+    <div class="setting-section">
+      <h4>班級課表設定</h4>
+      <p style="font-size:12px;color:var(--ink-light);margin-bottom:12px;">選擇每天的節次（無課請選「—」），並勾選彈性課程</p>
+      <div id="class-setups"></div>
+      <button class="save-btn" style="background:var(--flex);margin-bottom:12px" onclick="addClassSetup()">＋ 新增班級</button>
+    </div>
+
+    <button class="save-btn" onclick="saveSettings()">儲存設定</button>
+  </div>
+</div>
+
+<!-- SPECIAL DAYS MODAL -->
+<div class="modal-overlay" id="special-modal">
+  <div class="modal">
+    <h3>特殊日設定 <button class="modal-close" onclick="closeModal('special-modal')">✕</button></h3>
+
+    <div class="special-form">
+      <div class="form-row">
+        <label>日期</label>
+        <input class="form-input" type="date" id="sp-date" style="max-width:180px">
+        <label>類型</label>
+        <select class="form-input" id="sp-type" style="max-width:140px">
+          <option value="exam">段考</option>
+          <option value="review">複習考</option>
+          <option value="holiday">國定假日</option>
+          <option value="other">其他</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label>說明</label>
+        <input class="form-input" id="sp-note" placeholder="例：第一次段考、和平紀念日">
+      </div>
+      <button class="save-btn" onclick="addSpecialDay()">新增</button>
+    </div>
+
+    <div class="special-list" id="special-list"></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+const PERIODS = ['第1節','第2節','第3節','第4節','第5節','第6節','第7節','第8節'];
+const DAYS_ZH = ['週一','週二','週三','週四','週五'];
+const FIELD_LABELS = ['考試','進度','作業'];
+const TW_HOLIDAYS_2025 = {
+  '2025-01-01':'元旦','2025-01-27':'除夕','2025-01-28':'初一','2025-01-29':'初二',
+  '2025-01-30':'初三','2025-02-28':'和平紀念日','2025-04-04':'兒童節',
+  '2025-05-01':'勞動節','2025-06-11':'端午節','2025-09-03':'軍人節',
+  '2025-10-10':'國慶日'
+};
+const TW_HOLIDAYS_2026 = {
+  '2026-01-01':'元旦','2026-02-17':'除夕','2026-02-18':'初一','2026-02-19':'初二',
+  '2026-02-28':'和平紀念日','2026-04-04':'兒童節','2026-05-01':'勞動節',
+  '2026-06-19':'端午節','2026-10-10':'國慶日'
+};
+const TW_HOLIDAYS = {...TW_HOLIDAYS_2025, ...TW_HOLIDAYS_2026};
+
+let state = {
+  year: '115',
+  semester: '上',
+  startDate: null,
+  totalWeeks: 20,
+  currentWeek: 1,
+  currentDay: 0,
+  classes: [],      // [{name, schedule:[{period,isFlex,hasEighth},null,...x5]}]
+  specialDays: [],  // [{date,type,note}]
+  data: {}          // key: "w{week}_d{day}_c{ci}_p{pi}_f{fi}" => string
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem('teachingProgress_v2');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      Object.assign(state, parsed);
+    }
+  } catch(e) {}
+}
+
+function saveState() {
+  localStorage.setItem('teachingProgress_v2', JSON.stringify(state));
+  showToast();
+}
+
+function showToast() {
+  const t = document.getElementById('save-toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1500);
+}
+
+// ═══════════════════════════════════════════════
+// DATE UTILS
+// ═══════════════════════════════════════════════
+function getWeekStartDate(weekNum) {
+  if (!state.startDate) return null;
+  const start = new Date(state.startDate);
+  const d = new Date(start);
+  d.setDate(d.getDate() + (weekNum - 1) * 7);
+  // Move to Monday
+  const dow = d.getDay();
+  const diff = dow === 0 ? -6 : 1 - dow;
+  d.setDate(d.getDate() + diff);
+  return d;
+}
+
+function getDayDate(weekNum, dayIndex) {
+  const mon = getWeekStartDate(weekNum);
+  if (!mon) return null;
+  const d = new Date(mon);
+  d.setDate(d.getDate() + dayIndex);
+  return d;
+}
+
+function formatDateMD(d) {
+  if (!d) return '';
+  const m = d.getMonth() + 1;
+  const day = d.getDate();
+  return `${m}/${day}`;
+}
+
+function dateKey(d) {
+  if (!d) return '';
+  return d.toISOString().slice(0, 10);
+}
+
+function getSpecialDay(d) {
+  if (!d) return null;
+  const key = dateKey(d);
+  const found = state.specialDays.find(s => s.date === key);
+  if (found) return found;
+  if (TW_HOLIDAYS[key]) return { type: 'holiday', note: TW_HOLIDAYS[key], date: key };
+  return null;
+}
+
+// ═══════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════
+function render() {
+  updateHeader();
+  updateTabs();
+  for (let d = 0; d < 5; d++) renderDayView(d);
+}
+
+function updateHeader() {
+  document.getElementById('year-title').textContent =
+    `${state.year}學年度 ${state.semester}學期`;
+  document.getElementById('week-label').textContent = `第${state.currentWeek}週`;
+  document.getElementById('week-subtitle').textContent = `第 ${state.currentWeek} 週`;
+}
+
+function updateTabs() {
+  for (let d = 0; d < 5; d++) {
+    const date = getDayDate(state.currentWeek, d);
+    const el = document.getElementById(`tab-date-${d}`);
+    el.textContent = formatDateMD(date);
+
+    const tab = document.querySelector(`.day-tab[data-day="${d}"]`);
+    const special = getSpecialDay(date);
+    tab.classList.toggle('holiday', special?.type === 'holiday');
+    tab.classList.toggle('active', d === state.currentDay);
+  }
+}
+
+function renderDayView(dayIndex) {
+  const container = document.getElementById(`day-${dayIndex}`);
+  const date = getDayDate(state.currentWeek, dayIndex);
+  const special = getSpecialDay(date);
+  const classes = state.classes;
+
+  let html = '';
+
+  // Legend (only day 0)
+  if (dayIndex === 0) {
+    html += `<div class="legend">
+      <div class="legend-item"><div class="legend-dot flex"></div>彈性課程</div>
+      <div class="legend-item"><div class="legend-dot eighth"></div>第八節補課</div>
+      <div class="legend-item"><div class="legend-dot exam"></div>段考／複習考</div>
+      <div class="legend-item"><div class="legend-dot holiday"></div>假日</div>
+    </div><br>`;
+  }
+
+  // Week note
+  const weekNoteKey = `w${state.currentWeek}_note`;
+  if (dayIndex === 0) {
+    const wNote = state.data[weekNoteKey] || '';
+    html += `<div class="week-note-row">
+      <label>本週備注</label>
+      <input value="${escHtml(wNote)}" placeholder="本週特別事項…"
+        oninput="saveField('${weekNoteKey}', this.value)">
+    </div>`;
+  }
+
+  // Special banner
+  if (special) {
+    const typeLabel = {exam:'段考',review:'複習考',holiday:'假日',other:'特殊日'}[special.type] || '特殊日';
+    const isExam = special.type === 'exam' || special.type === 'review';
+    html += `<div class="special-banner ${isExam ? 'exam' : 'holiday'}">
+      <span>📌</span>
+      <div>
+        <div>${typeLabel}：${escHtml(special.note)}</div>
+        ${isExam ? `<div class="special-banner-note">仍可填寫備注（如複習考後半節授課內容）</div>` : ''}
+      </div>
+    </div>`;
+  }
+
+  if (classes.length === 0) {
+    html += `<div style="text-align:center;padding:40px;color:var(--ink-light)">
+      請先至「設定」新增班級與課表</div>`;
+    container.innerHTML = html;
+    return;
+  }
+
+  // Collect which periods appear this day across all classes
+  // Build per-class schedule for this day
+  const daySchedules = classes.map(cls => cls.schedule[dayIndex]);
+  // Determine which row periods to show
+  // Normal period rows: unique periods from all classes (sorted)
+  // 8th period: separate row if any class has it
+  const normalPeriods = [];
+  let hasEighth = false;
+  daySchedules.forEach(ds => {
+    if (!ds) return;
+    if (!normalPeriods.includes(ds.period)) normalPeriods.push(ds.period);
+    if (ds.hasEighth) hasEighth = true;
+  });
+  normalPeriods.sort();
+
+  const rows = [...normalPeriods.map(p => ({type:'normal', period:p}))];
+  if (hasEighth) rows.push({type:'eighth', period:'第8節'});
+
+  // Grid header
+  html += `<div class="day-grid">`;
+  html += `<div class="grid-corner"></div>`;
+  classes.forEach(cls => {
+    html += `<div class="grid-class-header">
+      <div class="class-name">${escHtml(cls.name)}</div>
+    </div>`;
+  });
+
+  // Rows
+  rows.forEach(row => {
+    // Period label
+    const isEighth = row.type === 'eighth';
+    html += `<div class="period-label ${isEighth ? 'eighth' : ''}">${row.period}</div>`;
+
+    // Cells
+    classes.forEach((cls, ci) => {
+      const ds = daySchedules[ci];
+      const isEighthRow = isEighth;
+      const hasThisPeriod = ds && (
+        isEighthRow ? ds.hasEighth : ds.period === row.period
+      );
+      const isFlex = !isEighthRow && ds && ds.period === row.period && ds.isFlex;
+      const isExamDay = special && (special.type === 'exam' || special.type === 'review');
+
+      if (!hasThisPeriod) {
+        html += `<div class="period-cell no-class"><div class="no-class-text">—</div></div>`;
+      } else {
+        const prefix = isEighthRow ? 'eighth' : (isFlex ? 'flex' : '');
+        const extraClass = isEighthRow ? 'eighth-class' : (isFlex ? 'flex-class' : '') + (isExamDay ? ' exam-class' : '');
+        html += `<div class="period-cell ${extraClass}">`;
+        if (isFlex) html += `<div class="cell-badge"><span class="badge-flex">彈性</span></div>`;
+        if (isEighthRow) html += `<div class="cell-badge"><span class="badge-eighth">補課</span></div>`;
+        html += `<div class="cell-fields">`;
+        FIELD_LABELS.forEach((label, fi) => {
+          const key = `w${state.currentWeek}_d${dayIndex}_c${ci}_r${row.period}_f${fi}`;
+          const val = state.data[key] || '';
+          html += `<div class="cell-field">
+            <div class="field-label ${fi===0?'exam-label':''}">${label}</div>
+            <textarea class="field-input" rows="1" placeholder=""
+              oninput="saveField('${key}', this.value); autoResize(this)"
+              onfocus="autoResize(this)">${escHtml(val)}</textarea>
+          </div>`;
+        });
+        html += `</div></div>`;
+      }
+    });
+  });
+
+  html += `</div>`;
+  container.innerHTML = html;
+  // Auto-resize all textareas
+  container.querySelectorAll('textarea').forEach(ta => autoResize(ta));
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
+function saveField(key, val) {
+  state.data[key] = val;
+  saveState();
+}
+
+function escHtml(str) {
+  return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+function changeWeek(delta) {
+  const newWeek = state.currentWeek + delta;
+  if (newWeek < 1 || newWeek > state.totalWeeks) return;
+  state.currentWeek = newWeek;
+  saveState();
+  render();
+}
+
+function switchDay(d) {
+  document.querySelectorAll('.day-view').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.day-tab').forEach(el => el.classList.remove('active'));
+  document.getElementById(`day-${d}`).classList.add('active');
+  document.querySelector(`.day-tab[data-day="${d}"]`).classList.add('active');
+  state.currentDay = d;
+}
+
+// ═══════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════
+function openModal(id) {
+  if (id === 'settings-modal') populateSettings();
+  if (id === 'special-modal') populateSpecial();
+  document.getElementById(id).classList.add('open');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+// ═══════════════════════════════════════════════
+// SETTINGS
+// ═══════════════════════════════════════════════
+function populateSettings() {
+  document.getElementById('set-year').value = state.year;
+  document.getElementById('set-sem').value = state.semester;
+  document.getElementById('set-start').value = state.startDate || '';
+  document.getElementById('set-weeks').value = state.totalWeeks;
+  renderClassSetups();
+}
+
+function renderClassSetups() {
+  const container = document.getElementById('class-setups');
+  container.innerHTML = '';
+  state.classes.forEach((cls, ci) => {
+    container.innerHTML += buildClassSetupHTML(cls, ci);
+  });
+}
+
+function buildClassSetupHTML(cls, ci) {
+  const days = ['一','二','三','四','五'];
+  let daysHtml = '';
+  days.forEach((dayLabel, di) => {
+    const ds = cls.schedule[di];
+    const selVal = ds ? ds.period : '0';
+    const flexChk = ds && ds.isFlex ? 'checked' : '';
+    const eighthChk = ds && ds.hasEighth ? 'checked' : '';
+    daysHtml += `<div class="day-col">
+      <label>週${dayLabel}</label>
+      <select id="cs${ci}_d${di}_p" onchange="updateSchedule(${ci},${di})">
+        <option value="0">—</option>
+        ${[1,2,3,4,5,6,7].map(p =>
+          `<option value="${p}" ${selVal==p?'selected':''}>第${p}節</option>`
+        ).join('')}
+      </select>
+      <div class="checkbox-row">
+        <input type="checkbox" id="cs${ci}_d${di}_flex" ${flexChk}
+          onchange="updateSchedule(${ci},${di})">
+        <label for="cs${ci}_d${di}_flex">彈性</label>
+      </div>
+      <div class="checkbox-row">
+        <input type="checkbox" id="cs${ci}_d${di}_8th" ${eighthChk}
+          onchange="updateSchedule(${ci},${di})">
+        <label for="cs${ci}_d${di}_8th">第8節</label>
+      </div>
+    </div>`;
+  });
+  return `<div class="class-setup-card" id="cls-card-${ci}">
+    <h5>
+      <input value="${escHtml(cls.name)}" placeholder="班級名稱（如 313）"
+        style="background:none;border:none;font:inherit;color:inherit;width:80px;outline:none;border-bottom:1.5px solid var(--accent)"
+        oninput="state.classes[${ci}].name=this.value">
+      <button onclick="removeClass(${ci})" style="float:right;background:none;border:none;color:#ccc;cursor:pointer;font-size:16px">✕</button>
+    </h5>
+    <div class="day-schedule">${daysHtml}</div>
+  </div>`;
+}
+
+function updateSchedule(ci, di) {
+  const periodEl = document.getElementById(`cs${ci}_d${di}_p`);
+  const flexEl = document.getElementById(`cs${ci}_d${di}_flex`);
+  const eighthEl = document.getElementById(`cs${ci}_d${di}_8th`);
+  if (!periodEl) return;
+  const period = parseInt(periodEl.value);
+  if (period === 0) {
+    state.classes[ci].schedule[di] = null;
+  } else {
+    state.classes[ci].schedule[di] = {
+      period: `第${period}節`,
+      isFlex: flexEl.checked,
+      hasEighth: eighthEl.checked
+    };
+  }
+}
+
+function addClassSetup() {
+  state.classes.push({ name: '', schedule: [null,null,null,null,null] });
+  renderClassSetups();
+}
+
+function removeClass(ci) {
+  state.classes.splice(ci, 1);
+  renderClassSetups();
+}
+
+function saveSettings() {
+  state.year = document.getElementById('set-year').value.trim() || '115';
+  state.semester = document.getElementById('set-sem').value;
+  state.startDate = document.getElementById('set-start').value;
+  state.totalWeeks = parseInt(document.getElementById('set-weeks').value) || 20;
+  saveState();
+  render();
+  closeModal('settings-modal');
+}
+
+// ═══════════════════════════════════════════════
+// SPECIAL DAYS
+// ═══════════════════════════════════════════════
+function populateSpecial() {
+  renderSpecialList();
+}
+
+function renderSpecialList() {
+  const container = document.getElementById('special-list');
+  const typeLabel = {exam:'段考',review:'複習考',holiday:'假日',other:'其他'};
+  const typeCls = {exam:'exam',review:'review',holiday:'holiday',other:'review'};
+  container.innerHTML = state.specialDays.length === 0
+    ? '<div style="text-align:center;padding:20px;color:var(--ink-light)">尚未設定特殊日</div>'
+    : state.specialDays.map((s, i) => `
+      <div class="special-item">
+        <div class="special-item-info">
+          <span class="type-badge ${typeCls[s.type]||'review'}">${typeLabel[s.type]||s.type}</span>
+          <div class="date-text">${s.date}　${escHtml(s.note)}</div>
+        </div>
+        <button class="del-btn" onclick="removeSpecial(${i})">✕</button>
+      </div>`).join('');
+}
+
+function addSpecialDay() {
+  const date = document.getElementById('sp-date').value;
+  const type = document.getElementById('sp-type').value;
+  const note = document.getElementById('sp-note').value.trim();
+  if (!date) { alert('請選擇日期'); return; }
+  if (!note) { alert('請填寫說明'); return; }
+  state.specialDays.push({ date, type, note });
+  state.specialDays.sort((a,b) => a.date.localeCompare(b.date));
+  saveState();
+  renderSpecialList();
+  document.getElementById('sp-date').value = '';
+  document.getElementById('sp-note').value = '';
+  render();
+}
+
+function removeSpecial(i) {
+  state.specialDays.splice(i, 1);
+  saveState();
+  renderSpecialList();
+  render();
+}
+
+// ═══════════════════════════════════════════════
+// EXPORT (basic Word-compatible HTML)
+// ═══════════════════════════════════════════════
+function exportWord() {
+  alert('匯出功能開發中，將在下一版本提供 Word 格式匯出。');
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+loadState();
+// Demo data if fresh
+if (state.classes.length === 0) {
+  state.classes = [
+    { name: '313', schedule: [
+      { period:'第2節', isFlex:false, hasEighth:false },
+      { period:'第4節', isFlex:false, hasEighth:false },
+      null,
+      { period:'第1節', isFlex:false, hasEighth:false },
+      { period:'第4節', isFlex:true,  hasEighth:true  }
+    ]},
+    { name: '314', schedule: [
+      { period:'第1節', isFlex:false, hasEighth:false },
+      null,
+      { period:'第3節', isFlex:false, hasEighth:false },
+      { period:'第2節', isFlex:true,  hasEighth:false },
+      { period:'第4節', isFlex:false, hasEighth:false }
+    ]},
+    { name: '315', schedule: [
+      null,
+      { period:'第3節', isFlex:false, hasEighth:false },
+      { period:'第1節', isFlex:true,  hasEighth:false },
+      { period:'第4節', isFlex:false, hasEighth:false },
+      { period:'第2節', isFlex:false, hasEighth:true  }
+    ]},
+    { name: '316', schedule: [
+      { period:'第3節', isFlex:false, hasEighth:false },
+      { period:'第1節', isFlex:true,  hasEighth:false },
+      { period:'第4節', isFlex:false, hasEighth:false },
+      null,
+      { period:'第2節', isFlex:false, hasEighth:false }
+    ]}
+  ];
+  state.year = '115';
+  state.semester = '上';
+  state.startDate = '2025-09-01';
+  state.totalWeeks = 20;
+}
+render();
+</script>
+</body>
+</html>
