@@ -514,8 +514,10 @@ function getStudentName(cls,num){
 function updateNoteHeader(){
   var cls=selClass||'—';
   var date=document.getElementById('rec-date').value||'—';
-  document.getElementById('note-cls-display').textContent=cls;
-  document.getElementById('note-date-display').textContent=date;
+  var cd=document.getElementById('note-cls-display');
+  var dd=document.getElementById('note-date-display');
+  if(cd)cd.textContent=cls;
+  if(dd)dd.textContent=date;
 }
 
 function buildAll(){
@@ -736,7 +738,7 @@ function switchTab(name,el){
   document.getElementById('panel-'+name).className='panel active';
   if(name==='log')renderLog();
   if(name==='summary')renderSummary();
-  if(name==='settings')buildSettings();
+  if(name==='settings'){buildSettings();buildRosterClsDropdown();}
 }
 
 function exportCSV(){
@@ -825,6 +827,7 @@ function exportAllCSV(){
 
 function buildRosterClsDropdown(){
   var sel=document.getElementById('roster-cls-sel');
+  if(!sel)return;
   sel.innerHTML='';
   cfg.classes.forEach(function(cls){
     var o=document.createElement('option');o.value=cls;o.textContent=cls;sel.appendChild(o);
