@@ -449,6 +449,7 @@
       <input class="form-input" id="rs-note" placeholder="例：因校外教學補課"></div>
 
     <button class="save-btn" onclick="addReschedule()">新增調課</button>
+    <div id="rs-debug" style="font-size:11px;color:#888;margin-top:8px;word-break:break-all;padding:6px;background:#f5f5f5;border-radius:6px;min-height:20px"></div>
 
     <div class="setting-section" style="margin-top:20px">
       <h4>已設定的調課</h4>
@@ -601,7 +602,7 @@ function renderMain(){
       {
         // Check for reschedule destinations arriving at this slot (regardless of ds)
         const dstRsList=state.reschedules.filter(r=>r.ci===ci&&r.dstWeek===state.currentWeek&&r.dstDi===di);
-        if(state.reschedules.length&&di===0&&ci===0) console.log('DEBUG reschedules:',JSON.stringify(state.reschedules),'currentWeek:',state.currentWeek,'ci:',ci,'di:',di,'dstRsList:',dstRsList.length);
+
 
         if(!ds){
           if(!dstRsList.length){
@@ -1146,10 +1147,14 @@ function addReschedule(){
   if(!srcDs){alert('來源班級該天沒有課');return;}
   // srcVariant: '8' only if purely eighth-node day; 'n' for normal/flex
   const srcVariant=(!srcDs.period&&!srcDs.isFlex&&srcDs.hasEighth)?'8':'n';
-  console.log('addReschedule: ci=',ci,'srcDi=',srcDi,'srcVariant=',srcVariant,'dstDi=',dstDi,'dstWeek=',dstWeek);
+
 
   const id='rs_'+Date.now();
-  state.reschedules.push({id,ci,srcWeek,srcDi,srcVariant,dstWeek,dstDi,dstPeriod,note});
+  const rsEntry={id,ci,srcWeek,srcDi,srcVariant,dstWeek,dstDi,dstPeriod,note};
+  state.reschedules.push(rsEntry);
+  // Show debug info on screen
+  const dbg=document.getElementById('rs-debug');
+  if(dbg) dbg.textContent='存入：'+JSON.stringify(rsEntry);
   saveState();
   renderRescheduleList();
   render();
