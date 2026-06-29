@@ -88,6 +88,7 @@ tr:hover td{background:var(--surface2);}
 
 .toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,16px) + 16px);left:50%;transform:translateX(-50%);background:#1a1814;color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;font-weight:500;opacity:0;transition:opacity 0.2s;pointer-events:none;z-index:999;white-space:nowrap;}
 .toast.show{opacity:1;}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </style>
 </head>
 <body>
@@ -242,12 +243,12 @@ tr:hover td{background:var(--surface2);}
     </div>
     <div class="card">
       <div class="card-title">班級名單匯入</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:8px">CSV 格式：座號,姓名（第一列為標題）<br>匯入後座號按鈕將顯示姓名</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:8px">支援 Excel（.xlsx）或 CSV 格式<br>欄位：座號、姓名（第一列為標題）<br>匯入後座號按鈕將顯示姓名</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <select id="roster-cls-sel" style="flex:1;height:38px;font-size:13px;border:1.5px solid var(--border);border-radius:9px;background:var(--surface2);color:var(--text);padding:0 10px"></select>
         <label class="btn" style="cursor:pointer;flex:1;justify-content:center">
           ⬆ 匯入名單
-          <input type="file" accept=".csv" style="display:none" onchange="importRoster(this)">
+          <input type="file" accept=".csv,.xlsx,.xls" style="display:none" onchange="importRoster(this)">
         </label>
       </div>
       <div id="roster-preview" style="margin-top:8px;font-size:12px;color:var(--text3)"></div>
@@ -410,28 +411,56 @@ function buildRosterClsDropdown(){
 function importRoster(input){
   var file=input.files[0];if(!file)return;
   var cls=document.getElementById('roster-cls-sel').value;
-  var reader=new FileReader();
-  reader.onload=function(e){
-    var lines=e.target.result.replace(/^\uFEFF/,'').split('\n').filter(function(l){return l.trim();});
+  var ext=file.name.split('.').pop().toLowerCase();
+
+  function processRows(rows){
+    // rows: array of arrays, first row is header
     if(!roster[cls])roster[cls]={};
     var count=0;
-    lines.slice(1).forEach(function(line){
-      var p=line.split(',');
-      if(p.length<2)return;
-      var num=parseInt(p[0].trim());
-      var name=(p[1]||'').trim();
-      if(isNaN(num)||!name)return;
+    var startRow=0;
+    // 自動偵測標題列（跳過）
+    if(rows.length>0){
+      var first=rows[0];
+      if(isNaN(parseInt(first[0])))startRow=1;
+    }
+    for(var i=startRow;i<rows.length;i++){
+      var row=rows[i];
+      if(!row||row.length<2)continue;
+      var num=parseInt(row[0]);
+      var name=String(row[1]||'').trim();
+      if(isNaN(num)||!name)continue;
       roster[cls][num]=name;
       count++;
-    });
+    }
     saveRoster();
     buildNumGrid();
-    var preview=document.getElementById('roster-preview');
-    preview.textContent='已匯入「'+cls+'」名單，共 '+count+' 位學生';
+    document.getElementById('roster-preview').textContent='已匯入「'+cls+'」名單，共 '+count+' 位學生';
     showToast('名單匯入完成 ✓');
     input.value='';
-  };
-  reader.readAsText(file,'utf-8');
+  }
+
+  if(ext==='xlsx'||ext==='xls'){
+    var reader=new FileReader();
+    reader.onload=function(e){
+      try{
+        var wb=XLSX.read(e.target.result,{type:'array'});
+        var ws=wb.Sheets[wb.SheetNames[0]];
+        var rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+        processRows(rows);
+      }catch(err){
+        showToast('讀取失敗，請確認檔案格式');
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var lines=e.target.result.replace(/^\uFEFF/,'').split('\n').filter(function(l){return l.trim();});
+      var rows=lines.map(function(l){return l.split(',');});
+      processRows(rows);
+    };
+    reader.readAsText(file,'utf-8');
+  }
 }
 
 function saveNote(){
