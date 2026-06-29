@@ -963,6 +963,13 @@ function importScheduleJSON(){
       if(!cls.name)throw new Error(`第${i+1}個班級缺少 name`);
       if(!Array.isArray(cls.schedule)||cls.schedule.length!==5)throw new Error(`${cls.name} schedule 需為5個元素`);
     });
+    // Warn if existing classes will be replaced
+    if(state.classes.length>0){
+      const oldNames=state.classes.map(c=>c.name).join('、');
+      const newNames=arr.map(c=>c.name).join('、');
+      const ok=confirm(`匯入課表將取代目前的班級設定。\n\n目前班級：${oldNames}\n匯入班級：${newNames}\n\n已輸入的進度內容會保留，但若班級數量或順序不同，內容可能對應到不同班級。\n\n確定繼續匯入？`);
+      if(!ok){msg.className='import-msg err';msg.textContent='已取消匯入';return;}
+    }
     state.classes=arr;saveState();renderClassSetups();render();
     msg.className='import-msg ok';msg.textContent=`✓ 成功匯入 ${arr.length} 個班級`;
   }catch(e){msg.className='import-msg err';msg.textContent='✗ '+e.message;}
@@ -985,8 +992,30 @@ function importCalendarJSON(){
       else state.specialDays.push(item);
     });
     state.specialDays.sort((a,b)=>a.date.localeCompare(b.date));
+
+    // Auto-update totalWeeks if calendar has dates beyond current setting
+    if(state.startDate){
+      let maxWeek=state.totalWeeks;
+      arr.forEach(item=>{
+        const itemDate=new Date(item.date);
+        const mon=getWeekMonday(1);
+        if(!mon)return;
+        const diffDays=Math.floor((itemDate-mon)/86400000);
+        const weekNum=Math.floor(diffDays/7)+1;
+        if(weekNum>maxWeek)maxWeek=weekNum;
+      });
+      if(maxWeek>state.totalWeeks){
+        state.totalWeeks=maxWeek;
+        msg.className='import-msg ok';
+        msg.textContent=`✓ 成功匯入 ${arr.length} 筆特殊日，總週數已自動更新為 ${maxWeek} 週`;
+      } else {
+        msg.className='import-msg ok';
+        msg.textContent=`✓ 成功匯入 ${arr.length} 筆特殊日`;
+      }
+    } else {
+      msg.className='import-msg ok';msg.textContent=`✓ 成功匯入 ${arr.length} 筆特殊日`;
+    }
     saveState();renderSpecialList();render();
-    msg.className='import-msg ok';msg.textContent=`✓ 成功匯入 ${arr.length} 筆特殊日`;
   }catch(e){msg.className='import-msg err';msg.textContent='✗ '+e.message;}
 }
 
