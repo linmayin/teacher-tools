@@ -10,6 +10,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>教學進度表</title>
+<meta name="version" content="1782748308">
 <style>
   :root {
     --ink: #1c1c1e;
@@ -435,6 +436,13 @@
             <option value="2">週三</option><option value="3">週四</option>
             <option value="4">週五</option>
           </select></div>
+        <div class="form-row"><label>節次</label>
+          <select class="form-input" id="rs-dst-period">
+            <option value="1">第1節</option><option value="2">第2節</option>
+            <option value="3">第3節</option><option value="4">第4節</option>
+            <option value="5">第5節</option><option value="6">第6節</option>
+            <option value="7">第7節</option><option value="8">第8節</option>
+          </select></div>
       </div>
     </div>
     <div class="form-row"><label>說明</label>
@@ -621,8 +629,9 @@ function renderMain(){
           const blockCls=r.srcVariant==='8'?'period-block eighth-block reschedule-block':
                          isRsFlex?'period-block flex-block reschedule-block':
                          'period-block reschedule-block';
-          const hdrLabel=r.srcVariant==='8'?'🔄 調課補課（第8節）':
-                         isRsFlex?'🔄 調課補課（彈性）':'🔄 調課補課';
+          const dstP=r.dstPeriod?`第${r.dstPeriod}節`:'';
+          const hdrLabel=r.srcVariant==='8'?`🔄 調課補課${dstP?'（'+dstP+'）':''}`:
+                         isRsFlex?`🔄 調課補課（彈性${dstP?' '+dstP:''}）`:`🔄 調課補課${dstP?' '+dstP:''}`;
           html+=`<div class="${blockCls}">
             <div class="period-block-header">${hdrLabel}${r.note?' ·'+esc(r.note):''}
               <div class="block-actions"><button class="copy-btn" onclick="removeReschedule('${r.id}')">✕</button></div>
@@ -1121,6 +1130,7 @@ function addReschedule(){
   const srcDi=parseInt(document.getElementById('rs-src-day').value);
   const dstWeek=parseInt(document.getElementById('rs-dst-week').value);
   const dstDi=parseInt(document.getElementById('rs-dst-day').value);
+  const dstPeriod=parseInt(document.getElementById('rs-dst-period').value);
   const note=document.getElementById('rs-note').value.trim();
 
   if(isNaN(ci)||isNaN(srcWeek)||isNaN(dstWeek)){alert('請填寫所有欄位');return;}
@@ -1131,7 +1141,7 @@ function addReschedule(){
   const srcVariant=srcDs.hasEighth&&!srcDs.period&&!srcDs.isFlex?'8':'n';
 
   const id='rs_'+Date.now();
-  state.reschedules.push({id,ci,srcWeek,srcDi,srcVariant,dstWeek,dstDi,note});
+  state.reschedules.push({id,ci,srcWeek,srcDi,srcVariant,dstWeek,dstDi,dstPeriod,note});
   saveState();
   renderRescheduleList();
   render();
@@ -1159,7 +1169,7 @@ function renderRescheduleList(){
       <div style="font-size:13px">
         <span class="type-badge" style="background:#fff8f0;color:#b45309;border:1px solid #f0b86e">調課</span>
         ${cls}　第${r.srcWeek}週${['週一','週二','週三','週四','週五'][r.srcDi]}
-        → 第${r.dstWeek}週${['週一','週二','週三','週四','週五'][r.dstDi]}
+        → 第${r.dstWeek}週${['週一','週二','週三','週四','週五'][r.dstDi]}第${r.dstPeriod||'?'}節
         ${r.note?'　'+r.note:''}
       </div>
       <button class="del-btn" onclick="removeReschedule('${r.id}')">✕</button>
