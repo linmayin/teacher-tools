@@ -328,34 +328,18 @@
 
 <!-- BATCH COPY MODAL -->
 <div class="modal-overlay" id="copy-modal">
-  <div class="modal" style="max-width:560px">
+  <div class="modal" style="max-width:520px">
     <h3>批次複製進度 <button class="modal-close" onclick="closeModal('copy-modal')">✕</button></h3>
+    <p style="font-size:12px;color:var(--ink-light);margin-bottom:16px;line-height:1.6">依各班當週上課順序對應：來源班第1節課 → 目標班第1節課，以此類推。彈性對彈性、一般對一般。</p>
 
     <div class="copy-section">
       <h4>來源班級</h4>
       <div class="class-pick-grid" id="copy-src-grid"></div>
     </div>
     <div class="copy-section">
-      <h4>來源天（可多選，不選＝全週）</h4>
-      <div class="class-pick-grid" id="copy-src-day-grid">
-        <button class="class-pick-btn" id="bsd-0" onclick="toggleBatchSrcDay(0)">週一</button>
-        <button class="class-pick-btn" id="bsd-1" onclick="toggleBatchSrcDay(1)">週二</button>
-        <button class="class-pick-btn" id="bsd-2" onclick="toggleBatchSrcDay(2)">週三</button>
-        <button class="class-pick-btn" id="bsd-3" onclick="toggleBatchSrcDay(3)">週四</button>
-        <button class="class-pick-btn" id="bsd-4" onclick="toggleBatchSrcDay(4)">週五</button>
-      </div>
-    </div>
-
-    <div class="copy-section">
       <h4>目標班級（可多選）</h4>
       <div class="class-pick-grid" id="copy-dst-grid"></div>
     </div>
-    <div class="copy-section">
-      <h4>目標天對應</h4>
-      <p style="font-size:12px;color:var(--ink-light);margin-bottom:8px">每個來源天對應到目標的哪天？不設定則沿用同天。</p>
-      <div id="copy-day-map" style="display:flex;flex-direction:column;gap:6px"></div>
-    </div>
-
     <div class="copy-section">
       <h4>複製週次範圍</h4>
       <div class="week-range-row">
@@ -374,7 +358,6 @@
         <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;"><input type="checkbox" id="copy-eighth"> 第八節</label>
       </div>
     </div>
-
     <button class="copy-execute-btn" onclick="executeBatchCopy()">開始複製</button>
     <div class="copy-msg" id="copy-msg"></div>
   </div>
@@ -717,13 +700,8 @@ function openCopyModal(){
   document.getElementById('copy-week-start').value=state.currentWeek;
   document.getElementById('copy-week-end').value=state.currentWeek;
   document.getElementById('copy-msg').textContent='';
-  // Reset day selections
-  document.querySelectorAll('[id^="bsd-"]').forEach(b=>b.classList.remove('selected'));
   window._copySrcIdx=null;
   window._copyDstIdxs=new Set();
-  window._copySrcDays=new Set(); // empty = all days
-  window._copyDayMap={}; // srcDi -> dstDi override
-  updateDayMapUI();
   openModal('copy-modal');
 }
 
@@ -737,28 +715,19 @@ function toggleDst(i){
   else window._copyDstIdxs.add(i);
   document.querySelectorAll('#copy-dst-grid .class-pick-btn').forEach((b,idx)=>{b.classList.toggle('selected',window._copyDstIdxs.has(idx));});
 }
-function toggleBatchSrcDay(di){
-  if(!window._copySrcDays)window._copySrcDays=new Set();
-  if(window._copySrcDays.has(di))window._copySrcDays.delete(di);
-  else window._copySrcDays.add(di);
-  document.getElementById(`bsd-${di}`)?.classList.toggle('selected',window._copySrcDays.has(di));
-  updateDayMapUI();
-}
-function updateDayMapUI(){
-  const srcDays=window._copySrcDays?.size>0?[...window._copySrcDays].sort():[0,1,2,3,4];
-  const map=window._copyDayMap||{};
-  const container=document.getElementById('copy-day-map');
-  if(!container)return;
-  container.innerHTML=srcDays.map(di=>{
-    const curDst=map[di]??di;
-    const opts=DAYS_ZH.map((d,idx)=>`<option value="${idx}"${idx===curDst?' selected':''}>${d}</option>`).join('');
-    return`<div style="display:flex;align-items:center;gap:10px;font-size:13px">
-      <span style="min-width:36px;font-weight:600">${DAYS_ZH[di]}</span>
-      <span style="color:var(--ink-light)">→</span>
-      <select style="border:1.5px solid var(--rule);border-radius:8px;padding:5px 8px;font-family:var(--font);font-size:13px;background:var(--paper);color:var(--ink);-webkit-appearance:none"
-        onchange="window._copyDayMap[${di}]=parseInt(this.value)">${opts}</select>
-    </div>`;
-  }).join('');
+
+// Build ordered lesson sequence for a class in a week
+// Returns array of {di, variant} in day order
+function getClassSequence(ci, copyNormal, copyFlex, copyEighth){
+  const seq=[];
+  for(let di=0;di<5;di++){
+    const ds=state.classes[ci]?.schedule[di];
+    if(!ds)continue;
+    if(copyNormal&&!ds.isFlex) seq.push({di,variant:'n'});
+    if(copyFlex&&ds.isFlex)    seq.push({di,variant:'n'});
+    if(copyEighth&&ds.hasEighth) seq.push({di,variant:'8'});
+  }
+  return seq;
 }
 
 function executeBatchCopy(){
@@ -775,42 +744,29 @@ function executeBatchCopy(){
   const copyEighth=document.getElementById('copy-eighth').checked;
   if(wStart>wEnd){msg.className='copy-msg err';msg.textContent='週次範圍錯誤';return;}
 
-  const srcDays=window._copySrcDays?.size>0?[...window._copySrcDays].sort():[0,1,2,3,4];
-  const dayMap=window._copyDayMap||{};
-
   let count=0;
   for(let w=wStart;w<=wEnd;w++){
-    srcDays.forEach(srcDi=>{
-      const dstDi=dayMap[srcDi]??srcDi;
-      const srcDs=state.classes[srcCi]?.schedule[srcDi];
-      if(!srcDs)return;
+    const srcSeq=getClassSequence(srcCi,copyNormal,copyFlex,copyEighth);
 
-      const variants=[];
-      if(copyNormal&&!srcDs.isFlex)variants.push('n');
-      if(copyFlex&&srcDs.isFlex)variants.push('n');
-      if(copyEighth&&srcDs.hasEighth)variants.push('8');
-
-      dstCis.forEach(dstCi=>{
-        const dstDs=state.classes[dstCi]?.schedule[dstDi];
-        if(!dstDs)return;
-        variants.forEach(variant=>{
-          // Check variant compatibility
-          if(variant==='n'&&srcDs.isFlex&&!dstDs.isFlex)return;
-          if(variant==='n'&&!srcDs.isFlex&&dstDs.isFlex)return;
-          if(variant==='8'&&!dstDs.hasEighth)return;
-          FIELD_LABELS.forEach((_,fi)=>{
-            const srcKey=`w${w}_d${srcDi}_c${srcCi}_${variant}_f${fi}`;
-            const dstKey=`w${w}_d${dstDi}_c${dstCi}_${variant}_f${fi}`;
-            if(state.data[srcKey]!==undefined){state.data[dstKey]=state.data[srcKey];count++;}
-          });
+    dstCis.forEach(dstCi=>{
+      const dstSeq=getClassSequence(dstCi,copyNormal,copyFlex,copyEighth);
+      // Pair up by index; stop at shorter sequence
+      const len=Math.min(srcSeq.length,dstSeq.length);
+      for(let i=0;i<len;i++){
+        const src=srcSeq[i];
+        const dst=dstSeq[i];
+        FIELD_LABELS.forEach((_,fi)=>{
+          const srcKey=`w${w}_d${src.di}_c${srcCi}_${src.variant}_f${fi}`;
+          const dstKey=`w${w}_d${dst.di}_c${dstCi}_${dst.variant}_f${fi}`;
+          if(state.data[srcKey]!==undefined){state.data[dstKey]=state.data[srcKey];count++;}
         });
-      });
+      }
     });
   }
 
   saveState();render();
   msg.className='copy-msg ok';
-  msg.textContent=`✓ 已複製 ${Math.floor(count/3)} 個節次到 ${dstCis.length} 個班級`;
+  msg.textContent=`✓ 已依課次順序複製 ${Math.floor(count/3)} 個節次到 ${dstCis.length} 個班級`;
 }
 
 // MODAL
