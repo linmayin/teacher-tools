@@ -5,247 +5,170 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="教師工具箱">
-<meta name="theme-color" content="#f5f4f0">
-<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌻</text></svg>">
+<meta name="theme-color" content="#1a1814">
 <title>教師工具箱</title>
 <style>
+:root{
+  --bg:#f5f4f0;--surface:#fff;--surface2:#f0ede8;--border:#e0dbd3;
+  --text:#1a1814;--text2:#6b6560;--text3:#a09a93;
+  --accent:#2d5be3;--accent-light:#edf0fd;
+  --green:#1e7e4a;--green-light:#edf7f2;
+  --amber:#b45309;--amber-light:#fef3c7;
+  --radius:16px;--shadow:0 4px 20px rgba(0,0,0,0.08);
+}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-html,body{min-height:100%;background:#f5f4f0;font-family:'PingFang TC','Noto Sans TC',sans-serif;color:#1a1814;}
+html,body{min-height:100%;background:var(--bg);font-family:'PingFang TC','Noto Sans TC',sans-serif;color:var(--text);}
 
-.wrap{max-width:480px;margin:0 auto;padding:20px 18px 40px;}
+.page{max-width:480px;margin:0 auto;padding:env(safe-area-inset-top,0px) 18px env(safe-area-inset-bottom,32px);}
 
-.topbar{display:flex;align-items:center;gap:10px;margin-bottom:28px;}
-.topbar-icon{font-size:26px;line-height:1;}
-.topbar-title{font-size:17px;font-weight:700;color:#1a1814;letter-spacing:-0.3px;}
-.topbar-sub{font-size:12px;color:#a09a93;margin-top:2px;}
+/* Hero */
+.hero{padding:40px 0 24px;text-align:center;}
+.hero-icon{font-size:52px;margin-bottom:12px;display:block;}
+.hero-title{font-size:24px;font-weight:800;letter-spacing:-0.5px;color:var(--text);margin-bottom:6px;}
+.hero-sub{font-size:13px;color:var(--text3);line-height:1.6;}
 
-.section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:#a09a93;margin:0 0 10px;}
-.section-gap{margin-top:8px;}
-
-.card{
-  background:#fff;
-  border:1px solid #e0dbd3;
-  border-radius:16px;
-  box-shadow:0 4px 20px rgba(0,0,0,0.07);
-  overflow:hidden;
+/* Cards */
+.tool-card{
+  background:var(--surface);
+  border-radius:var(--radius);
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
   margin-bottom:14px;
+  overflow:hidden;
   text-decoration:none;
   display:block;
-  transition:transform 0.12s,box-shadow 0.12s;
+  transition:transform 0.12s, box-shadow 0.12s;
 }
-.card:active{transform:scale(0.98);box-shadow:0 2px 10px rgba(0,0,0,0.06);}
+.tool-card:active{transform:scale(0.98);box-shadow:0 2px 10px rgba(0,0,0,0.06);}
 
-.card-stripe{height:5px;}
-.s-blue{background:#2d5be3;}
-.s-green{background:#1e7e4a;}
-.s-amber{background:#b45309;}
-.s-slate{background:#5c6bc0;}
-.s-rose{background:#be185d;}
+.card-accent{height:5px;}
+.accent-blue{background:var(--accent);}
+.accent-green{background:var(--green);}
+.accent-amber{background:var(--amber);}
 
-.card-body{padding:14px 16px 16px;}
-.card-header{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
-.card-emoji{font-size:24px;flex-shrink:0;}
-.card-name{font-size:15px;font-weight:700;color:#1a1814;letter-spacing:-0.2px;}
+.card-body{padding:16px 18px 18px;}
+.card-header{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.card-emoji{font-size:28px;flex-shrink:0;}
+.card-name{font-size:17px;font-weight:700;color:var(--text);letter-spacing:-0.3px;}
+.card-desc{font-size:13px;color:var(--text2);line-height:1.65;margin-bottom:12px;}
 
-.device-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;margin-bottom:8px;}
-.badge-phone{background:#edf0fd;color:#2d5be3;}
-.badge-pc{background:#fef3c7;color:#b45309;}
+.tag-row{display:flex;flex-wrap:wrap;gap:6px;}
+.tag{display:inline-block;font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;}
+.tag-blue{background:var(--accent-light);color:var(--accent);}
+.tag-green{background:var(--green-light);color:var(--green);}
+.tag-amber{background:var(--amber-light);color:var(--amber);}
 
-.card-desc{font-size:12px;color:#6b6560;line-height:1.65;margin-bottom:8px;}
-
-.note-box{background:#f8f7f4;border-left:3px solid #e0dbd3;border-radius:0 6px 6px 0;padding:8px 10px;margin-bottom:10px;font-size:11px;color:#6b6560;line-height:1.7;}
-.note-box b{color:#1a1814;}
-.note-box code{font-family:monospace;background:#eee;padding:1px 4px;border-radius:3px;font-size:10px;}
-
-.tag-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
-.tag{font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;}
-.t-blue{background:#edf0fd;color:#2d5be3;}
-.t-green{background:#edf7f2;color:#1e7e4a;}
-.t-amber{background:#fef3c7;color:#b45309;}
-.t-slate{background:#eef0fb;color:#5c6bc0;}
-.t-rose{background:#fdf2f8;color:#be185d;}
-
-.btn{
+.open-btn{
   display:flex;align-items:center;justify-content:center;gap:6px;
-  height:38px;border-radius:9px;
-  font-size:13px;font-weight:600;color:#fff;
+  margin-top:14px;height:40px;border-radius:10px;
+  font-size:14px;font-weight:600;
   transition:opacity 0.12s;
 }
-.btn:active{opacity:0.8;}
-.btn-blue{background:#2d5be3;}
-.btn-green{background:#1e7e4a;}
-.btn-amber{background:#b45309;}
-.btn-slate{background:#5c6bc0;}
-.btn-rose{background:#be185d;}
+.open-btn:active{opacity:0.75;}
+.btn-blue{background:var(--accent);color:#fff;}
+.btn-green{background:var(--green);color:#fff;}
+.btn-amber{background:var(--amber);color:#fff;}
 
-.footer{text-align:center;font-size:11px;color:#a09a93;line-height:1.9;padding-top:4px;}
+/* Footer */
+.footer{text-align:center;padding:24px 0 8px;font-size:11px;color:var(--text3);line-height:1.8;}
+.footer a{color:var(--text3);}
+
+/* Divider */
+.section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--text3);margin:4px 0 10px;}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="page">
 
-  <div class="topbar">
-    <span class="topbar-icon">🌻</span>
-    <div>
-      <div class="topbar-title">教師工具箱</div>
-      <div class="topbar-sub">課堂記錄 · 導師班管理 · 成績登記</div>
-    </div>
+  <div class="hero">
+    <span class="hero-icon">🧰</span>
+    <div class="hero-title">教師工具箱</div>
+    <div class="hero-sub">課堂表現記錄 ＆ 優缺點管理<br>點選工具即可開始使用</div>
   </div>
 
-  <!-- 課堂表現記錄 -->
   <div class="section-label">課堂表現記錄</div>
 
-  <a class="card" href="classroom_record.html">
-    <div class="card-stripe s-blue"></div>
+  <a class="tool-card" href="classroom_record.html">
+    <div class="card-accent accent-blue"></div>
     <div class="card-body">
-      <div class="card-header"><span class="card-emoji">📋</span><span class="card-name">課堂記錄（四班）</span></div>
-      <span class="device-badge badge-phone">📱 適合以手機開啟</span>
-      <div class="card-desc">記錄學生課堂加扣分，支援四個班級，可依班級、日期篩選，期末匯出 CSV 統整。</div>
-      <div class="note-box">
-        <b>使用說明</b><br>
-        上方選擇班級與日期後，點選座號即可登記加扣分與事由。每筆記錄即時存入瀏覽器。<br><br>
-        <b>注意事項</b><br>
-        • 班級名稱可在設定中自訂<br>
-        • 建議每學期末匯出 CSV 備份，清除瀏覽器資料會導致記錄消失
+      <div class="card-header">
+        <span class="card-emoji">📋</span>
+        <span class="card-name">課堂記錄（四班）</span>
       </div>
+      <div class="card-desc">記錄學生課堂表現的加扣分，支援四個班級，可依班級、日期篩選，期末匯出 CSV 統整。</div>
       <div class="tag-row">
-        <span class="tag t-blue">四個班級</span>
-        <span class="tag t-blue">座號 1–40</span>
-        <span class="tag t-blue">匯出 CSV</span>
+        <span class="tag tag-blue">四個班級</span>
+        <span class="tag tag-blue">座號 1–40</span>
+        <span class="tag tag-blue">班級名稱可自訂</span>
+        <span class="tag tag-blue">匯出 CSV</span>
       </div>
-      <div class="btn btn-blue">開啟工具 →</div>
+      <div class="open-btn btn-blue">開啟工具 →</div>
     </div>
   </a>
 
-  <a class="card" href="classroom_record_5class.html">
-    <div class="card-stripe s-blue"></div>
+  <a class="tool-card" href="classroom_record_5class.html">
+    <div class="card-accent accent-blue"></div>
     <div class="card-body">
-      <div class="card-header"><span class="card-emoji">📋</span><span class="card-name">課堂記錄（五班）</span></div>
-      <span class="device-badge badge-phone">📱 適合以手機開啟</span>
-      <div class="card-desc">功能同四班版，擴充至五個班級，適合授課班級較多的老師使用。</div>
-      <div class="note-box">
-        <b>使用說明</b><br>
-        操作方式與四班版完全相同，僅班級數量擴充至五班。兩個工具的資料各自獨立儲存，互不影響。<br><br>
-        <b>注意事項</b><br>
-        • 若只有四個授課班級，建議使用四班版以保持介面簡潔<br>
-        • 同樣建議定期匯出 CSV 備份
+      <div class="card-header">
+        <span class="card-emoji">📋</span>
+        <span class="card-name">課堂記錄（五班）</span>
       </div>
+      <div class="card-desc">與四班版本功能相同，擴充至五個班級，適合授課班級較多的老師使用。</div>
       <div class="tag-row">
-        <span class="tag t-blue">五個班級</span>
-        <span class="tag t-blue">座號 1–40</span>
-        <span class="tag t-blue">匯出 CSV</span>
+        <span class="tag tag-blue">五個班級</span>
+        <span class="tag tag-blue">座號 1–40</span>
+        <span class="tag tag-blue">班級名稱可自訂</span>
+        <span class="tag tag-blue">匯出 CSV</span>
       </div>
-      <div class="btn btn-blue">開啟工具 →</div>
+      <div class="open-btn btn-blue">開啟工具 →</div>
     </div>
   </a>
 
-  <!-- 導師班管理 -->
-  <div class="section-label section-gap">導師班管理</div>
+  <div class="section-label" style="margin-top:8px">教學進度</div>
 
-  <a class="card" href="merit_record_v2.html">
-    <div class="card-stripe s-green"></div>
+  <a class="tool-card" href="teaching_progress.html">
+    <div class="card-accent accent-amber"></div>
     <div class="card-body">
-      <div class="card-header"><span class="card-emoji">🏅</span><span class="card-name">優缺點記錄</span></div>
-      <span class="device-badge badge-phone">📱 適合以手機開啟</span>
-      <div class="card-desc">記錄導師班學生優缺點支數，自動換算嘉獎／警告，一鍵結轉，匯出合併列印 CSV。</div>
-      <div class="note-box">
-        <b>使用說明</b><br>
-        點選座號後登記優點或缺點支數，系統自動換算為嘉獎／警告。期中或期末可使用「一鍵結轉」將本期累積數轉入下一期，並清空本期記錄。匯出 CSV 可直接用於通知單合併列印。<br><br>
-        <b>注意事項</b><br>
-        • 結轉前請先匯出 CSV 備份，結轉後本期數字將清零<br>
-        • 每學期開始建議確認座號人數（預設 1–35）
+      <div class="card-header">
+        <span class="card-emoji">📅</span>
+        <span class="card-name">教學進度表</span>
       </div>
+      <div class="card-desc">記錄各班每週教學進度、考試與作業，支援多班並排檢視、段考／複習考標記、課次批次複製，學期末匯出 Word 備份。</div>
       <div class="tag-row">
-        <span class="tag t-green">座號 1–35</span>
-        <span class="tag t-green">自動換算</span>
-        <span class="tag t-green">一鍵結轉</span>
-        <span class="tag t-green">合併列印</span>
+        <span class="tag tag-amber">多班級自訂</span>
+        <span class="tag tag-amber">彈性／第八節</span>
+        <span class="tag tag-amber">段考標記</span>
+        <span class="tag tag-amber">批次複製</span>
+        <span class="tag tag-amber">匯出 Word</span>
       </div>
-      <div class="btn btn-green">開啟工具 →</div>
+      <div class="open-btn btn-amber">開啟工具 →</div>
     </div>
   </a>
 
-  <a class="card" href="life_rules.html">
-    <div class="card-stripe s-amber"></div>
+  <div class="section-label" style="margin-top:8px">導師班管理</div>
+
+  <a class="tool-card" href="merit_record_v2.html">
+    <div class="card-accent accent-green"></div>
     <div class="card-body">
-      <div class="card-header"><span class="card-emoji">📝</span><span class="card-name">生活常規登記表</span></div>
-      <span class="device-badge badge-phone">📱 適合以手機開啟</span>
-      <div class="card-desc">登記學生生活常規違規事項，支援拍照後由 Claude 解析匯入，自動記錄座號、項目與星期。</div>
-      <div class="note-box">
-        <b>使用說明</b><br>
-        拍下紙本登記表後，請貼給 Claude 解析，Claude 會輸出格式為「座號,項目,星期」的 CSV 區塊，複製後貼入工具的匯入欄位即可。每日一張照片對應一次匯入。<br><br>
-        <b>注意事項</b><br>
-        • 匯入格式：<code>座號,項目,星期</code>，例如 <code>3,作業缺交,一</code><br>
-        • 同一天重複匯入會累加，請勿重複貼入同一張照片的資料
+      <div class="card-header">
+        <span class="card-emoji">🏅</span>
+        <span class="card-name">優缺點記錄</span>
       </div>
+      <div class="card-desc">記錄導師班學生的優缺點支數，自動換算嘉獎／警告，期中期末一鍵結轉，匯出合併列印 CSV 供通知單使用。</div>
       <div class="tag-row">
-        <span class="tag t-amber">照片匯入</span>
-        <span class="tag t-amber">CSV 解析</span>
-        <span class="tag t-amber">多日管理</span>
+        <span class="tag tag-green">座號 1–35</span>
+        <span class="tag tag-green">全班一鍵登記</span>
+        <span class="tag tag-green">自動換算嘉獎</span>
+        <span class="tag tag-green">一鍵結轉</span>
+        <span class="tag tag-green">合併列印 CSV</span>
       </div>
-      <div class="btn btn-amber">開啟工具 →</div>
-    </div>
-  </a>
-
-  <!-- 成績管理 -->
-  <div class="section-label section-gap">成績管理</div>
-
-  <a class="card" href="grade_voice_system.html">
-    <div class="card-stripe s-rose"></div>
-    <div class="card-body">
-      <div class="card-header"><span class="card-emoji">🎙️</span><span class="card-name">語音成績登記系統</span></div>
-      <span class="device-badge badge-phone">📱 適合以手機／平板開啟</span>
-      <div class="card-desc">語音輸入或照片辨識，快速登記各班學生成績，支援多班級、多科目，統計分析，匯出 Excel。</div>
-      <div class="note-box">
-        <b>使用說明</b><br>
-        先在「班級設定」設定好班級名稱與評量科目。登記時選擇班級與科目，點擊麥克風後依序說出「座號 分數」（例如「1號85」）；每說完一筆，稍作停頓並確認畫面已填入後，再繼續念下一筆，以確保辨識準確。<br><br>
-        亦可拍下手寫成績表，複製畫面提示詞連同照片發給 Claude，將回傳的 JSON 貼入工具即可一次匯入多科成績。<br><br>
-        <b>注意事項</b><br>
-        • 語音輸入速度不宜過快，每筆之間請稍作停頓，並即時確認分數是否正確填入<br>
-        • 若遇辨識有誤，可點擊「最近填入」標籤直接修正，或手動點擊表格格子輸入<br>
-        • 加分題超過 100 分，系統自動登記為 100 分<br>
-        • 資料自動儲存於裝置本機，重新整理後仍會保留；建議定期匯出 Excel 備份
-      </div>
-      <div class="tag-row">
-        <span class="tag t-rose">語音輸入</span>
-        <span class="tag t-rose">照片辨識匯入</span>
-        <span class="tag t-rose">多班級多科目</span>
-        <span class="tag t-rose">統計分析</span>
-        <span class="tag t-rose">匯出 Excel</span>
-      </div>
-      <div class="btn btn-rose">開啟工具 →</div>
-    </div>
-  </a>
-
-  <!-- 段考看板 -->
-  <div class="section-label section-gap">考試輔助</div>
-
-  <a class="card" href="exam_dashboard.html">
-    <div class="card-stripe s-slate"></div>
-    <div class="card-body">
-      <div class="card-header"><span class="card-emoji">🖥️</span><span class="card-name">段考看板</span></div>
-      <span class="device-badge badge-pc">💻 適合以電腦開啟</span>
-      <div class="card-desc">段考期間投影使用，顯示即時時鐘、科目時程與倒數，自動高亮目前進行中科目，整點提示音。</div>
-      <div class="note-box">
-        <b>使用說明</b><br>
-        開啟後全螢幕投影至教室螢幕。系統依據當前時間自動高亮目前科目並顯示剩餘時間。開考前可在設定中調整科目名稱與時間。<br><br>
-        <b>注意事項</b><br>
-        • 建議使用 Chrome 瀏覽器以確保提示音正常播放<br>
-        • 科目時程設定儲存於本機，換電腦使用需重新設定<br>
-        • 保持瀏覽器分頁在前景，背景分頁可能導致時鐘延遲
-      </div>
-      <div class="tag-row">
-        <span class="tag t-slate">即時時鐘</span>
-        <span class="tag t-slate">自動高亮</span>
-        <span class="tag t-slate">提示音</span>
-      </div>
-      <div class="btn btn-slate">開啟工具 →</div>
+      <div class="open-btn btn-green">開啟工具 →</div>
     </div>
   </a>
 
   <div class="footer">
     資料儲存於本機瀏覽器，不會上傳至伺服器<br>
-    建議定期匯出備份以防資料遺失
+    建議定期匯出 CSV 備份以防資料遺失
   </div>
 
 </div>
