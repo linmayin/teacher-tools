@@ -128,7 +128,7 @@ tr:hover td{background:var(--surface2);}
         <div class="f1">
           <div class="field" style="margin:0">
             <label>日期</label>
-            <input type="date" id="rec-date">
+            <input type="date" id="rec-date" oninput="updateNoteHeader()">
           </div>
         </div>
         <div style="width:80px">
@@ -149,16 +149,12 @@ tr:hover td{background:var(--surface2);}
     </div>
     <div class="card">
       <div class="card-title">特殊班級記事</div>
-      <div style="font-size:12px;color:var(--text3);margin-bottom:8px">每日一則，記錄缺席座號、特殊事件等</div>
-      <div id="note-date-row" style="display:flex;gap:8px;align-items:flex-end;margin-bottom:8px">
-        <div class="f1">
-          <label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:4px">班級</label>
-          <select id="note-cls" onchange="renderNoteList()" style="width:100%;height:38px;font-size:13px;border:1.5px solid var(--border);border-radius:9px;background:var(--surface2);color:var(--text);padding:0 10px;-webkit-appearance:none;appearance:none"></select>
-        </div>
-        <div class="f1">
-          <label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:4px">日期</label>
-          <input type="date" id="note-date" style="height:38px;font-size:13px">
-        </div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:8px">自動帶入上方選擇的班級與日期，記錄缺席座號、特殊事件等</div>
+      <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;padding:8px 10px;background:var(--surface2);border-radius:var(--radius-sm);border:1px solid var(--border)">
+        <span style="font-size:12px;color:var(--text2)">班級：</span>
+        <span id="note-cls-display" style="font-size:13px;font-weight:600;color:var(--text)">—</span>
+        <span style="font-size:12px;color:var(--text2);margin-left:12px">日期：</span>
+        <span id="note-date-display" style="font-size:13px;font-weight:600;color:var(--text)">—</span>
       </div>
       <textarea id="note-text" placeholder="例：缺席：03、15號；第三節有消防演習" style="width:100%;height:80px;padding:10px;border:1.5px solid var(--border);border-radius:9px;background:var(--surface2);font-size:13px;color:var(--text);font-family:inherit;resize:none;"></textarea>
       <div style="display:flex;gap:8px;margin-top:8px">
@@ -299,7 +295,7 @@ function init(){
   buildClassChips();
   buildNumGrid();
   buildDropdowns();
-  buildNoteClsDropdown();
+  updateNoteHeader();
   buildRosterClsDropdown();
   buildSettings();
   renderLog();
@@ -316,6 +312,13 @@ function getStudentName(cls,num){
   return (roster[cls]&&roster[cls][num])||'';
 }
 
+function updateNoteHeader(){
+  var cls=selClass||'—';
+  var date=document.getElementById('rec-date').value||'—';
+  document.getElementById('note-cls-display').textContent=cls;
+  document.getElementById('note-date-display').textContent=date;
+}
+
 function buildClassChips(){
   var el=document.getElementById('class-chips');
   el.innerHTML='';
@@ -326,7 +329,8 @@ function buildClassChips(){
     d.onclick=(function(el2,c){return function(){
       document.querySelectorAll('#class-chips .chip').forEach(function(x){x.className='chip';});
       el2.className='chip sel';selClass=c;
-      buildNumGrid(); // 切班級時重建座號格（顯示對應班級名單）
+      buildNumGrid();
+      updateNoteHeader();
     };})(d,cls);
     el.appendChild(d);
   });
@@ -431,20 +435,11 @@ function importRoster(input){
   reader.readAsText(file,'utf-8');
 }
 
-function toggleNoteList(){
-  var el=document.getElementById('note-list');
-  if(el.style.display==='none'){
-    el.style.display='block';
-    renderNoteList();
-  } else {
-    el.style.display='none';
-  }
-}
-
 function saveNote(){
-  var cls=document.getElementById('note-cls').value;
-  var date=document.getElementById('note-date').value;
+  var cls=selClass;
+  var date=document.getElementById('rec-date').value;
   var text=document.getElementById('note-text').value.trim();
+  if(!cls){showToast('請先選擇班級');return;}
   if(!date){showToast('請選擇日期');return;}
   if(!text){showToast('請輸入記事內容');return;}
   var idx=notes.findIndex(function(n){return n.cls===cls&&n.date===date;});
@@ -462,7 +457,7 @@ function saveNote(){
 }
 
 function renderNoteList(){
-  var cls=document.getElementById('note-cls').value;
+  var cls=selClass;
   if(!cls)return;
   var el=document.getElementById('note-list');
   var clsNotes=notes.filter(function(n){return n.cls===cls;}).sort(function(a,b){return b.date.localeCompare(a.date);});
@@ -483,11 +478,19 @@ function renderNoteList(){
   }).join('');
 }
 
+function toggleNoteList(){
+  var el=document.getElementById('note-list');
+  if(el.style.display==='none'||el.style.display===''){
+    el.style.display='block';
+    renderNoteList();
+  } else {
+    el.style.display='none';
+  }
+}
+
 function editNote(id){
   var n=notes.find(function(x){return x.id===id;});
   if(!n)return;
-  document.getElementById('note-date').value=n.date;
-  document.getElementById('note-cls').value=n.cls;
   document.getElementById('note-text').value=n.text;
   document.getElementById('note-text').focus();
   showToast('已載入，修改後按儲存');
