@@ -33,9 +33,7 @@
     --radius: 10px;
     --font: -apple-system, 'Helvetica Neue', 'PingFang TC', sans-serif;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
     font-family: var(--font);
     background: var(--paper-warm);
@@ -45,7 +43,7 @@
     -webkit-text-size-adjust: 100%;
   }
 
-  /* ── HEADER ── */
+  /* HEADER */
   #header {
     background: var(--paper);
     border-bottom: 1px solid var(--rule);
@@ -62,50 +60,23 @@
     gap: 8px;
     flex-wrap: wrap;
   }
-  #title-block h1 {
-    font-size: 17px;
-    font-weight: 700;
-    color: var(--ink);
-  }
-  #title-block h2 {
-    font-size: 12px;
-    font-weight: 400;
-    color: var(--ink-light);
-    margin-top: 1px;
-  }
-  #week-nav {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
+  #title-block h1 { font-size: 17px; font-weight: 700; }
+  #title-block h2 { font-size: 12px; font-weight: 400; color: var(--ink-light); margin-top: 1px; }
+  #week-nav { display: flex; align-items: center; gap: 6px; }
   #week-nav button {
     background: var(--paper-warm);
     border: 1px solid var(--rule);
     color: var(--ink);
-    width: 34px;
-    height: 34px;
+    width: 34px; height: 34px;
     border-radius: 50%;
     font-size: 20px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex; align-items: center; justify-content: center;
     transition: background 0.15s;
-    line-height: 1;
   }
   #week-nav button:hover { background: var(--paper-mid); }
-  #week-label {
-    font-size: 16px;
-    font-weight: 700;
-    min-width: 64px;
-    text-align: center;
-    color: var(--ink);
-  }
-  #header-actions {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
+  #week-label { font-size: 16px; font-weight: 700; min-width: 64px; text-align: center; }
+  #header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
   .hdr-btn {
     background: var(--paper-warm);
     border: 1px solid var(--rule);
@@ -114,78 +85,51 @@
     border-radius: 8px;
     font-size: 13px;
     cursor: pointer;
-    transition: background 0.15s;
-    white-space: nowrap;
     font-family: var(--font);
+    white-space: nowrap;
+    transition: background 0.15s;
   }
   .hdr-btn:hover { background: var(--paper-mid); }
   .hdr-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
   .hdr-btn.primary:hover { opacity: 0.88; }
 
-  /* ── WEEK DATE BAR ── */
-  #date-bar {
-    display: flex;
-    gap: 4px;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  #date-bar::-webkit-scrollbar { display: none; }
+  /* DATE BAR */
+  #date-bar { display: flex; gap: 4px; }
   .date-chip {
-    flex: 1;
-    min-width: 52px;
-    text-align: center;
+    flex: 1; text-align: center;
     padding: 4px 2px;
     border-radius: 6px;
     font-size: 11px;
     color: var(--ink-light);
   }
   .date-chip .dow { font-weight: 600; font-size: 12px; color: var(--ink); }
-  .date-chip .md { margin-top: 1px; }
-  .date-chip.special-exam { color: var(--exam-text); }
-  .date-chip.special-exam .dow { color: var(--exam-text); }
-  .date-chip.special-review { color: var(--review-text); }
-  .date-chip.special-review .dow { color: var(--review-text); }
-  .date-chip.special-holiday { color: var(--holiday-text); }
-  .date-chip.special-holiday .dow { color: var(--holiday-text); }
+  .date-chip.sp-exam .dow { color: var(--exam-text); }
+  .date-chip.sp-exam { color: var(--exam-text); }
+  .date-chip.sp-review .dow { color: var(--review-text); }
+  .date-chip.sp-review { color: var(--review-text); }
+  .date-chip.sp-holiday .dow { color: var(--holiday-text); }
+  .date-chip.sp-holiday { color: var(--holiday-text); }
 
-  /* ── MAIN ── */
-  #main {
-    padding: 12px 12px 100px;
-    overflow-x: auto;
-  }
+  /* MAIN */
+  #main { padding: 12px 12px 100px; overflow-x: auto; }
 
-  /* Week note */
   .week-note-row {
     background: var(--paper);
     border: 1px solid var(--rule);
     border-radius: var(--radius);
     padding: 8px 14px;
     margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    display: flex; align-items: center; gap: 10px;
   }
-  .week-note-row label {
-    font-size: 12px;
-    color: var(--ink-light);
-    min-width: 56px;
-    font-weight: 600;
-  }
+  .week-note-row label { font-size: 12px; color: var(--ink-light); min-width: 56px; font-weight: 600; }
   .week-note-row input {
-    flex: 1;
-    border: none;
-    font-family: var(--font);
-    font-size: 13px;
-    color: var(--ink);
-    outline: none;
-    background: transparent;
+    flex: 1; border: none;
+    font-family: var(--font); font-size: 13px; color: var(--ink);
+    outline: none; background: transparent;
   }
 
-  /* Legend */
   .legend {
-    display: flex;
-    gap: 14px;
-    flex-wrap: wrap;
+    display: flex; gap: 14px; flex-wrap: wrap;
     padding: 8px 12px;
     background: var(--paper);
     border-radius: var(--radius);
@@ -195,335 +139,278 @@
   .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--ink-light); }
   .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
 
-  /* ── TABLE ── */
+  /* TABLE */
   .progress-table {
-    width: 100%;
-    min-width: 520px;
+    width: 100%; min-width: 520px;
     border-collapse: separate;
     border-spacing: 0 4px;
   }
-
-  /* Column header row (class names) */
   .progress-table thead th {
-    background: var(--ink);
-    color: white;
-    padding: 8px 6px;
-    font-size: 13px;
-    font-weight: 700;
-    text-align: center;
+    background: var(--ink); color: white;
+    padding: 8px 6px; font-size: 13px; font-weight: 700; text-align: center;
   }
   .progress-table thead th:first-child {
-    background: transparent;
-    width: 64px;
-    min-width: 64px;
+    background: transparent; width: 64px; min-width: 64px;
   }
   .progress-table thead th:nth-child(2) { border-radius: 8px 0 0 0; }
   .progress-table thead th:last-child { border-radius: 0 8px 0 0; }
-
-  /* Day rows */
   .progress-table tbody tr { vertical-align: top; }
 
-  /* Day label cell */
-  .day-cell {
-    padding: 0 6px 0 0;
-    width: 64px;
-    min-width: 64px;
-  }
+  /* Day label */
+  .day-cell { padding: 0 6px 0 0; width: 64px; min-width: 64px; }
   .day-label {
     background: var(--paper);
     border: 1px solid var(--rule);
     border-radius: 8px;
     padding: 6px 4px;
     text-align: center;
-    min-height: 100px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 3px;
+    min-height: 120px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 3px;
   }
-  .day-label .dow-text { font-size: 13px; font-weight: 700; color: var(--ink); }
+  .day-label .dow-text { font-size: 13px; font-weight: 700; }
   .day-label .date-text { font-size: 11px; color: var(--ink-light); }
-  .day-label .period-text { font-size: 9px; color: var(--ink-light); margin-top: 2px; line-height: 1.6; }
-  .day-label.special-exam { background: var(--exam-bg); border-color: var(--exam-border); }
-  .day-label.special-exam .dow-text { color: var(--exam-text); }
-  .day-label.special-review { background: var(--review-bg); border-color: var(--review-border); }
-  .day-label.special-review .dow-text { color: var(--review-text); }
-  .day-label.special-holiday { background: var(--holiday-bg); border-color: var(--holiday-border); }
-  .day-label.special-holiday .dow-text { color: var(--holiday-text); }
-  .special-tag { font-size: 9px; font-weight: 700; margin-top: 2px; padding: 1px 4px; border-radius: 3px; }
-  .special-tag.exam { background: var(--exam-bg); color: var(--exam-text); }
-  .special-tag.review { background: var(--review-bg); color: var(--review-text); }
-  .special-tag.holiday { background: var(--holiday-bg); color: var(--holiday-text); }
-
-  /* Class content cell */
-  .class-cell {
-    padding: 0 3px;
+  .day-label .period-hint { font-size: 9px; color: var(--ink-light); margin-top: 2px; line-height: 1.6; }
+  .day-label.sp-exam { background: var(--exam-bg); border-color: var(--exam-border); }
+  .day-label.sp-exam .dow-text { color: var(--exam-text); }
+  .day-label.sp-review { background: var(--review-bg); border-color: var(--review-border); }
+  .day-label.sp-review .dow-text { color: var(--review-text); }
+  .day-label.sp-holiday { background: var(--holiday-bg); border-color: var(--holiday-border); }
+  .day-label.sp-holiday .dow-text { color: var(--holiday-text); }
+  .special-tag {
+    font-size: 9px; font-weight: 700;
+    padding: 1px 5px; border-radius: 3px; margin-top: 2px;
   }
+  .special-tag.exam { background: var(--exam-bg); color: var(--exam-text); border: 1px solid var(--exam-border); }
+  .special-tag.review { background: var(--review-bg); color: var(--review-text); border: 1px solid var(--review-border); }
+  .special-tag.holiday { background: var(--holiday-bg); color: var(--holiday-text); border: 1px solid var(--holiday-border); }
+
+  /* Class cell */
+  .class-cell { padding: 0 3px; }
   .class-cell:last-child { padding-right: 0; }
-  .class-cell:first-of-type { padding-left: 0; }
+  .cell-wrapper { display: flex; flex-direction: column; gap: 3px; }
 
-  .cell-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    min-height: 100px;
-  }
-
-  /* Each period block within a cell */
+  /* Period block */
   .period-block {
     background: var(--paper);
     border: 1px solid var(--rule);
     border-radius: 8px;
     overflow: hidden;
-    flex: 1;
-    min-height: 90px;
-    display: flex;
-    flex-direction: column;
   }
   .period-block:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
   .period-block.flex-block { background: var(--flex-bg); border-color: var(--flex-border); }
-  .period-block.flex-block:focus-within { border-color: var(--flex-text); box-shadow: 0 0 0 2px var(--flex-bg); }
+  .period-block.flex-block:focus-within { border-color: var(--flex-text); }
   .period-block.eighth-block { background: var(--eighth-bg); border-color: var(--eighth-border); }
-  .period-block.eighth-block:focus-within { border-color: var(--eighth-text); box-shadow: 0 0 0 2px var(--eighth-bg); }
+  .period-block.eighth-block:focus-within { border-color: var(--eighth-text); }
   .period-block.exam-block { background: var(--exam-bg); border-color: var(--exam-border); }
-  .period-block.no-class { background: var(--paper-warm); border: 1px dashed var(--rule); min-height: 90px; display: flex; align-items: center; justify-content: center; }
+  .period-block.exam-block:focus-within { border-color: var(--exam-text); }
+  .period-block.review-block { background: var(--review-bg); border-color: var(--review-border); }
+  .period-block.no-class {
+    background: var(--paper-warm);
+    border: 1px dashed var(--rule);
+    min-height: 120px;
+    display: flex; align-items: center; justify-content: center;
+  }
   .no-class-dash { color: var(--rule-strong); font-size: 16px; }
 
   .period-block-header {
-    padding: 3px 6px;
-    font-size: 10px;
-    font-weight: 700;
-    display: flex;
-    gap: 5px;
-    align-items: center;
+    padding: 3px 7px;
+    font-size: 10px; font-weight: 700;
     border-bottom: 1px solid var(--rule);
     background: rgba(0,0,0,0.02);
+    color: var(--ink-light);
   }
-  .period-badge { color: var(--ink-light); }
-  .period-badge.flex { color: var(--flex-text); }
-  .period-badge.eighth { color: var(--eighth-text); }
+  .period-block-header.flex-hdr { color: var(--flex-text); }
+  .period-block-header.eighth-hdr { color: var(--eighth-text); }
+  .period-block-header.exam-hdr { color: var(--exam-text); }
+  .period-block-header.review-hdr { color: var(--review-text); }
 
-  .period-textarea {
+  /* THREE FIXED FIELDS */
+  .fields-grid { display: flex; flex-direction: column; }
+  .field-row {
+    display: flex;
+    align-items: stretch;
+    border-bottom: 1px solid var(--rule);
+    min-height: 34px;
+  }
+  .field-row:last-child { border-bottom: none; }
+  .field-lbl {
+    width: 30px; min-width: 30px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700;
+    color: var(--ink-light);
+    border-right: 1px solid var(--rule);
+    background: rgba(0,0,0,0.02);
+    flex-shrink: 0;
+  }
+  .field-lbl.exam-lbl { color: var(--exam-text); }
+  .field-ta {
     flex: 1;
-    border: none;
-    background: transparent;
-    font-family: var(--font);
-    font-size: 13px;
-    color: var(--ink);
-    padding: 6px 8px;
-    resize: none;
-    line-height: 1.5;
-    outline: none;
+    border: none; background: transparent;
+    font-family: var(--font); font-size: 12px; color: var(--ink);
+    padding: 5px 6px;
+    resize: none; outline: none;
+    line-height: 1.45;
+    min-height: 34px;
     width: 100%;
-    min-height: 72px;
+    overflow: hidden;
   }
-  .period-textarea::placeholder { color: var(--rule-strong); font-size: 12px; }
+  .field-ta::placeholder { color: #ccc; }
 
-  /* ── BOTTOM BAR ── */
+  /* BOTTOM BAR */
   #bottom-bar {
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
+    position: fixed; bottom: 0; left: 0; right: 0;
     background: var(--paper);
     border-top: 1px solid var(--rule);
-    display: flex;
-    justify-content: space-around;
+    display: flex; justify-content: space-around;
     padding: 10px 0 22px;
     z-index: 100;
   }
   .bottom-btn {
-    color: var(--ink-light);
-    border: none;
-    background: none;
+    color: var(--ink-light); border: none; background: none;
     font-size: 11px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    cursor: pointer;
-    padding: 4px 14px;
-    border-radius: 8px;
-    font-family: var(--font);
-    transition: color 0.15s;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    cursor: pointer; padding: 4px 14px; border-radius: 8px;
+    font-family: var(--font); transition: color 0.15s;
   }
   .bottom-btn:hover { color: var(--ink); }
   .bottom-btn .icon { font-size: 22px; }
 
-  /* ── MODAL ── */
+  /* MODAL */
   .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
+    display: none; position: fixed; inset: 0;
     background: rgba(0,0,0,0.35);
-    z-index: 200;
-    align-items: flex-end;
-    justify-content: center;
+    z-index: 200; align-items: flex-end; justify-content: center;
   }
   .modal-overlay.open { display: flex; }
   .modal {
     background: var(--paper);
     border-radius: 20px 20px 0 0;
     padding: 20px 20px 40px;
-    width: 100%;
-    max-width: 720px;
-    max-height: 88vh;
-    overflow-y: auto;
+    width: 100%; max-width: 720px;
+    max-height: 88vh; overflow-y: auto;
   }
   .modal h3 {
-    font-size: 17px;
-    font-weight: 700;
+    font-size: 17px; font-weight: 700;
     margin-bottom: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    display: flex; justify-content: space-between; align-items: center;
   }
   .modal-close {
-    background: var(--paper-mid);
-    border: none;
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    font-size: 15px;
-    cursor: pointer;
+    background: var(--paper-mid); border: none;
+    width: 28px; height: 28px; border-radius: 50%;
+    font-size: 15px; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     color: var(--ink-light);
   }
-
   .setting-section { margin-bottom: 22px; }
   .setting-section h4 {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--ink-light);
-    margin-bottom: 10px;
-    padding-bottom: 6px;
+    font-size: 11px; font-weight: 700; color: var(--ink-light);
+    margin-bottom: 10px; padding-bottom: 6px;
     border-bottom: 1px solid var(--rule);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
+    text-transform: uppercase; letter-spacing: 0.8px;
   }
   .form-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
+    display: flex; align-items: center;
+    gap: 10px; margin-bottom: 10px; flex-wrap: wrap;
   }
   .form-row label { font-size: 13px; min-width: 72px; color: var(--ink-light); }
   .form-input {
-    border: 1.5px solid var(--rule);
-    border-radius: 8px;
+    border: 1.5px solid var(--rule); border-radius: 8px;
     padding: 8px 10px;
-    font-family: var(--font);
-    font-size: 13px;
-    color: var(--ink);
-    background: var(--paper);
-    flex: 1;
-    min-width: 100px;
+    font-family: var(--font); font-size: 13px; color: var(--ink);
+    background: var(--paper); flex: 1; min-width: 100px;
     -webkit-appearance: none;
   }
   .form-input:focus { outline: none; border-color: var(--accent); }
-
   .class-setup-card {
     background: var(--paper-warm);
     border: 1.5px solid var(--rule);
     border-radius: var(--radius);
-    padding: 14px;
-    margin-bottom: 12px;
+    padding: 14px; margin-bottom: 12px;
   }
   .class-setup-card h5 {
-    font-size: 14px;
-    font-weight: 700;
-    margin-bottom: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    font-size: 14px; font-weight: 700; margin-bottom: 12px;
+    display: flex; justify-content: space-between; align-items: center;
   }
-  .day-schedule {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 8px;
-  }
+  .day-schedule { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; }
   .day-col > label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--ink-light);
-    display: block;
-    margin-bottom: 4px;
-    text-align: center;
+    font-size: 11px; font-weight: 600; color: var(--ink-light);
+    display: block; margin-bottom: 4px; text-align: center;
   }
   .day-col select {
-    width: 100%;
-    border: 1px solid var(--rule);
-    border-radius: 6px;
-    padding: 5px 2px;
-    font-size: 12px;
-    text-align: center;
-    background: var(--paper);
-    color: var(--ink);
-    -webkit-appearance: none;
+    width: 100%; border: 1px solid var(--rule);
+    border-radius: 6px; padding: 5px 2px;
+    font-size: 12px; text-align: center;
+    background: var(--paper); color: var(--ink); -webkit-appearance: none;
   }
   .checkbox-row {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-top: 5px;
-    font-size: 11px;
-    color: var(--ink-light);
+    display: flex; align-items: center; gap: 4px;
+    margin-top: 5px; font-size: 11px; color: var(--ink-light);
   }
-
   .save-btn {
-    width: 100%;
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: 10px;
-    padding: 13px;
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 8px;
-    font-family: var(--font);
-    transition: opacity 0.15s;
+    width: 100%; background: var(--accent); color: white;
+    border: none; border-radius: 10px;
+    padding: 13px; font-size: 15px; font-weight: 600;
+    cursor: pointer; margin-top: 8px;
+    font-family: var(--font); transition: opacity 0.15s;
   }
   .save-btn:hover { opacity: 0.88; }
   .add-btn {
-    width: 100%;
-    background: var(--paper-warm);
-    color: var(--accent);
-    border: 1.5px dashed var(--accent);
-    border-radius: 10px;
-    padding: 10px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-bottom: 12px;
-    font-family: var(--font);
+    width: 100%; background: var(--paper-warm);
+    color: var(--accent); border: 1.5px dashed var(--accent);
+    border-radius: 10px; padding: 10px;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer; margin-bottom: 12px; font-family: var(--font);
   }
+
+  /* JSON import area */
+  .json-import-box {
+    background: var(--paper-warm);
+    border: 1.5px solid var(--rule);
+    border-radius: var(--radius);
+    padding: 14px; margin-bottom: 16px;
+  }
+  .json-import-box p {
+    font-size: 12px; color: var(--ink-light); margin-bottom: 8px; line-height: 1.5;
+  }
+  .json-ta {
+    width: 100%; min-height: 90px;
+    border: 1.5px solid var(--rule); border-radius: 8px;
+    padding: 8px 10px;
+    font-family: 'Menlo', 'Courier New', monospace;
+    font-size: 12px; color: var(--ink);
+    background: var(--paper); resize: vertical; outline: none;
+    margin-bottom: 8px;
+  }
+  .json-ta:focus { border-color: var(--accent); }
+  .import-btn {
+    background: var(--flex-text); color: white;
+    border: none; border-radius: 8px;
+    padding: 9px 18px; font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: var(--font);
+  }
+  .import-msg { font-size: 12px; margin-top: 6px; }
+  .import-msg.ok { color: var(--accent); }
+  .import-msg.err { color: var(--exam-text); }
 
   /* Special days */
   .special-form {
     background: var(--paper-warm);
     border: 1.5px solid var(--rule);
     border-radius: var(--radius);
-    padding: 14px;
-    margin-bottom: 14px;
+    padding: 14px; margin-bottom: 14px;
   }
   .special-item {
     background: var(--paper);
     border: 1.5px solid var(--rule);
-    border-radius: 8px;
-    padding: 10px 12px;
+    border-radius: 8px; padding: 10px 12px;
     margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 10px;
   }
   .type-badge {
-    display: inline-block;
-    font-size: 10px;
-    font-weight: 700;
-    padding: 2px 6px;
-    border-radius: 4px;
-    margin-right: 6px;
+    display: inline-block; font-size: 10px; font-weight: 700;
+    padding: 2px 6px; border-radius: 4px; margin-right: 6px;
   }
   .type-badge.exam { background: var(--exam-bg); color: var(--exam-text); }
   .type-badge.review { background: var(--review-bg); color: var(--review-text); }
@@ -537,20 +424,13 @@
 
   /* Toast */
   #save-toast {
-    position: fixed;
-    bottom: 80px;
-    left: 50%;
+    position: fixed; bottom: 80px; left: 50%;
     transform: translateX(-50%);
-    background: var(--ink);
-    color: white;
-    padding: 8px 18px;
-    border-radius: 20px;
-    font-size: 13px;
-    opacity: 0;
-    transition: opacity 0.3s;
-    z-index: 300;
-    pointer-events: none;
-    white-space: nowrap;
+    background: var(--ink); color: white;
+    padding: 8px 18px; border-radius: 20px;
+    font-size: 13px; opacity: 0;
+    transition: opacity 0.3s; z-index: 300;
+    pointer-events: none; white-space: nowrap;
   }
   #save-toast.show { opacity: 1; }
 
@@ -562,7 +442,6 @@
 </head>
 <body>
 
-<!-- HEADER -->
 <div id="header">
   <div id="header-top">
     <div id="title-block">
@@ -583,32 +462,21 @@
   <div id="date-bar"></div>
 </div>
 
-<!-- MAIN -->
 <div id="main"></div>
-
-<!-- TOAST -->
 <div id="save-toast">已儲存 ✓</div>
 
-<!-- BOTTOM BAR -->
 <div id="bottom-bar">
-  <button class="bottom-btn" onclick="changeWeek(-1)">
-    <span class="icon">‹</span>上一週
-  </button>
-  <button class="bottom-btn" onclick="openModal('settings-modal')">
-    <span class="icon">⚙</span>設定
-  </button>
-  <button class="bottom-btn" onclick="openModal('special-modal')">
-    <span class="icon">📅</span>特殊日
-  </button>
-  <button class="bottom-btn" onclick="changeWeek(1)">
-    <span class="icon">›</span>下一週
-  </button>
+  <button class="bottom-btn" onclick="changeWeek(-1)"><span class="icon">‹</span>上一週</button>
+  <button class="bottom-btn" onclick="openModal('settings-modal')"><span class="icon">⚙</span>設定</button>
+  <button class="bottom-btn" onclick="openModal('special-modal')"><span class="icon">📅</span>特殊日</button>
+  <button class="bottom-btn" onclick="changeWeek(1)"><span class="icon">›</span>下一週</button>
 </div>
 
 <!-- SETTINGS MODAL -->
 <div class="modal-overlay" id="settings-modal">
   <div class="modal">
     <h3>設定 <button class="modal-close" onclick="closeModal('settings-modal')">✕</button></h3>
+
     <div class="setting-section">
       <h4>學期資訊</h4>
       <div class="form-row">
@@ -629,12 +497,26 @@
         <input class="form-input" type="number" id="set-weeks" placeholder="20" min="1" max="25" style="max-width:80px">
       </div>
     </div>
+
     <div class="setting-section">
-      <h4>班級課表</h4>
-      <p style="font-size:12px;color:var(--ink-light);margin-bottom:12px">選每天上課的節次（無課選「—」），勾選彈性或第八節</p>
+      <h4>課表 JSON 匯入</h4>
+      <div class="json-import-box">
+        <p>將課表照片給 Claude 解析後，把 Claude 產生的 JSON 貼在下方匯入。格式範例：<br>
+        <code style="font-size:11px">[{"name":"313","schedule":[{"period":"第2節","isFlex":false,"hasEighth":false},null,null,{"period":"第1節","isFlex":true,"hasEighth":false},{"period":"第4節","isFlex":false,"hasEighth":true}]}]</code><br>
+        schedule 陣列共5個元素，依序為週一到週五，無課填 null。</p>
+        <textarea class="json-ta" id="schedule-json" placeholder="貼上 Claude 產生的課表 JSON…"></textarea>
+        <button class="import-btn" onclick="importScheduleJSON()">匯入課表</button>
+        <div class="import-msg" id="schedule-msg"></div>
+      </div>
+    </div>
+
+    <div class="setting-section">
+      <h4>班級課表（手動設定）</h4>
+      <p style="font-size:12px;color:var(--ink-light);margin-bottom:12px">也可直接在此手動新增或調整班級課表</p>
       <div id="class-setups"></div>
       <button class="add-btn" onclick="addClassSetup()">＋ 新增班級</button>
     </div>
+
     <button class="save-btn" onclick="saveSettings()">儲存設定</button>
   </div>
 </div>
@@ -643,54 +525,75 @@
 <div class="modal-overlay" id="special-modal">
   <div class="modal">
     <h3>特殊日設定 <button class="modal-close" onclick="closeModal('special-modal')">✕</button></h3>
-    <div class="special-form">
-      <div class="form-row">
-        <label>日期</label>
-        <input class="form-input" type="date" id="sp-date" style="max-width:190px">
-        <label>類型</label>
-        <select class="form-input" id="sp-type" style="max-width:130px">
-          <option value="exam">段考</option>
-          <option value="review">複習考</option>
-          <option value="holiday">放假日</option>
-          <option value="other">其他</option>
-        </select>
+
+    <div class="setting-section">
+      <h4>行事曆 JSON 匯入</h4>
+      <div class="json-import-box">
+        <p>將行事曆 PDF 給 Claude 解析後，把 Claude 產生的 JSON 貼在下方匯入。格式範例：<br>
+        <code style="font-size:11px">[{"date":"2025-10-15","type":"exam","note":"第一次段考"},{"date":"2025-10-16","type":"exam","note":"第一次段考"}]</code><br>
+        type 可填：exam（段考）、review（複習考）、holiday（放假日）、other（其他）</p>
+        <textarea class="json-ta" id="calendar-json" placeholder="貼上 Claude 產生的行事曆 JSON…"></textarea>
+        <button class="import-btn" onclick="importCalendarJSON()">匯入行事曆</button>
+        <div class="import-msg" id="calendar-msg"></div>
       </div>
-      <div class="form-row">
-        <label>說明</label>
-        <input class="form-input" id="sp-note" placeholder="例：第一次段考、開國紀念日">
-      </div>
-      <button class="save-btn" onclick="addSpecialDay()">新增</button>
     </div>
-    <div id="special-list"></div>
+
+    <div class="setting-section">
+      <h4>手動新增特殊日</h4>
+      <div class="special-form">
+        <div class="form-row">
+          <label>開始日期</label>
+          <input class="form-input" type="date" id="sp-date-start" style="max-width:190px">
+        </div>
+        <div class="form-row">
+          <label>結束日期</label>
+          <input class="form-input" type="date" id="sp-date-end" style="max-width:190px">
+          <span style="font-size:12px;color:var(--ink-light)">（單天則填同一日）</span>
+        </div>
+        <div class="form-row">
+          <label>類型</label>
+          <select class="form-input" id="sp-type" style="max-width:130px">
+            <option value="exam">段考</option>
+            <option value="review">複習考</option>
+            <option value="holiday">放假日</option>
+            <option value="other">其他</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>說明</label>
+          <input class="form-input" id="sp-note" placeholder="例：第一次段考、開國紀念日">
+        </div>
+        <button class="save-btn" onclick="addSpecialDay()">新增</button>
+      </div>
+    </div>
+
+    <div class="setting-section">
+      <h4>已設定的特殊日</h4>
+      <div id="special-list"></div>
+    </div>
   </div>
 </div>
 
 <script>
-// ═══════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════
 const DAYS_ZH = ['週一','週二','週三','週四','週五'];
+const FIELD_LABELS = ['考試','進度','作業'];
 
 let state = {
-  year: '115',
-  semester: '上',
-  startDate: '2025-09-01',
-  totalWeeks: 20,
+  year: '115', semester: '上',
+  startDate: '2025-09-01', totalWeeks: 20,
   currentWeek: 1,
-  classes: [],
-  specialDays: [],
-  data: {}
+  classes: [], specialDays: [], data: {}
 };
 
 function loadState() {
   try {
-    const saved = localStorage.getItem('teachingProgress_v3');
-    if (saved) Object.assign(state, JSON.parse(saved));
+    const s = localStorage.getItem('teachingProgress_v4');
+    if (s) Object.assign(state, JSON.parse(s));
   } catch(e) {}
 }
 
 function saveState() {
-  localStorage.setItem('teachingProgress_v3', JSON.stringify(state));
+  localStorage.setItem('teachingProgress_v4', JSON.stringify(state));
   showToast();
 }
 
@@ -700,19 +603,15 @@ function showToast() {
   setTimeout(() => t.classList.remove('show'), 1400);
 }
 
-// ═══════════════════════════════════════════════
 // DATE UTILS
-// ═══════════════════════════════════════════════
 function getWeekMonday(weekNum) {
   if (!state.startDate) return null;
   const start = new Date(state.startDate);
-  // find first Monday on or after startDate
   const dow = start.getDay();
   const toMon = dow === 0 ? 1 : (dow === 1 ? 0 : 8 - dow);
   start.setDate(start.getDate() + toMon + (weekNum - 1) * 7);
   return start;
 }
-
 function getDayDate(weekNum, dayIdx) {
   const mon = getWeekMonday(weekNum);
   if (!mon) return null;
@@ -720,47 +619,30 @@ function getDayDate(weekNum, dayIdx) {
   d.setDate(d.getDate() + dayIdx);
   return d;
 }
-
-function dateKey(d) {
-  if (!d) return '';
-  return d.toISOString().slice(0, 10);
-}
-
-function formatMD(d) {
-  if (!d) return '';
-  return `${d.getMonth()+1}/${d.getDate()}`;
-}
-
+function dateKey(d) { return d ? d.toISOString().slice(0,10) : ''; }
+function formatMD(d) { return d ? `${d.getMonth()+1}/${d.getDate()}` : ''; }
 function getSpecialDay(d) {
   if (!d) return null;
   const k = dateKey(d);
   return state.specialDays.find(s => s.date === k) || null;
 }
 
-// ═══════════════════════════════════════════════
 // RENDER
-// ═══════════════════════════════════════════════
 function render() {
   updateHeader();
   renderMain();
 }
 
 function updateHeader() {
-  document.getElementById('year-title').textContent =
-    `${state.year}學年度 ${state.semester}學期`;
+  document.getElementById('year-title').textContent = `${state.year}學年度 ${state.semester}學期`;
   document.getElementById('week-label').textContent = `第${state.currentWeek}週`;
   document.getElementById('week-subtitle').textContent = `第 ${state.currentWeek} 週`;
-
-  // Date bar
   let bar = '';
   for (let d = 0; d < 5; d++) {
     const date = getDayDate(state.currentWeek, d);
     const sp = getSpecialDay(date);
-    const cls = sp ? `date-chip special-${sp.type}` : 'date-chip';
-    bar += `<div class="${cls}">
-      <div class="dow">${DAYS_ZH[d]}</div>
-      <div class="md">${formatMD(date)}</div>
-    </div>`;
+    const cls = sp ? `date-chip sp-${sp.type}` : 'date-chip';
+    bar += `<div class="${cls}"><div class="dow">${DAYS_ZH[d]}</div><div class="md">${formatMD(date)}</div></div>`;
   }
   document.getElementById('date-bar').innerHTML = bar;
 }
@@ -769,10 +651,7 @@ function renderMain() {
   const container = document.getElementById('main');
   const classes = state.classes;
 
-  let html = '';
-
-  // Legend
-  html += `<div class="legend">
+  let html = `<div class="legend">
     <div class="legend-item"><div class="legend-dot" style="background:var(--flex-bg);border:1.5px solid var(--flex-border)"></div>彈性課程</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--eighth-bg);border:1.5px solid var(--eighth-border)"></div>第八節補課</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--exam-bg);border:1.5px solid var(--exam-border)"></div>段考</div>
@@ -780,7 +659,6 @@ function renderMain() {
     <div class="legend-item"><div class="legend-dot" style="background:var(--holiday-bg);border:1.5px solid var(--holiday-border)"></div>放假日</div>
   </div>`;
 
-  // Week note
   const wKey = `w${state.currentWeek}_note`;
   html += `<div class="week-note-row">
     <label>本週備注</label>
@@ -792,24 +670,16 @@ function renderMain() {
     html += `<div style="text-align:center;padding:60px 20px;color:var(--ink-light)">
       <div style="font-size:40px;margin-bottom:12px">📋</div>
       <div style="font-size:15px;font-weight:600;margin-bottom:6px">尚未設定班級</div>
-      <div style="font-size:13px">請點右上角「設定」新增班級與課表</div>
+      <div style="font-size:13px">請點「設定」新增班級課表，或匯入課表 JSON</div>
     </div>`;
     container.innerHTML = html;
     return;
   }
 
-  // Table
-  html += `<table class="progress-table">`;
+  html += `<table class="progress-table"><thead><tr><th></th>`;
+  classes.forEach(cls => { html += `<th>${esc(cls.name)}</th>`; });
+  html += `</tr></thead><tbody>`;
 
-  // Header: class names
-  html += `<thead><tr><th></th>`;
-  classes.forEach(cls => {
-    html += `<th>${esc(cls.name)}</th>`;
-  });
-  html += `</tr></thead>`;
-
-  // Body: one row per day
-  html += `<tbody>`;
   for (let di = 0; di < 5; di++) {
     const date = getDayDate(state.currentWeek, di);
     const sp = getSpecialDay(date);
@@ -817,62 +687,73 @@ function renderMain() {
 
     html += `<tr>`;
 
-    // Day label cell
-    let dayLabelCls = 'day-label';
-    if (spType) dayLabelCls += ` special-${spType}`;
-    let spTagHtml = spType
-      ? `<div class="special-tag ${spType}">${{exam:'段考',review:'複習考',holiday:'放假',other:'特殊'}[spType]||''}</div>`
+    // Day label
+    const dayLabelCls = spType ? `day-label sp-${spType}` : 'day-label';
+    const periodsThisDay = classes.map(c => c.schedule[di]).filter(Boolean);
+    const periodNums = [...new Set(periodsThisDay.map(p => p.period))].sort().join('・');
+    const spTagHtml = spType
+      ? `<div class="special-tag ${spType}">${{exam:'段考',review:'複習考',holiday:'放假',other:'特殊'}[spType]}</div>`
       : '';
-    // Collect period info for this day across all classes (for label)
-    const periodsThisDay = classes.map(cls => cls.schedule[di]).filter(Boolean);
-    const periodNums = [...new Set(periodsThisDay.map(p => p.period))].sort();
-    let periodHint = periodNums.join('・');
+    const noteHtml = sp ? `<div style="font-size:9px;color:var(--ink-light);margin-top:2px;max-width:58px;word-break:break-all;text-align:center">${esc(sp.note)}</div>` : '';
 
-    html += `<td class="day-cell">
-      <div class="${dayLabelCls}">
-        <div class="dow-text">${DAYS_ZH[di]}</div>
-        <div class="date-text">${formatMD(date)}</div>
-        ${spTagHtml}
-        <div class="period-text">${periodHint}</div>
-      </div>
-    </td>`;
+    html += `<td class="day-cell"><div class="${dayLabelCls}">
+      <div class="dow-text">${DAYS_ZH[di]}</div>
+      <div class="date-text">${formatMD(date)}</div>
+      ${spTagHtml}${noteHtml}
+      <div class="period-hint">${periodNums}</div>
+    </div></td>`;
 
     // Class cells
     classes.forEach((cls, ci) => {
-      const ds = cls.schedule[di]; // {period, isFlex, hasEighth} or null
-      html += `<td class="class-cell">`;
-      html += `<div class="cell-wrapper">`;
+      const ds = cls.schedule[di];
+      html += `<td class="class-cell"><div class="cell-wrapper">`;
 
       if (!ds) {
-        // No class this day
         html += `<div class="period-block no-class"><div class="no-class-dash">—</div></div>`;
       } else {
-        // Normal period block
-        const blockCls = ds.isFlex ? 'period-block flex-block' : (spType === 'exam' || spType === 'review') ? 'period-block exam-block' : 'period-block';
-        const badgeCls = ds.isFlex ? 'period-badge flex' : 'period-badge';
-        const badgeLabel = ds.isFlex ? `${ds.period}（彈性）` : ds.period;
-        const key = `w${state.currentWeek}_d${di}_c${ci}_normal`;
-        const val = state.data[key] || '';
-        const placeholder = spType === 'exam' ? '段考備注…' : spType === 'review' ? '複習考備注…' : '考試｜進度｜作業…';
-        html += `<div class="${blockCls}">
-          <div class="period-block-header">
-            <span class="${badgeCls}">${badgeLabel}</span>
-          </div>
-          <textarea class="period-textarea" placeholder="${placeholder}"
-            oninput="saveField('${key}',this.value);autoResize(this)">${esc(val)}</textarea>
-        </div>`;
+        // Determine block style
+        let blockCls = 'period-block';
+        let hdrCls = 'period-block-header';
+        if (ds.isFlex) { blockCls += ' flex-block'; hdrCls += ' flex-hdr'; }
+        else if (spType === 'exam') { blockCls += ' exam-block'; hdrCls += ' exam-hdr'; }
+        else if (spType === 'review') { blockCls += ' review-block'; hdrCls += ' review-hdr'; }
 
-        // Eighth period block (if applicable)
-        if (ds.hasEighth) {
-          const key8 = `w${state.currentWeek}_d${di}_c${ci}_eighth`;
-          const val8 = state.data[key8] || '';
-          html += `<div class="period-block eighth-block">
-            <div class="period-block-header">
-              <span class="period-badge eighth">第8節（補課）</span>
-            </div>
-            <textarea class="period-textarea" placeholder="考試｜進度｜作業…"
-              oninput="saveField('${key8}',this.value);autoResize(this)">${esc(val8)}</textarea>
+        const hdrLabel = ds.isFlex ? `${ds.period}（彈性）` : ds.period;
+
+        html += `<div class="${blockCls}">
+          <div class="${hdrCls}">${hdrLabel}</div>
+          <div class="fields-grid">`;
+
+        FIELD_LABELS.forEach((lbl, fi) => {
+          const key = `w${state.currentWeek}_d${di}_c${ci}_n_f${fi}`;
+          const val = state.data[key] || '';
+          const placeholder = (spType === 'exam' || spType === 'review') && fi === 0 ? '範圍…' : '';
+          html += `<div class="field-row">
+            <div class="field-lbl ${fi===0?'exam-lbl':''}">${lbl}</div>
+            <textarea class="field-ta" placeholder="${placeholder}"
+              oninput="saveField('${key}',this.value);autoResize(this)"
+              onfocus="autoResize(this)">${esc(val)}</textarea>
           </div>`;
+        });
+
+        html += `</div></div>`;
+
+        // Eighth period
+        if (ds.hasEighth) {
+          html += `<div class="period-block eighth-block">
+            <div class="period-block-header eighth-hdr">第8節（補課）</div>
+            <div class="fields-grid">`;
+          FIELD_LABELS.forEach((lbl, fi) => {
+            const key = `w${state.currentWeek}_d${di}_c${ci}_8_f${fi}`;
+            const val = state.data[key] || '';
+            html += `<div class="field-row">
+              <div class="field-lbl ${fi===0?'exam-lbl':''}">${lbl}</div>
+              <textarea class="field-ta"
+                oninput="saveField('${key}',this.value);autoResize(this)"
+                onfocus="autoResize(this)">${esc(val)}</textarea>
+            </div>`;
+          });
+          html += `</div></div>`;
         }
       }
 
@@ -889,7 +770,7 @@ function renderMain() {
 
 function autoResize(el) {
   el.style.height = 'auto';
-  el.style.height = Math.max(72, el.scrollHeight) + 'px';
+  el.style.height = Math.max(30, el.scrollHeight) + 'px';
 }
 
 function saveField(key, val) {
@@ -897,43 +778,33 @@ function saveField(key, val) {
   saveState();
 }
 
-function esc(str) {
-  return (str || '')
-    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ═══════════════════════════════════════════════
 // NAVIGATION
-// ═══════════════════════════════════════════════
-function changeWeek(delta) {
-  const n = state.currentWeek + delta;
+function changeWeek(d) {
+  const n = state.currentWeek + d;
   if (n < 1 || n > state.totalWeeks) return;
   state.currentWeek = n;
   saveState();
   render();
 }
 
-// ═══════════════════════════════════════════════
 // MODAL
-// ═══════════════════════════════════════════════
 function openModal(id) {
   if (id === 'settings-modal') populateSettings();
   if (id === 'special-modal') renderSpecialList();
   document.getElementById(id).classList.add('open');
 }
-
 function closeModal(id) {
   document.getElementById(id).classList.remove('open');
 }
-
 document.querySelectorAll('.modal-overlay').forEach(el => {
   el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
 });
 
-// ═══════════════════════════════════════════════
 // SETTINGS
-// ═══════════════════════════════════════════════
 function populateSettings() {
   document.getElementById('set-year').value = state.year;
   document.getElementById('set-sem').value = state.semester;
@@ -943,17 +814,15 @@ function populateSettings() {
 }
 
 function renderClassSetups() {
-  const c = document.getElementById('class-setups');
-  c.innerHTML = state.classes.map((cls, ci) => buildClassCard(cls, ci)).join('');
+  document.getElementById('class-setups').innerHTML =
+    state.classes.map((cls, ci) => buildClassCard(cls, ci)).join('');
 }
 
 function buildClassCard(cls, ci) {
   const days = ['一','二','三','四','五'];
-  let dHtml = days.map((dl, di) => {
+  const dHtml = days.map((dl, di) => {
     const ds = cls.schedule[di];
     const pVal = ds ? ds.period.replace('第','').replace('節','') : '0';
-    const flex = ds?.isFlex ? 'checked' : '';
-    const eighth = ds?.hasEighth ? 'checked' : '';
     return `<div class="day-col">
       <label>週${dl}</label>
       <select id="cs${ci}d${di}p" onchange="updateSched(${ci},${di})">
@@ -961,18 +830,18 @@ function buildClassCard(cls, ci) {
         ${[1,2,3,4,5,6,7].map(p=>`<option value="${p}"${pVal==p?' selected':''}>${p}節</option>`).join('')}
       </select>
       <div class="checkbox-row">
-        <input type="checkbox" id="cs${ci}d${di}f" ${flex} onchange="updateSched(${ci},${di})">
+        <input type="checkbox" id="cs${ci}d${di}f" ${ds?.isFlex?'checked':''} onchange="updateSched(${ci},${di})">
         <label for="cs${ci}d${di}f">彈性</label>
       </div>
       <div class="checkbox-row">
-        <input type="checkbox" id="cs${ci}d${di}e" ${eighth} onchange="updateSched(${ci},${di})">
+        <input type="checkbox" id="cs${ci}d${di}e" ${ds?.hasEighth?'checked':''} onchange="updateSched(${ci},${di})">
         <label for="cs${ci}d${di}e">第8節</label>
       </div>
     </div>`;
   }).join('');
   return `<div class="class-setup-card">
     <h5>
-      <input value="${esc(cls.name)}" placeholder="班級名稱（如 313）"
+      <input value="${esc(cls.name)}" placeholder="班級（如 313）"
         style="background:none;border:none;border-bottom:1.5px solid var(--accent);
                font:700 14px var(--font);color:var(--accent);width:90px;outline:none;padding:2px 0"
         oninput="state.classes[${ci}].name=this.value">
@@ -984,17 +853,14 @@ function buildClassCard(cls, ci) {
 }
 
 function updateSched(ci, di) {
-  const pEl = document.getElementById(`cs${ci}d${di}p`);
-  const fEl = document.getElementById(`cs${ci}d${di}f`);
-  const eEl = document.getElementById(`cs${ci}d${di}e`);
-  const p = parseInt(pEl.value);
-  state.classes[ci].schedule[di] = p === 0 ? null : {
-    period: `第${p}節`, isFlex: fEl.checked, hasEighth: eEl.checked
-  };
+  const p = parseInt(document.getElementById(`cs${ci}d${di}p`).value);
+  const f = document.getElementById(`cs${ci}d${di}f`).checked;
+  const e = document.getElementById(`cs${ci}d${di}e`).checked;
+  state.classes[ci].schedule[di] = p === 0 ? null : { period:`第${p}節`, isFlex:f, hasEighth:e };
 }
 
 function addClassSetup() {
-  state.classes.push({ name: '', schedule: [null,null,null,null,null] });
+  state.classes.push({ name:'', schedule:[null,null,null,null,null] });
   renderClassSetups();
 }
 
@@ -1014,14 +880,67 @@ function saveSettings() {
   closeModal('settings-modal');
 }
 
-// ═══════════════════════════════════════════════
-// SPECIAL DAYS
-// ═══════════════════════════════════════════════
+// JSON IMPORT - Schedule
+function importScheduleJSON() {
+  const raw = document.getElementById('schedule-json').value.trim();
+  const msg = document.getElementById('schedule-msg');
+  try {
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) throw new Error('格式錯誤：需為陣列');
+    arr.forEach((cls, i) => {
+      if (!cls.name) throw new Error(`第${i+1}個班級缺少 name`);
+      if (!Array.isArray(cls.schedule) || cls.schedule.length !== 5)
+        throw new Error(`${cls.name} 的 schedule 需為5個元素的陣列`);
+    });
+    state.classes = arr;
+    saveState();
+    renderClassSetups();
+    render();
+    msg.className = 'import-msg ok';
+    msg.textContent = `✓ 成功匯入 ${arr.length} 個班級`;
+  } catch(e) {
+    msg.className = 'import-msg err';
+    msg.textContent = '✗ ' + e.message;
+  }
+}
+
+// JSON IMPORT - Calendar
+function importCalendarJSON() {
+  const raw = document.getElementById('calendar-json').value.trim();
+  const msg = document.getElementById('calendar-msg');
+  try {
+    const arr = JSON.parse(raw);
+    if (!Array.isArray(arr)) throw new Error('格式錯誤：需為陣列');
+    const validTypes = ['exam','review','holiday','other'];
+    arr.forEach((item, i) => {
+      if (!item.date) throw new Error(`第${i+1}項缺少 date`);
+      if (!validTypes.includes(item.type)) throw new Error(`第${i+1}項 type 無效`);
+      if (!item.note) throw new Error(`第${i+1}項缺少 note`);
+    });
+    // Merge (avoid duplicates by date)
+    arr.forEach(item => {
+      const exists = state.specialDays.findIndex(s => s.date === item.date);
+      if (exists >= 0) state.specialDays[exists] = item;
+      else state.specialDays.push(item);
+    });
+    state.specialDays.sort((a,b) => a.date.localeCompare(b.date));
+    saveState();
+    renderSpecialList();
+    render();
+    msg.className = 'import-msg ok';
+    msg.textContent = `✓ 成功匯入 ${arr.length} 筆特殊日`;
+  } catch(e) {
+    msg.className = 'import-msg err';
+    msg.textContent = '✗ ' + e.message;
+  }
+}
+
+// SPECIAL DAYS - manual
 function renderSpecialList() {
   const typeLabel = {exam:'段考',review:'複習考',holiday:'放假日',other:'其他'};
   const c = document.getElementById('special-list');
-  if (state.specialDays.length === 0) {
-    c.innerHTML = `<div style="text-align:center;padding:24px;color:var(--ink-light);font-size:13px">尚未設定特殊日</div>`;
+  if (!state.specialDays.length) {
+    c.innerHTML = `<div style="text-align:center;padding:16px;color:var(--ink-light);font-size:13px">尚未設定特殊日</div>`;
     return;
   }
   c.innerHTML = state.specialDays.map((s, i) => `
@@ -1035,18 +954,35 @@ function renderSpecialList() {
 }
 
 function addSpecialDay() {
-  const date = document.getElementById('sp-date').value;
+  const dateStart = document.getElementById('sp-date-start').value;
+  const dateEnd = document.getElementById('sp-date-end').value || dateStart;
   const type = document.getElementById('sp-type').value;
   const note = document.getElementById('sp-note').value.trim();
-  if (!date) { alert('請選擇日期'); return; }
+  if (!dateStart) { alert('請選擇開始日期'); return; }
   if (!note) { alert('請填寫說明'); return; }
-  state.specialDays.push({ date, type, note });
+
+  // Generate all dates in range
+  const start = new Date(dateStart);
+  const end = new Date(dateEnd);
+  if (end < start) { alert('結束日期不能早於開始日期'); return; }
+
+  const cur = new Date(start);
+  while (cur <= end) {
+    const dk = cur.toISOString().slice(0,10);
+    const exists = state.specialDays.findIndex(s => s.date === dk);
+    const entry = { date: dk, type, note };
+    if (exists >= 0) state.specialDays[exists] = entry;
+    else state.specialDays.push(entry);
+    cur.setDate(cur.getDate() + 1);
+  }
+
   state.specialDays.sort((a,b) => a.date.localeCompare(b.date));
   saveState();
   renderSpecialList();
-  document.getElementById('sp-date').value = '';
-  document.getElementById('sp-note').value = '';
   render();
+  document.getElementById('sp-date-start').value = '';
+  document.getElementById('sp-date-end').value = '';
+  document.getElementById('sp-note').value = '';
 }
 
 function removeSpecial(i) {
@@ -1056,76 +992,94 @@ function removeSpecial(i) {
   render();
 }
 
-// ═══════════════════════════════════════════════
-// EXPORT TO WORD (HTML-based .doc)
-// ═══════════════════════════════════════════════
+// EXPORT
 function exportWord() {
   const classes = state.classes;
-  if (classes.length === 0) { alert('請先設定班級課表'); return; }
+  if (!classes.length) { alert('請先設定班級課表'); return; }
+
+  const typeColors = {exam:'#C0392B',review:'#856404',holiday:'#8B5E3C',other:'#666'};
+  const typeBg = {exam:'#FDECEA',review:'#FFF8E1',holiday:'#FFF3EA',other:'#F5F5F5'};
+  const typeLabel = {exam:'段考',review:'複習考',holiday:'放假',other:'特殊'};
 
   let rows = '';
   for (let di = 0; di < 5; di++) {
     const date = getDayDate(state.currentWeek, di);
     const sp = getSpecialDay(date);
     const spType = sp?.type || '';
-    const bgColor = spType === 'exam' ? '#FDECEA' : spType === 'review' ? '#FFF8E1' : spType === 'holiday' ? '#FFF3EA' : '#FFFFFF';
+    const rowBg = spType ? typeBg[spType] : '#FFFFFF';
+
+    const spHtml = spType
+      ? `<br><span style="font-size:8pt;color:${typeColors[spType]}">${typeLabel[spType]}</span><br><span style="font-size:8pt;color:${typeColors[spType]}">${esc(sp.note)}</span>`
+      : '';
 
     let classCells = '';
     classes.forEach((cls, ci) => {
       const ds = cls.schedule[di];
       if (!ds) {
-        classCells += `<td style="background:#F5F5F5;text-align:center;color:#999;border:1px solid #DDD;padding:6px;">—</td>`;
+        classCells += `<td style="background:#F5F5F5;text-align:center;color:#999;border:1px solid #DDD;padding:4px;">—</td>`;
       } else {
-        const key = `w${state.currentWeek}_d${di}_c${ci}_normal`;
-        const val = (state.data[key] || '').replace(/\n/g,'<br>');
-        const cellBg = ds.isFlex ? '#EEF3FB' : bgColor;
-        const periodLabel = ds.isFlex ? `${ds.period}（彈性）` : ds.period;
-        let cell = `<td style="background:${cellBg};border:1px solid #DDD;padding:6px;vertical-align:top;">
-          <div style="font-size:9pt;color:#666;margin-bottom:3px">${periodLabel}</div>
-          <div style="font-size:10pt">${val || '　'}</div>`;
+        const cellBg = ds.isFlex ? '#EEF3FB' : rowBg;
+        const hdrColor = ds.isFlex ? '#2C5F9E' : (spType ? typeColors[spType] : '#666');
+        const hdrLabel = ds.isFlex ? `${ds.period}（彈性）` : ds.period;
+
+        const fields = FIELD_LABELS.map((lbl, fi) => {
+          const key = `w${state.currentWeek}_d${di}_c${ci}_n_f${fi}`;
+          const val = (state.data[key]||'').replace(/\n/g,'<br>');
+          return `<tr>
+            <td style="font-size:8pt;color:#999;border:1px solid #EEE;padding:3px 4px;width:22px;text-align:center;background:rgba(0,0,0,0.02)">${lbl}</td>
+            <td style="font-size:10pt;border:1px solid #EEE;padding:3px 5px">${val||'&nbsp;'}</td>
+          </tr>`;
+        }).join('');
+
+        let cell = `<td style="background:${cellBg};border:1px solid #DDD;padding:5px;vertical-align:top;">
+          <div style="font-size:8pt;color:${hdrColor};font-weight:bold;margin-bottom:4px">${hdrLabel}</div>
+          <table style="width:100%;border-collapse:collapse">${fields}</table>`;
+
         if (ds.hasEighth) {
-          const k8 = `w${state.currentWeek}_d${di}_c${ci}_eighth`;
-          const v8 = (state.data[k8] || '').replace(/\n/g,'<br>');
-          cell += `<hr style="border:none;border-top:1px solid #DDD;margin:6px 0">
-            <div style="font-size:9pt;color:#6B3FA0;margin-bottom:3px">第8節（補課）</div>
-            <div style="font-size:10pt">${v8 || '　'}</div>`;
+          const fields8 = FIELD_LABELS.map((lbl, fi) => {
+            const key = `w${state.currentWeek}_d${di}_c${ci}_8_f${fi}`;
+            const val = (state.data[key]||'').replace(/\n/g,'<br>');
+            return `<tr>
+              <td style="font-size:8pt;color:#999;border:1px solid #EEE;padding:3px 4px;width:22px;text-align:center;background:rgba(0,0,0,0.02)">${lbl}</td>
+              <td style="font-size:10pt;border:1px solid #EEE;padding:3px 5px">${val||'&nbsp;'}</td>
+            </tr>`;
+          }).join('');
+          cell += `<div style="font-size:8pt;color:#6B3FA0;font-weight:bold;margin:5px 0 3px">第8節（補課）</div>
+            <table style="width:100%;border-collapse:collapse">${fields8}</table>`;
         }
         cell += `</td>`;
         classCells += cell;
       }
     });
 
-    const spLabel = spType ? `<br><span style="font-size:8pt;color:${{exam:'#C0392B',review:'#856404',holiday:'#8B5E3C',other:'#666'}[spType]||'#666'}">${{exam:'段考',review:'複習考',holiday:'放假',other:'特殊'}[spType]||''}</span>` : '';
     rows += `<tr>
-      <td style="background:${bgColor};border:1px solid #DDD;padding:8px;text-align:center;font-weight:bold;width:60px;vertical-align:middle;">
-        ${DAYS_ZH[di]}<br><span style="font-weight:normal;font-size:10pt">${formatMD(date)}</span>${spLabel}
-      </td>
-      ${classCells}
+      <td style="background:${rowBg};border:1px solid #DDD;padding:6px;text-align:center;font-weight:bold;width:56px;vertical-align:middle;font-size:11pt">
+        ${DAYS_ZH[di]}<br><span style="font-weight:normal;font-size:10pt">${formatMD(date)}</span>${spHtml}
+      </td>${classCells}
     </tr>`;
   }
 
-  const headers = classes.map(c => `<th style="background:#1C1C1E;color:white;padding:8px;text-align:center;border:1px solid #444">${esc(c.name)}</th>`).join('');
-  const wNote = state.data[`w${state.currentWeek}_note`] || '';
+  const headers = classes.map(c =>
+    `<th style="background:#1C1C1E;color:white;padding:8px;text-align:center;border:1px solid #444;font-size:13pt">${esc(c.name)}</th>`
+  ).join('');
 
+  const wNote = state.data[`w${state.currentWeek}_note`] || '';
   const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office'
     xmlns:w='urn:schemas-microsoft-com:office:word'
     xmlns='http://www.w3.org/TR/REC-html40'>
   <head><meta charset='utf-8'>
-  <style>
-    body { font-family: 'Microsoft YaHei', 'PingFang TC', sans-serif; font-size:11pt; }
-    table { border-collapse:collapse; width:100%; }
-  </style></head>
-  <body>
+  <style>body{font-family:'Microsoft YaHei','PingFang TC',sans-serif;font-size:11pt}table{border-collapse:collapse;width:100%}</style>
+  </head><body>
     <h2 style="text-align:center;margin-bottom:4px">${state.year}學年度${state.semester}學期　教學進度表</h2>
     <p style="text-align:center;margin-bottom:12px;color:#666">第 ${state.currentWeek} 週</p>
-    ${wNote ? `<p style="margin-bottom:10px;color:#444">本週備注：${esc(wNote)}</p>` : ''}
-    <table>
-      <thead><tr><th style="background:#1C1C1E;color:white;padding:8px;border:1px solid #444;width:60px"></th>${headers}</tr></thead>
-      <tbody>${rows}</tbody>
-    </table>
+    ${wNote?`<p style="margin-bottom:10px;color:#444">本週備注：${esc(wNote)}</p>`:''}
+    <table><thead><tr>
+      <th style="background:#1C1C1E;color:white;padding:8px;border:1px solid #444;width:56px"></th>
+      ${headers}
+    </tr></thead><tbody>${rows}</tbody></table>
   </body></html>`;
 
-  const blob = new Blob([html], { type: 'application/msword' });
+  const blob = new Blob([html], {type:'application/msword'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -1134,40 +1088,14 @@ function exportWord() {
   URL.revokeObjectURL(url);
 }
 
-// ═══════════════════════════════════════════════
 // INIT
-// ═══════════════════════════════════════════════
 loadState();
 if (state.classes.length === 0) {
   state.classes = [
-    { name: '313', schedule: [
-      {period:'第2節',isFlex:false,hasEighth:false},
-      {period:'第4節',isFlex:false,hasEighth:false},
-      null,
-      {period:'第1節',isFlex:false,hasEighth:false},
-      {period:'第4節',isFlex:true,hasEighth:true}
-    ]},
-    { name: '314', schedule: [
-      {period:'第1節',isFlex:false,hasEighth:false},
-      null,
-      {period:'第3節',isFlex:false,hasEighth:false},
-      {period:'第2節',isFlex:true,hasEighth:false},
-      {period:'第4節',isFlex:false,hasEighth:false}
-    ]},
-    { name: '315', schedule: [
-      null,
-      {period:'第3節',isFlex:false,hasEighth:false},
-      {period:'第1節',isFlex:true,hasEighth:false},
-      {period:'第4節',isFlex:false,hasEighth:false},
-      {period:'第2節',isFlex:false,hasEighth:true}
-    ]},
-    { name: '316', schedule: [
-      {period:'第3節',isFlex:false,hasEighth:false},
-      {period:'第1節',isFlex:true,hasEighth:false},
-      {period:'第4節',isFlex:false,hasEighth:false},
-      null,
-      {period:'第2節',isFlex:false,hasEighth:false}
-    ]}
+    {name:'313',schedule:[{period:'第2節',isFlex:false,hasEighth:false},{period:'第4節',isFlex:false,hasEighth:false},null,{period:'第1節',isFlex:false,hasEighth:false},{period:'第4節',isFlex:true,hasEighth:true}]},
+    {name:'314',schedule:[{period:'第1節',isFlex:false,hasEighth:false},null,{period:'第3節',isFlex:false,hasEighth:false},{period:'第2節',isFlex:true,hasEighth:false},{period:'第4節',isFlex:false,hasEighth:false}]},
+    {name:'315',schedule:[null,{period:'第3節',isFlex:false,hasEighth:false},{period:'第1節',isFlex:true,hasEighth:false},{period:'第4節',isFlex:false,hasEighth:false},{period:'第2節',isFlex:false,hasEighth:true}]},
+    {name:'316',schedule:[{period:'第3節',isFlex:false,hasEighth:false},{period:'第1節',isFlex:true,hasEighth:false},{period:'第4節',isFlex:false,hasEighth:false},null,{period:'第2節',isFlex:false,hasEighth:false}]}
   ];
 }
 render();
