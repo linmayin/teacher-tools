@@ -30,413 +30,179 @@
     --holiday-bg: #fff3ea;
     --holiday-border: #f0c999;
     --holiday-text: #8b5e3c;
+    --drag-over: #d4edda;
     --radius: 10px;
-    --font: -apple-system, 'Helvetica Neue', 'PingFang TC', sans-serif;
+    --font: -apple-system,'Helvetica Neue','PingFang TC',sans-serif;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: var(--font);
-    background: var(--paper-warm);
-    color: var(--ink);
-    min-height: 100vh;
-    font-size: 14px;
-    -webkit-text-size-adjust: 100%;
-  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:var(--font);background:var(--paper-warm);color:var(--ink);min-height:100vh;font-size:14px;-webkit-text-size-adjust:100%;}
 
   /* HEADER */
-  #header {
-    background: var(--paper);
-    border-bottom: 1px solid var(--rule);
-    padding: 12px 16px 8px;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-  #header-top {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    gap: 8px;
-    flex-wrap: wrap;
-  }
-  #title-block h1 { font-size: 17px; font-weight: 700; }
-  #title-block h2 { font-size: 12px; font-weight: 400; color: var(--ink-light); margin-top: 1px; }
-  #week-nav { display: flex; align-items: center; gap: 6px; }
-  #week-nav button {
-    background: var(--paper-warm);
-    border: 1px solid var(--rule);
-    color: var(--ink);
-    width: 34px; height: 34px;
-    border-radius: 50%;
-    font-size: 20px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.15s;
-  }
-  #week-nav button:hover { background: var(--paper-mid); }
-  #week-label { font-size: 16px; font-weight: 700; min-width: 64px; text-align: center; }
-  #header-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-  .hdr-btn {
-    background: var(--paper-warm);
-    border: 1px solid var(--rule);
-    color: var(--ink);
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 13px;
-    cursor: pointer;
-    font-family: var(--font);
-    white-space: nowrap;
-    transition: background 0.15s;
-  }
-  .hdr-btn:hover { background: var(--paper-mid); }
-  .hdr-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
-  .hdr-btn.primary:hover { opacity: 0.88; }
+  #header{background:var(--paper);border-bottom:1px solid var(--rule);padding:12px 16px 8px;position:sticky;top:0;z-index:100;}
+  #header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:8px;flex-wrap:wrap;}
+  #title-block h1{font-size:17px;font-weight:700;}
+  #title-block h2{font-size:12px;font-weight:400;color:var(--ink-light);margin-top:1px;}
+  #week-nav{display:flex;align-items:center;gap:6px;}
+  #week-nav button{background:var(--paper-warm);border:1px solid var(--rule);color:var(--ink);width:34px;height:34px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+  #week-nav button:hover{background:var(--paper-mid);}
+  #week-label{font-size:16px;font-weight:700;min-width:64px;text-align:center;}
+  #header-actions{display:flex;gap:8px;flex-wrap:wrap;}
+  .hdr-btn{background:var(--paper-warm);border:1px solid var(--rule);color:var(--ink);padding:6px 12px;border-radius:8px;font-size:13px;cursor:pointer;font-family:var(--font);white-space:nowrap;transition:background .15s;}
+  .hdr-btn:hover{background:var(--paper-mid);}
+  .hdr-btn.primary{background:var(--accent);color:white;border-color:var(--accent);}
+  .hdr-btn.primary:hover{opacity:.88;}
 
   /* DATE BAR */
-  #date-bar { display: flex; gap: 4px; }
-  .date-chip {
-    flex: 1; text-align: center;
-    padding: 4px 2px;
-    border-radius: 6px;
-    font-size: 11px;
-    color: var(--ink-light);
-  }
-  .date-chip .dow { font-weight: 600; font-size: 12px; color: var(--ink); }
-  .date-chip.sp-exam .dow { color: var(--exam-text); }
-  .date-chip.sp-exam { color: var(--exam-text); }
-  .date-chip.sp-review .dow { color: var(--review-text); }
-  .date-chip.sp-review { color: var(--review-text); }
-  .date-chip.sp-holiday .dow { color: var(--holiday-text); }
-  .date-chip.sp-holiday { color: var(--holiday-text); }
+  #date-bar{display:flex;gap:4px;}
+  .date-chip{flex:1;text-align:center;padding:4px 2px;border-radius:6px;font-size:11px;color:var(--ink-light);}
+  .date-chip .dow{font-weight:600;font-size:12px;color:var(--ink);}
+  .date-chip.sp-exam .dow,.date-chip.sp-exam{color:var(--exam-text);}
+  .date-chip.sp-review .dow,.date-chip.sp-review{color:var(--review-text);}
+  .date-chip.sp-holiday .dow,.date-chip.sp-holiday{color:var(--holiday-text);}
 
   /* MAIN */
-  #main { padding: 12px 12px 100px; overflow-x: auto; }
-
-  .week-note-row {
-    background: var(--paper);
-    border: 1px solid var(--rule);
-    border-radius: var(--radius);
-    padding: 8px 14px;
-    margin-bottom: 10px;
-    display: flex; align-items: center; gap: 10px;
-  }
-  .week-note-row label { font-size: 12px; color: var(--ink-light); min-width: 56px; font-weight: 600; }
-  .week-note-row input {
-    flex: 1; border: none;
-    font-family: var(--font); font-size: 13px; color: var(--ink);
-    outline: none; background: transparent;
-  }
-
-  .legend {
-    display: flex; gap: 14px; flex-wrap: wrap;
-    padding: 8px 12px;
-    background: var(--paper);
-    border-radius: var(--radius);
-    border: 1px solid var(--rule);
-    margin-bottom: 10px;
-  }
-  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--ink-light); }
-  .legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+  #main{padding:12px 12px 100px;overflow-x:auto;}
+  .week-note-row{background:var(--paper);border:1px solid var(--rule);border-radius:var(--radius);padding:8px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+  .week-note-row label{font-size:12px;color:var(--ink-light);min-width:56px;font-weight:600;}
+  .week-note-row input{flex:1;border:none;font-family:var(--font);font-size:13px;color:var(--ink);outline:none;background:transparent;}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;padding:8px 12px;background:var(--paper);border-radius:var(--radius);border:1px solid var(--rule);margin-bottom:10px;}
+  .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink-light);}
+  .legend-dot{width:12px;height:12px;border-radius:3px;}
 
   /* TABLE */
-  .progress-table {
-    width: 100%; min-width: 520px;
-    border-collapse: separate;
-    border-spacing: 0 4px;
-  }
-  .progress-table thead th {
-    background: var(--ink); color: white;
-    padding: 8px 6px; font-size: 13px; font-weight: 700; text-align: center;
-  }
-  .progress-table thead th:first-child {
-    background: transparent; width: 64px; min-width: 64px;
-  }
-  .progress-table thead th:nth-child(2) { border-radius: 8px 0 0 0; }
-  .progress-table thead th:last-child { border-radius: 0 8px 0 0; }
-  .progress-table tbody tr { vertical-align: top; }
+  .progress-table{width:100%;min-width:520px;border-collapse:separate;border-spacing:0 4px;}
+  .progress-table thead th{background:var(--ink);color:white;padding:8px 6px;font-size:13px;font-weight:700;text-align:center;}
+  .progress-table thead th:first-child{background:transparent;width:52px;min-width:52px;}
+  .progress-table thead th:nth-child(2){border-radius:8px 0 0 0;}
+  .progress-table thead th:last-child{border-radius:0 8px 0 0;}
+  .progress-table tbody tr{vertical-align:top;}
 
   /* Day label */
-  .day-cell { padding: 0 6px 0 0; width: 64px; min-width: 64px; }
-  .day-label {
-    background: var(--paper);
-    border: 1px solid var(--rule);
-    border-radius: 8px;
-    padding: 6px 4px;
-    text-align: center;
-    min-height: 120px;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center; gap: 3px;
-  }
-  .day-label .dow-text { font-size: 13px; font-weight: 700; }
-  .day-label .date-text { font-size: 11px; color: var(--ink-light); }
-  .day-label .period-hint { font-size: 9px; color: var(--ink-light); margin-top: 2px; line-height: 1.6; }
-  .day-label.sp-exam { background: var(--exam-bg); border-color: var(--exam-border); }
-  .day-label.sp-exam .dow-text { color: var(--exam-text); }
-  .day-label.sp-review { background: var(--review-bg); border-color: var(--review-border); }
-  .day-label.sp-review .dow-text { color: var(--review-text); }
-  .day-label.sp-holiday { background: var(--holiday-bg); border-color: var(--holiday-border); }
-  .day-label.sp-holiday .dow-text { color: var(--holiday-text); }
-  .special-tag {
-    font-size: 9px; font-weight: 700;
-    padding: 1px 5px; border-radius: 3px; margin-top: 2px;
-  }
-  .special-tag.exam { background: var(--exam-bg); color: var(--exam-text); border: 1px solid var(--exam-border); }
-  .special-tag.review { background: var(--review-bg); color: var(--review-text); border: 1px solid var(--review-border); }
-  .special-tag.holiday { background: var(--holiday-bg); color: var(--holiday-text); border: 1px solid var(--holiday-border); }
+  .day-cell{padding:0 6px 0 0;width:52px;min-width:52px;}
+  .day-label{background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:6px 4px;text-align:center;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;}
+  .day-label .dow-text{font-size:13px;font-weight:700;}
+  .day-label .date-text{font-size:11px;color:var(--ink-light);}
+  .day-label.sp-exam{background:var(--exam-bg);border-color:var(--exam-border);}
+  .day-label.sp-exam .dow-text{color:var(--exam-text);}
+  .day-label.sp-review{background:var(--review-bg);border-color:var(--review-border);}
+  .day-label.sp-review .dow-text{color:var(--review-text);}
+  .day-label.sp-holiday{background:var(--holiday-bg);border-color:var(--holiday-border);}
+  .day-label.sp-holiday .dow-text{color:var(--holiday-text);}
+  .special-tag{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;margin-top:2px;}
+  .special-tag.exam{background:var(--exam-bg);color:var(--exam-text);border:1px solid var(--exam-border);}
+  .special-tag.review{background:var(--review-bg);color:var(--review-text);border:1px solid var(--review-border);}
+  .special-tag.holiday{background:var(--holiday-bg);color:var(--holiday-text);border:1px solid var(--holiday-border);}
 
   /* Class cell */
-  .class-cell { padding: 0 3px; }
-  .class-cell:last-child { padding-right: 0; }
-  .cell-wrapper { display: flex; flex-direction: column; gap: 3px; }
+  .class-cell{padding:0 3px;}
+  .class-cell:last-child{padding-right:0;}
+  .cell-wrapper{display:flex;flex-direction:column;gap:3px;}
 
   /* Period block */
-  .period-block {
-    background: var(--paper);
-    border: 1px solid var(--rule);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  .period-block:focus-within { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-light); }
-  .period-block.flex-block { background: var(--flex-bg); border-color: var(--flex-border); }
-  .period-block.flex-block:focus-within { border-color: var(--flex-text); }
-  .period-block.eighth-block { background: var(--eighth-bg); border-color: var(--eighth-border); }
-  .period-block.eighth-block:focus-within { border-color: var(--eighth-text); }
-  .period-block.exam-block { background: var(--exam-bg); border-color: var(--exam-border); }
-  .period-block.exam-block:focus-within { border-color: var(--exam-text); }
-  .period-block.review-block { background: var(--review-bg); border-color: var(--review-border); }
-  .period-block.no-class {
-    background: var(--paper-warm);
-    border: 1px dashed var(--rule);
-    min-height: 120px;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .no-class-dash { color: var(--rule-strong); font-size: 16px; }
+  .period-block{background:var(--paper);border:1px solid var(--rule);border-radius:8px;overflow:hidden;position:relative;transition:box-shadow .15s;}
+  .period-block:focus-within{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-light);}
+  .period-block.flex-block{background:var(--flex-bg);border-color:var(--flex-border);}
+  .period-block.flex-block:focus-within{border-color:var(--flex-text);}
+  .period-block.eighth-block{background:var(--eighth-bg);border-color:var(--eighth-border);}
+  .period-block.exam-block{background:var(--exam-bg);border-color:var(--exam-border);}
+  .period-block.review-block{background:var(--review-bg);border-color:var(--review-border);}
+  .period-block.no-class{background:var(--paper-warm);border:1px dashed var(--rule);min-height:100px;display:flex;align-items:center;justify-content:center;}
+  .no-class-dash{color:var(--rule-strong);font-size:16px;}
 
-  .period-block-header {
-    padding: 3px 7px;
-    font-size: 10px; font-weight: 700;
-    border-bottom: 1px solid var(--rule);
-    background: rgba(0,0,0,0.02);
-    color: var(--ink-light);
-  }
-  .period-block-header.flex-hdr { color: var(--flex-text); }
-  .period-block-header.eighth-hdr { color: var(--eighth-text); }
-  .period-block-header.exam-hdr { color: var(--exam-text); }
-  .period-block-header.review-hdr { color: var(--review-text); }
+  /* Drag states */
+  .period-block.dragging{opacity:.4;box-shadow:0 4px 16px rgba(0,0,0,.2);}
+  .period-block.drag-over{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light);background:var(--drag-over)!important;}
 
-  /* THREE FIXED FIELDS */
-  .fields-grid { display: flex; flex-direction: column; }
-  .field-row {
-    display: flex;
-    align-items: stretch;
-    border-bottom: 1px solid var(--rule);
-    min-height: 34px;
-  }
-  .field-row:last-child { border-bottom: none; }
-  .field-lbl {
-    width: 30px; min-width: 30px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 10px; font-weight: 700;
-    color: var(--ink-light);
-    border-right: 1px solid var(--rule);
-    background: rgba(0,0,0,0.02);
-    flex-shrink: 0;
-  }
-  .field-lbl.exam-lbl { color: var(--exam-text); }
-  .field-ta {
-    flex: 1;
-    border: none; background: transparent;
-    font-family: var(--font); font-size: 12px; color: var(--ink);
-    padding: 5px 6px;
-    resize: none; outline: none;
-    line-height: 1.45;
-    min-height: 34px;
-    width: 100%;
-    overflow: hidden;
-  }
-  .field-ta::placeholder { color: #ccc; }
+  .period-block-header{padding:3px 7px 3px 6px;font-size:10px;font-weight:700;border-bottom:1px solid var(--rule);background:rgba(0,0,0,.02);color:var(--ink-light);display:flex;align-items:center;justify-content:space-between;gap:4px;}
+  .period-block-header.flex-hdr{color:var(--flex-text);}
+  .period-block-header.eighth-hdr{color:var(--eighth-text);}
+  .period-block-header.exam-hdr{color:var(--exam-text);}
+  .period-block-header.review-hdr{color:var(--review-text);}
+
+  /* Drag handle + copy btn */
+  .block-actions{display:flex;gap:4px;align-items:center;}
+  .drag-handle{cursor:grab;font-size:12px;color:var(--rule-strong);user-select:none;padding:0 2px;}
+  .drag-handle:active{cursor:grabbing;}
+  .copy-btn{background:none;border:none;cursor:pointer;font-size:11px;color:var(--rule-strong);padding:0 2px;line-height:1;font-family:var(--font);}
+  .copy-btn:hover{color:var(--accent);}
+
+  /* Fields */
+  .fields-grid{display:flex;flex-direction:column;}
+  .field-row{display:flex;align-items:stretch;border-bottom:1px solid var(--rule);min-height:32px;}
+  .field-row:last-child{border-bottom:none;}
+  .field-lbl{width:28px;min-width:28px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:var(--ink-light);border-right:1px solid var(--rule);background:rgba(0,0,0,.02);flex-shrink:0;}
+  .field-lbl.exam-lbl{color:var(--exam-text);}
+  .field-ta{flex:1;border:none;background:transparent;font-family:var(--font);font-size:12px;color:var(--ink);padding:5px 6px;resize:none;outline:none;line-height:1.45;min-height:32px;width:100%;overflow:hidden;}
+  .field-ta::placeholder{color:#ccc;}
 
   /* BOTTOM BAR */
-  #bottom-bar {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    background: var(--paper);
-    border-top: 1px solid var(--rule);
-    display: flex; justify-content: space-around;
-    padding: 10px 0 22px;
-    z-index: 100;
-  }
-  .bottom-btn {
-    color: var(--ink-light); border: none; background: none;
-    font-size: 11px;
-    display: flex; flex-direction: column; align-items: center; gap: 2px;
-    cursor: pointer; padding: 4px 14px; border-radius: 8px;
-    font-family: var(--font); transition: color 0.15s;
-  }
-  .bottom-btn:hover { color: var(--ink); }
-  .bottom-btn .icon { font-size: 22px; }
+  #bottom-bar{position:fixed;bottom:0;left:0;right:0;background:var(--paper);border-top:1px solid var(--rule);display:flex;justify-content:space-around;padding:10px 0 22px;z-index:100;}
+  .bottom-btn{color:var(--ink-light);border:none;background:none;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px 14px;border-radius:8px;font-family:var(--font);transition:color .15s;}
+  .bottom-btn:hover{color:var(--ink);}
+  .bottom-btn .icon{font-size:22px;}
 
   /* MODAL */
-  .modal-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.35);
-    z-index: 200; align-items: flex-end; justify-content: center;
-  }
-  .modal-overlay.open { display: flex; }
-  .modal {
-    background: var(--paper);
-    border-radius: 20px 20px 0 0;
-    padding: 20px 20px 40px;
-    width: 100%; max-width: 720px;
-    max-height: 88vh; overflow-y: auto;
-  }
-  .modal h3 {
-    font-size: 17px; font-weight: 700;
-    margin-bottom: 16px;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .modal-close {
-    background: var(--paper-mid); border: none;
-    width: 28px; height: 28px; border-radius: 50%;
-    font-size: 15px; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--ink-light);
-  }
-  .setting-section { margin-bottom: 22px; }
-  .setting-section h4 {
-    font-size: 11px; font-weight: 700; color: var(--ink-light);
-    margin-bottom: 10px; padding-bottom: 6px;
-    border-bottom: 1px solid var(--rule);
-    text-transform: uppercase; letter-spacing: 0.8px;
-  }
-  .form-row {
-    display: flex; align-items: center;
-    gap: 10px; margin-bottom: 10px; flex-wrap: wrap;
-  }
-  .form-row label { font-size: 13px; min-width: 72px; color: var(--ink-light); }
-  .form-input {
-    border: 1.5px solid var(--rule); border-radius: 8px;
-    padding: 8px 10px;
-    font-family: var(--font); font-size: 13px; color: var(--ink);
-    background: var(--paper); flex: 1; min-width: 100px;
-    -webkit-appearance: none;
-  }
-  .form-input:focus { outline: none; border-color: var(--accent); }
-  .class-setup-card {
-    background: var(--paper-warm);
-    border: 1.5px solid var(--rule);
-    border-radius: var(--radius);
-    padding: 14px; margin-bottom: 12px;
-  }
-  .class-setup-card h5 {
-    font-size: 14px; font-weight: 700; margin-bottom: 12px;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .day-schedule { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; }
-  .day-col > label {
-    font-size: 11px; font-weight: 600; color: var(--ink-light);
-    display: block; margin-bottom: 4px; text-align: center;
-  }
-  .day-col select {
-    width: 100%; border: 1px solid var(--rule);
-    border-radius: 6px; padding: 5px 2px;
-    font-size: 12px; text-align: center;
-    background: var(--paper); color: var(--ink); -webkit-appearance: none;
-  }
-  .checkbox-row {
-    display: flex; align-items: center; gap: 4px;
-    margin-top: 5px; font-size: 11px; color: var(--ink-light);
-  }
-  .save-btn {
-    width: 100%; background: var(--accent); color: white;
-    border: none; border-radius: 10px;
-    padding: 13px; font-size: 15px; font-weight: 600;
-    cursor: pointer; margin-top: 8px;
-    font-family: var(--font); transition: opacity 0.15s;
-  }
-  .save-btn:hover { opacity: 0.88; }
-  .add-btn {
-    width: 100%; background: var(--paper-warm);
-    color: var(--accent); border: 1.5px dashed var(--accent);
-    border-radius: 10px; padding: 10px;
-    font-size: 14px; font-weight: 600;
-    cursor: pointer; margin-bottom: 12px; font-family: var(--font);
-  }
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;align-items:flex-end;justify-content:center;}
+  .modal-overlay.open{display:flex;}
+  .modal{background:var(--paper);border-radius:20px 20px 0 0;padding:20px 20px 40px;width:100%;max-width:720px;max-height:88vh;overflow-y:auto;}
+  .modal h3{font-size:17px;font-weight:700;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;}
+  .modal-close{background:var(--paper-mid);border:none;width:28px;height:28px;border-radius:50%;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink-light);}
+  .setting-section{margin-bottom:22px;}
+  .setting-section h4{font-size:11px;font-weight:700;color:var(--ink-light);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--rule);text-transform:uppercase;letter-spacing:.8px;}
+  .form-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+  .form-row label{font-size:13px;min-width:72px;color:var(--ink-light);}
+  .form-input{border:1.5px solid var(--rule);border-radius:8px;padding:8px 10px;font-family:var(--font);font-size:13px;color:var(--ink);background:var(--paper);flex:1;min-width:100px;-webkit-appearance:none;}
+  .form-input:focus{outline:none;border-color:var(--accent);}
+  .class-setup-card{background:var(--paper-warm);border:1.5px solid var(--rule);border-radius:var(--radius);padding:14px;margin-bottom:12px;}
+  .class-setup-card h5{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
+  .day-schedule{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+  .day-col>label{font-size:11px;font-weight:600;color:var(--ink-light);display:block;margin-bottom:4px;text-align:center;}
+  .day-col select{width:100%;border:1px solid var(--rule);border-radius:6px;padding:5px 2px;font-size:12px;text-align:center;background:var(--paper);color:var(--ink);-webkit-appearance:none;}
+  .checkbox-row{display:flex;align-items:center;gap:4px;margin-top:5px;font-size:11px;color:var(--ink-light);}
+  .save-btn{width:100%;background:var(--accent);color:white;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:600;cursor:pointer;margin-top:8px;font-family:var(--font);transition:opacity .15s;}
+  .save-btn:hover{opacity:.88;}
+  .add-btn{width:100%;background:var(--paper-warm);color:var(--accent);border:1.5px dashed var(--accent);border-radius:10px;padding:10px;font-size:14px;font-weight:600;cursor:pointer;margin-bottom:12px;font-family:var(--font);}
+  .json-import-box{background:var(--paper-warm);border:1.5px solid var(--rule);border-radius:var(--radius);padding:14px;margin-bottom:16px;}
+  .json-ta{width:100%;min-height:80px;border:1.5px solid var(--rule);border-radius:8px;padding:8px 10px;font-family:'Menlo','Courier New',monospace;font-size:12px;color:var(--ink);background:var(--paper);resize:vertical;outline:none;margin-bottom:8px;}
+  .json-ta:focus{border-color:var(--accent);}
+  .import-btn{background:var(--flex-text);color:white;border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font);}
+  .import-msg{font-size:12px;margin-top:6px;}
+  .import-msg.ok{color:var(--accent);}
+  .import-msg.err{color:var(--exam-text);}
+  .special-form{background:var(--paper-warm);border:1.5px solid var(--rule);border-radius:var(--radius);padding:14px;margin-bottom:14px;}
+  .special-item{background:var(--paper);border:1.5px solid var(--rule);border-radius:8px;padding:10px 12px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .type-badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;margin-right:6px;}
+  .type-badge.exam{background:var(--exam-bg);color:var(--exam-text);}
+  .type-badge.review{background:var(--review-bg);color:var(--review-text);}
+  .type-badge.holiday{background:var(--holiday-bg);color:var(--holiday-text);}
+  .type-badge.other{background:var(--paper-mid);color:var(--ink-light);}
+  .del-btn{background:none;border:none;color:var(--rule-strong);font-size:18px;cursor:pointer;padding:2px 6px;line-height:1;}
+  .del-btn:hover{color:var(--exam-text);}
 
-  /* JSON import area */
-  .json-import-box {
-    background: var(--paper-warm);
-    border: 1.5px solid var(--rule);
-    border-radius: var(--radius);
-    padding: 14px; margin-bottom: 16px;
-  }
-  .json-import-box p {
-    font-size: 12px; color: var(--ink-light); margin-bottom: 8px; line-height: 1.5;
-  }
-  .json-ta {
-    width: 100%; min-height: 90px;
-    border: 1.5px solid var(--rule); border-radius: 8px;
-    padding: 8px 10px;
-    font-family: 'Menlo', 'Courier New', monospace;
-    font-size: 12px; color: var(--ink);
-    background: var(--paper); resize: vertical; outline: none;
-    margin-bottom: 8px;
-  }
-  .json-ta:focus { border-color: var(--accent); }
-  .import-btn {
-    background: var(--flex-text); color: white;
-    border: none; border-radius: 8px;
-    padding: 9px 18px; font-size: 13px; font-weight: 600;
-    cursor: pointer; font-family: var(--font);
-  }
-  .import-msg { font-size: 12px; margin-top: 6px; }
-  .import-msg.ok { color: var(--accent); }
-  .import-msg.err { color: var(--exam-text); }
-
-  /* Special days */
-  .special-form {
-    background: var(--paper-warm);
-    border: 1.5px solid var(--rule);
-    border-radius: var(--radius);
-    padding: 14px; margin-bottom: 14px;
-  }
-  .special-item {
-    background: var(--paper);
-    border: 1.5px solid var(--rule);
-    border-radius: 8px; padding: 10px 12px;
-    margin-bottom: 8px;
-    display: flex; align-items: center;
-    justify-content: space-between; gap: 10px;
-  }
-  .type-badge {
-    display: inline-block; font-size: 10px; font-weight: 700;
-    padding: 2px 6px; border-radius: 4px; margin-right: 6px;
-  }
-  .type-badge.exam { background: var(--exam-bg); color: var(--exam-text); }
-  .type-badge.review { background: var(--review-bg); color: var(--review-text); }
-  .type-badge.holiday { background: var(--holiday-bg); color: var(--holiday-text); }
-  .type-badge.other { background: var(--paper-mid); color: var(--ink-light); }
-  .del-btn {
-    background: none; border: none; color: var(--rule-strong);
-    font-size: 18px; cursor: pointer; padding: 2px 6px; line-height: 1;
-  }
-  .del-btn:hover { color: var(--exam-text); }
+  /* BATCH COPY MODAL */
+  #copy-modal .modal{max-width:500px;}
+  .copy-section{margin-bottom:16px;}
+  .copy-section h4{font-size:13px;font-weight:700;margin-bottom:8px;color:var(--ink-light);}
+  .class-pick-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px;}
+  .class-pick-btn{padding:7px 14px;border-radius:8px;border:1.5px solid var(--rule);background:var(--paper);font-family:var(--font);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+  .class-pick-btn.selected{background:var(--accent);color:white;border-color:var(--accent);}
+  .week-range-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .week-range-row label{font-size:13px;color:var(--ink-light);min-width:48px;}
+  .week-num-input{border:1.5px solid var(--rule);border-radius:8px;padding:7px 10px;font-family:var(--font);font-size:13px;color:var(--ink);background:var(--paper);width:70px;-webkit-appearance:none;outline:none;}
+  .week-num-input:focus{border-color:var(--accent);}
+  .copy-execute-btn{width:100%;background:var(--accent);color:white;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font);transition:opacity .15s;margin-top:4px;}
+  .copy-execute-btn:hover{opacity:.88;}
+  .copy-msg{font-size:13px;margin-top:10px;text-align:center;}
+  .copy-msg.ok{color:var(--accent);}
+  .copy-msg.err{color:var(--exam-text);}
 
   /* Toast */
-  #save-toast {
-    position: fixed; bottom: 80px; left: 50%;
-    transform: translateX(-50%);
-    background: var(--ink); color: white;
-    padding: 8px 18px; border-radius: 20px;
-    font-size: 13px; opacity: 0;
-    transition: opacity 0.3s; z-index: 300;
-    pointer-events: none; white-space: nowrap;
-  }
-  #save-toast.show { opacity: 1; }
+  #save-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--ink);color:white;padding:8px 18px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;z-index:300;pointer-events:none;white-space:nowrap;}
+  #save-toast.show{opacity:1;}
 
-  @media (min-width: 768px) {
-    .modal { border-radius: 20px; margin: auto; margin-bottom: 20px; }
-    .modal-overlay { align-items: center; }
+  @media(min-width:768px){
+    .modal{border-radius:20px;margin:auto;margin-bottom:20px;}
+    .modal-overlay{align-items:center;}
   }
 </style>
 </head>
@@ -456,7 +222,7 @@
     <div id="header-actions">
       <button class="hdr-btn" onclick="openModal('settings-modal')">⚙ 設定</button>
       <button class="hdr-btn" onclick="openModal('special-modal')">📅 特殊日</button>
-      <button class="hdr-btn primary" onclick="exportWord()">↓ 匯出</button>
+      <button class="hdr-btn primary" onclick="exportAllWeeks()">↓ 匯出全學期</button>
     </div>
   </div>
   <div id="date-bar"></div>
@@ -476,7 +242,6 @@
 <div class="modal-overlay" id="settings-modal">
   <div class="modal">
     <h3>設定 <button class="modal-close" onclick="closeModal('settings-modal')">✕</button></h3>
-
     <div class="setting-section">
       <h4>學期資訊</h4>
       <div class="form-row">
@@ -497,26 +262,19 @@
         <input class="form-input" type="number" id="set-weeks" placeholder="20" min="1" max="25" style="max-width:80px">
       </div>
     </div>
-
     <div class="setting-section">
       <h4>課表 JSON 匯入</h4>
       <div class="json-import-box">
-        <p>將課表照片給 Claude 解析後，把 Claude 產生的 JSON 貼在下方匯入。格式範例：<br>
-        <code style="font-size:11px">[{"name":"313","schedule":[{"period":"第2節","isFlex":false,"hasEighth":false},null,null,{"period":"第1節","isFlex":true,"hasEighth":false},{"period":"第4節","isFlex":false,"hasEighth":true}]}]</code><br>
-        schedule 陣列共5個元素，依序為週一到週五，無課填 null。</p>
         <textarea class="json-ta" id="schedule-json" placeholder="貼上 Claude 產生的課表 JSON…"></textarea>
         <button class="import-btn" onclick="importScheduleJSON()">匯入課表</button>
         <div class="import-msg" id="schedule-msg"></div>
       </div>
     </div>
-
     <div class="setting-section">
       <h4>班級課表（手動設定）</h4>
-      <p style="font-size:12px;color:var(--ink-light);margin-bottom:12px">也可直接在此手動新增或調整班級課表</p>
       <div id="class-setups"></div>
       <button class="add-btn" onclick="addClassSetup()">＋ 新增班級</button>
     </div>
-
     <button class="save-btn" onclick="saveSettings()">儲存設定</button>
   </div>
 </div>
@@ -525,19 +283,14 @@
 <div class="modal-overlay" id="special-modal">
   <div class="modal">
     <h3>特殊日設定 <button class="modal-close" onclick="closeModal('special-modal')">✕</button></h3>
-
     <div class="setting-section">
       <h4>行事曆 JSON 匯入</h4>
       <div class="json-import-box">
-        <p>將行事曆 PDF 給 Claude 解析後，把 Claude 產生的 JSON 貼在下方匯入。格式範例：<br>
-        <code style="font-size:11px">[{"date":"2025-10-15","type":"exam","note":"第一次段考"},{"date":"2025-10-16","type":"exam","note":"第一次段考"}]</code><br>
-        type 可填：exam（段考）、review（複習考）、holiday（放假日）、other（其他）</p>
         <textarea class="json-ta" id="calendar-json" placeholder="貼上 Claude 產生的行事曆 JSON…"></textarea>
         <button class="import-btn" onclick="importCalendarJSON()">匯入行事曆</button>
         <div class="import-msg" id="calendar-msg"></div>
       </div>
     </div>
-
     <div class="setting-section">
       <h4>手動新增特殊日</h4>
       <div class="special-form">
@@ -548,7 +301,7 @@
         <div class="form-row">
           <label>結束日期</label>
           <input class="form-input" type="date" id="sp-date-end" style="max-width:190px">
-          <span style="font-size:12px;color:var(--ink-light)">（單天則填同一日）</span>
+          <span style="font-size:12px;color:var(--ink-light)">（單天填同一日）</span>
         </div>
         <div class="form-row">
           <label>類型</label>
@@ -566,7 +319,6 @@
         <button class="save-btn" onclick="addSpecialDay()">新增</button>
       </div>
     </div>
-
     <div class="setting-section">
       <h4>已設定的特殊日</h4>
       <div id="special-list"></div>
@@ -574,524 +326,630 @@
   </div>
 </div>
 
+<!-- BATCH COPY MODAL -->
+<div class="modal-overlay" id="copy-modal">
+  <div class="modal" style="max-width:500px">
+    <h3>批次複製進度 <button class="modal-close" onclick="closeModal('copy-modal')">✕</button></h3>
+    <div class="copy-section">
+      <h4>來源班級</h4>
+      <div class="class-pick-grid" id="copy-src-grid"></div>
+    </div>
+    <div class="copy-section">
+      <h4>目標班級（可多選）</h4>
+      <div class="class-pick-grid" id="copy-dst-grid"></div>
+    </div>
+    <div class="copy-section">
+      <h4>複製週次範圍</h4>
+      <div class="week-range-row">
+        <label>第</label>
+        <input type="number" class="week-num-input" id="copy-week-start" min="1" max="25" placeholder="1">
+        <label>週 到 第</label>
+        <input type="number" class="week-num-input" id="copy-week-end" min="1" max="25" placeholder="20">
+        <label>週</label>
+      </div>
+    </div>
+    <div class="copy-section">
+      <h4>複製內容</h4>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+          <input type="checkbox" id="copy-normal" checked> 一般節次
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+          <input type="checkbox" id="copy-flex" checked> 彈性課程
+        </label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
+          <input type="checkbox" id="copy-eighth"> 第八節
+        </label>
+      </div>
+    </div>
+    <button class="copy-execute-btn" onclick="executeBatchCopy()">開始複製</button>
+    <div class="copy-msg" id="copy-msg"></div>
+  </div>
+</div>
+
 <script>
-const DAYS_ZH = ['週一','週二','週三','週四','週五'];
-const FIELD_LABELS = ['考試','進度','作業'];
+const DAYS_ZH=['週一','週二','週三','週四','週五'];
+const FIELD_LABELS=['考試','進度','作業'];
+const TYPE_LABEL={exam:'段考',review:'複習考',holiday:'放假',other:'特殊'};
+const TYPE_COLORS={exam:'var(--exam-text)',review:'var(--review-text)',holiday:'var(--holiday-text)',other:'var(--ink-light)'};
 
-let state = {
-  year: '115', semester: '上',
-  startDate: '2025-09-01', totalWeeks: 20,
-  currentWeek: 1,
-  classes: [], specialDays: [], data: {}
-};
+let state={year:'115',semester:'上',startDate:'2025-09-01',totalWeeks:20,currentWeek:1,classes:[],specialDays:[],data:{}};
 
-function loadState() {
-  try {
-    const s = localStorage.getItem('teachingProgress_v4');
-    if (s) Object.assign(state, JSON.parse(s));
-  } catch(e) {}
+// drag state
+let dragSrc=null; // {week,di,ci,blockType}
+
+function loadState(){
+  try{const s=localStorage.getItem('teachingProgress_v5');if(s)Object.assign(state,JSON.parse(s));}catch(e){}
 }
-
-function saveState() {
-  localStorage.setItem('teachingProgress_v4', JSON.stringify(state));
+function saveState(){
+  localStorage.setItem('teachingProgress_v5',JSON.stringify(state));
   showToast();
 }
-
-function showToast() {
-  const t = document.getElementById('save-toast');
+function showToast(){
+  const t=document.getElementById('save-toast');
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 1400);
+  setTimeout(()=>t.classList.remove('show'),1400);
 }
 
-// DATE UTILS
-function getWeekMonday(weekNum) {
-  if (!state.startDate) return null;
-  const start = new Date(state.startDate);
-  const dow = start.getDay();
-  const toMon = dow === 0 ? 1 : (dow === 1 ? 0 : 8 - dow);
-  start.setDate(start.getDate() + toMon + (weekNum - 1) * 7);
-  return start;
+// DATE
+function getWeekMonday(w){
+  if(!state.startDate)return null;
+  const s=new Date(state.startDate);
+  const dow=s.getDay();
+  const toMon=dow===0?1:(dow===1?0:8-dow);
+  s.setDate(s.getDate()+toMon+(w-1)*7);
+  return s;
 }
-function getDayDate(weekNum, dayIdx) {
-  const mon = getWeekMonday(weekNum);
-  if (!mon) return null;
-  const d = new Date(mon);
-  d.setDate(d.getDate() + dayIdx);
-  return d;
+function getDayDate(w,di){
+  const m=getWeekMonday(w);if(!m)return null;
+  const d=new Date(m);d.setDate(d.getDate()+di);return d;
 }
-function dateKey(d) { return d ? d.toISOString().slice(0,10) : ''; }
-function formatMD(d) { return d ? `${d.getMonth()+1}/${d.getDate()}` : ''; }
-function getSpecialDay(d) {
-  if (!d) return null;
-  const k = dateKey(d);
-  return state.specialDays.find(s => s.date === k) || null;
+function dateKey(d){return d?d.toISOString().slice(0,10):'';}
+function formatMD(d){return d?`${d.getMonth()+1}/${d.getDate()}`:''}
+function getSpecialDay(d){
+  if(!d)return null;
+  const k=dateKey(d);
+  return state.specialDays.find(s=>s.date===k)||null;
 }
 
 // RENDER
-function render() {
-  updateHeader();
-  renderMain();
-}
+function render(){updateHeader();renderMain();}
 
-function updateHeader() {
-  document.getElementById('year-title').textContent = `${state.year}學年度 ${state.semester}學期`;
-  document.getElementById('week-label').textContent = `第${state.currentWeek}週`;
-  document.getElementById('week-subtitle').textContent = `第 ${state.currentWeek} 週`;
-  let bar = '';
-  for (let d = 0; d < 5; d++) {
-    const date = getDayDate(state.currentWeek, d);
-    const sp = getSpecialDay(date);
-    const cls = sp ? `date-chip sp-${sp.type}` : 'date-chip';
-    bar += `<div class="${cls}"><div class="dow">${DAYS_ZH[d]}</div><div class="md">${formatMD(date)}</div></div>`;
+function updateHeader(){
+  document.getElementById('year-title').textContent=`${state.year}學年度 ${state.semester}學期`;
+  document.getElementById('week-label').textContent=`第${state.currentWeek}週`;
+  document.getElementById('week-subtitle').textContent=`第 ${state.currentWeek} 週`;
+  let bar='';
+  for(let d=0;d<5;d++){
+    const date=getDayDate(state.currentWeek,d);
+    const sp=getSpecialDay(date);
+    const cls=sp?`date-chip sp-${sp.type}`:'date-chip';
+    bar+=`<div class="${cls}"><div class="dow">${DAYS_ZH[d]}</div><div class="md">${formatMD(date)}</div></div>`;
   }
-  document.getElementById('date-bar').innerHTML = bar;
+  document.getElementById('date-bar').innerHTML=bar;
 }
 
-function renderMain() {
-  const container = document.getElementById('main');
-  const classes = state.classes;
-
-  let html = `<div class="legend">
+function renderMain(){
+  const container=document.getElementById('main');
+  const classes=state.classes;
+  let html=`<div class="legend">
     <div class="legend-item"><div class="legend-dot" style="background:var(--flex-bg);border:1.5px solid var(--flex-border)"></div>彈性課程</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--eighth-bg);border:1.5px solid var(--eighth-border)"></div>第八節補課</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--exam-bg);border:1.5px solid var(--exam-border)"></div>段考</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--review-bg);border:1.5px solid var(--review-border)"></div>複習考</div>
     <div class="legend-item"><div class="legend-dot" style="background:var(--holiday-bg);border:1.5px solid var(--holiday-border)"></div>放假日</div>
+    <div class="legend-item" style="margin-left:auto"><button class="hdr-btn" onclick="openCopyModal()" style="font-size:12px;padding:4px 10px">⇄ 批次複製</button></div>
   </div>`;
 
-  const wKey = `w${state.currentWeek}_note`;
-  html += `<div class="week-note-row">
+  const wKey=`w${state.currentWeek}_note`;
+  html+=`<div class="week-note-row">
     <label>本週備注</label>
-    <input value="${esc(state.data[wKey]||'')}" placeholder="本週特別事項…"
-      oninput="saveField('${wKey}',this.value)">
+    <input value="${esc(state.data[wKey]||'')}" placeholder="本週特別事項…" oninput="saveField('${wKey}',this.value)">
   </div>`;
 
-  if (classes.length === 0) {
-    html += `<div style="text-align:center;padding:60px 20px;color:var(--ink-light)">
+  if(!classes.length){
+    html+=`<div style="text-align:center;padding:60px 20px;color:var(--ink-light)">
       <div style="font-size:40px;margin-bottom:12px">📋</div>
       <div style="font-size:15px;font-weight:600;margin-bottom:6px">尚未設定班級</div>
       <div style="font-size:13px">請點「設定」新增班級課表，或匯入課表 JSON</div>
     </div>`;
-    container.innerHTML = html;
-    return;
+    container.innerHTML=html;return;
   }
 
-  html += `<table class="progress-table"><thead><tr><th></th>`;
-  classes.forEach(cls => { html += `<th>${esc(cls.name)}</th>`; });
-  html += `</tr></thead><tbody>`;
+  html+=`<table class="progress-table"><thead><tr><th></th>`;
+  classes.forEach(cls=>{html+=`<th>${esc(cls.name)}</th>`;});
+  html+=`</tr></thead><tbody>`;
 
-  for (let di = 0; di < 5; di++) {
-    const date = getDayDate(state.currentWeek, di);
-    const sp = getSpecialDay(date);
-    const spType = sp?.type || '';
+  for(let di=0;di<5;di++){
+    const date=getDayDate(state.currentWeek,di);
+    const sp=getSpecialDay(date);
+    const spType=sp?.type||'';
 
-    html += `<tr>`;
-
-    // Day label
-    const dayLabelCls = spType ? `day-label sp-${spType}` : 'day-label';
-    const periodsThisDay = classes.map(c => c.schedule[di]).filter(Boolean);
-    const periodNums = [...new Set(periodsThisDay.map(p => p.period))].sort().join('・');
-    const spTagHtml = spType
-      ? `<div class="special-tag ${spType}">${{exam:'段考',review:'複習考',holiday:'放假',other:'特殊'}[spType]}</div>`
-      : '';
-    const noteHtml = sp ? `<div style="font-size:9px;color:var(--ink-light);margin-top:2px;max-width:58px;word-break:break-all;text-align:center">${esc(sp.note)}</div>` : '';
-
-    html += `<td class="day-cell"><div class="${dayLabelCls}">
+    html+=`<tr>`;
+    // Day label (no period hint)
+    const dlCls=spType?`day-label sp-${spType}`:'day-label';
+    const spTag=spType?`<div class="special-tag ${spType}">${TYPE_LABEL[spType]||''}</div>`:'';
+    const spNote=sp?`<div style="font-size:9px;color:${TYPE_COLORS[spType]||'var(--ink-light)'};margin-top:2px;max-width:48px;word-break:break-all;text-align:center">${esc(sp.note)}</div>`:'';
+    html+=`<td class="day-cell"><div class="${dlCls}">
       <div class="dow-text">${DAYS_ZH[di]}</div>
       <div class="date-text">${formatMD(date)}</div>
-      ${spTagHtml}${noteHtml}
-      <div class="period-hint">${periodNums}</div>
+      ${spTag}${spNote}
     </div></td>`;
 
-    // Class cells
-    classes.forEach((cls, ci) => {
-      const ds = cls.schedule[di];
-      html += `<td class="class-cell"><div class="cell-wrapper">`;
-
-      if (!ds) {
-        html += `<div class="period-block no-class"><div class="no-class-dash">—</div></div>`;
+    classes.forEach((cls,ci)=>{
+      const ds=cls.schedule[di];
+      html+=`<td class="class-cell"><div class="cell-wrapper">`;
+      if(!ds){
+        html+=`<div class="period-block no-class"><div class="no-class-dash">—</div></div>`;
       } else {
-        // Determine block style
-        let blockCls = 'period-block';
-        let hdrCls = 'period-block-header';
-        if (ds.isFlex) { blockCls += ' flex-block'; hdrCls += ' flex-hdr'; }
-        else if (spType === 'exam') { blockCls += ' exam-block'; hdrCls += ' exam-hdr'; }
-        else if (spType === 'review') { blockCls += ' review-block'; hdrCls += ' review-hdr'; }
-
-        const hdrLabel = ds.isFlex ? `${ds.period}（彈性）` : ds.period;
-
-        html += `<div class="${blockCls}">
-          <div class="${hdrCls}">${hdrLabel}</div>
-          <div class="fields-grid">`;
-
-        FIELD_LABELS.forEach((lbl, fi) => {
-          const key = `w${state.currentWeek}_d${di}_c${ci}_n_f${fi}`;
-          const val = state.data[key] || '';
-          const placeholder = (spType === 'exam' || spType === 'review') && fi === 0 ? '範圍…' : '';
-          html += `<div class="field-row">
-            <div class="field-lbl ${fi===0?'exam-lbl':''}">${lbl}</div>
-            <textarea class="field-ta" placeholder="${placeholder}"
-              oninput="saveField('${key}',this.value);autoResize(this)"
-              onfocus="autoResize(this)">${esc(val)}</textarea>
-          </div>`;
-        });
-
-        html += `</div></div>`;
-
-        // Eighth period
-        if (ds.hasEighth) {
-          html += `<div class="period-block eighth-block">
-            <div class="period-block-header eighth-hdr">第8節（補課）</div>
-            <div class="fields-grid">`;
-          FIELD_LABELS.forEach((lbl, fi) => {
-            const key = `w${state.currentWeek}_d${di}_c${ci}_8_f${fi}`;
-            const val = state.data[key] || '';
-            html += `<div class="field-row">
-              <div class="field-lbl ${fi===0?'exam-lbl':''}">${lbl}</div>
-              <textarea class="field-ta"
-                oninput="saveField('${key}',this.value);autoResize(this)"
-                onfocus="autoResize(this)">${esc(val)}</textarea>
-            </div>`;
-          });
-          html += `</div></div>`;
-        }
+        html+=makePeriodBlock(di,ci,ds,spType,'n');
+        if(ds.hasEighth) html+=makePeriodBlock(di,ci,ds,spType,'8');
       }
-
-      html += `</div></td>`;
+      html+=`</div></td>`;
     });
-
-    html += `</tr>`;
+    html+=`</tr>`;
   }
-
-  html += `</tbody></table>`;
-  container.innerHTML = html;
-  container.querySelectorAll('textarea').forEach(ta => autoResize(ta));
+  html+=`</tbody></table>`;
+  container.innerHTML=html;
+  container.querySelectorAll('textarea').forEach(ta=>autoResize(ta));
+  setupDragDrop();
 }
 
-function autoResize(el) {
-  el.style.height = 'auto';
-  el.style.height = Math.max(30, el.scrollHeight) + 'px';
+function makePeriodBlock(di,ci,ds,spType,variant){
+  const isEighth=variant==='8';
+  const isFlex=!isEighth&&ds.isFlex;
+  let blockCls='period-block';
+  let hdrCls='period-block-header';
+  if(isEighth){blockCls+=' eighth-block';hdrCls+=' eighth-hdr';}
+  else if(isFlex){blockCls+=' flex-block';hdrCls+=' flex-hdr';}
+  else if(spType==='exam'){blockCls+=' exam-block';hdrCls+=' exam-hdr';}
+  else if(spType==='review'){blockCls+=' review-block';hdrCls+=' review-hdr';}
+
+  const hdrLabel=isEighth?'第8節（補課）':isFlex?`${ds.period}（彈性）`:ds.period;
+  const w=state.currentWeek;
+
+  let fields='';
+  FIELD_LABELS.forEach((lbl,fi)=>{
+    const key=`w${w}_d${di}_c${ci}_${variant}_f${fi}`;
+    const val=state.data[key]||'';
+    fields+=`<div class="field-row">
+      <div class="field-lbl ${fi===0?'exam-lbl':''}">${lbl}</div>
+      <textarea class="field-ta" oninput="saveField('${key}',this.value);autoResize(this)" onfocus="autoResize(this)">${esc(val)}</textarea>
+    </div>`;
+  });
+
+  return `<div class="${blockCls}" draggable="true"
+    data-di="${di}" data-ci="${ci}" data-variant="${variant}"
+    ondragstart="onDragStart(event,${di},${ci},'${variant}')"
+    ondragover="onDragOver(event)"
+    ondragleave="onDragLeave(event)"
+    ondrop="onDrop(event,${di},${ci},'${variant}')">
+    <div class="${hdrCls}">
+      <span>${hdrLabel}</span>
+      <div class="block-actions">
+        <span class="drag-handle" title="拖曳到其他班">⠿</span>
+        <button class="copy-btn" title="複製到其他班" onclick="openSingleCopy(${di},${ci},'${variant}')">複製→</button>
+      </div>
+    </div>
+    <div class="fields-grid">${fields}</div>
+  </div>`;
 }
 
-function saveField(key, val) {
-  state.data[key] = val;
-  saveState();
-}
-
-function esc(s) {
-  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function autoResize(el){el.style.height='auto';el.style.height=Math.max(30,el.scrollHeight)+'px';}
+function saveField(key,val){state.data[key]=val;saveState();}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
 // NAVIGATION
-function changeWeek(d) {
-  const n = state.currentWeek + d;
-  if (n < 1 || n > state.totalWeeks) return;
-  state.currentWeek = n;
+function changeWeek(d){
+  const n=state.currentWeek+d;
+  if(n<1||n>state.totalWeeks)return;
+  state.currentWeek=n;saveState();render();
+}
+
+// DRAG & DROP
+function setupDragDrop(){} // handled via inline ondrag*
+
+function onDragStart(e,di,ci,variant){
+  dragSrc={week:state.currentWeek,di,ci,variant};
+  setTimeout(()=>{
+    const el=e.target;
+    if(el)el.classList.add('dragging');
+  },0);
+}
+
+function onDragOver(e){
+  e.preventDefault();
+  const block=e.currentTarget;
+  block.classList.add('drag-over');
+}
+function onDragLeave(e){
+  e.currentTarget.classList.remove('drag-over');
+}
+
+function onDrop(e,di,ci,variant){
+  e.preventDefault();
+  const block=e.currentTarget;
+  block.classList.remove('drag-over');
+  document.querySelectorAll('.period-block.dragging').forEach(el=>el.classList.remove('dragging'));
+
+  if(!dragSrc)return;
+  if(dragSrc.di===di&&dragSrc.ci===ci&&dragSrc.variant===variant)return; // same block
+
+  // Copy data from src to dst (current week)
+  const w=state.currentWeek;
+  FIELD_LABELS.forEach((_,fi)=>{
+    const srcKey=`w${dragSrc.week}_d${dragSrc.di}_c${dragSrc.ci}_${dragSrc.variant}_f${fi}`;
+    const dstKey=`w${w}_d${di}_c${ci}_${variant}_f${fi}`;
+    state.data[dstKey]=state.data[srcKey]||'';
+  });
+  dragSrc=null;
   saveState();
   render();
 }
 
+// SINGLE CELL COPY
+let singleCopySrc=null;
+function openSingleCopy(di,ci,variant){
+  singleCopySrc={week:state.currentWeek,di,ci,variant};
+  // Build quick copy UI inline as mini-modal
+  const classes=state.classes;
+  const srcName=classes[ci]?.name||'?';
+  const varLabel=variant==='8'?'第8節':variant==='n'&&classes[ci]?.schedule[di]?.isFlex?'彈性':'一般節';
+  let btns=classes.map((cls,idx)=>{
+    if(idx===ci)return'';
+    return `<button class="class-pick-btn" onclick="executeSingleCopy(${idx})">${esc(cls.name)}</button>`;
+  }).join('');
+
+  // Use a simple inline overlay
+  const overlay=document.createElement('div');
+  overlay.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:250;display:flex;align-items:flex-end;justify-content:center';
+  overlay.innerHTML=`<div style="background:var(--paper);border-radius:20px 20px 0 0;padding:20px 20px 40px;width:100%;max-width:500px">
+    <div style="font-size:15px;font-weight:700;margin-bottom:4px">複製 ${esc(srcName)} ${DAYS_ZH[di]} ${varLabel}</div>
+    <div style="font-size:13px;color:var(--ink-light);margin-bottom:14px">選擇目標班級（覆蓋該班同天同類型節次）</div>
+    <div class="class-pick-grid">${btns}</div>
+    <button style="margin-top:14px;width:100%;background:var(--paper-warm);border:1px solid var(--rule);border-radius:10px;padding:11px;font-size:14px;cursor:pointer;font-family:var(--font)" onclick="this.closest('div[style*=fixed]').remove()">取消</button>
+  </div>`;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)overlay.remove();});
+
+  window._singleCopyOverlay=overlay;
+}
+
+function executeSingleCopy(dstCi){
+  if(!singleCopySrc)return;
+  const {week,di,ci,variant}=singleCopySrc;
+  // Determine destination variant: match type (flex→flex, eighth→eighth, normal→normal)
+  const dstDs=state.classes[dstCi]?.schedule[di];
+  if(!dstDs){alert('目標班級該天沒有課，無法複製');return;}
+  const dstVariant=variant; // keep same type
+
+  FIELD_LABELS.forEach((_,fi)=>{
+    const srcKey=`w${week}_d${di}_c${ci}_${variant}_f${fi}`;
+    const dstKey=`w${week}_d${di}_c${dstCi}_${dstVariant}_f${fi}`;
+    state.data[dstKey]=state.data[srcKey]||'';
+  });
+  singleCopySrc=null;
+  if(window._singleCopyOverlay)window._singleCopyOverlay.remove();
+  saveState();render();
+}
+
+// BATCH COPY MODAL
+function openCopyModal(){
+  const classes=state.classes;
+  let srcGrid='',dstGrid='';
+  classes.forEach((cls,i)=>{
+    srcGrid+=`<button class="class-pick-btn" id="src-${i}" onclick="selectSrc(${i})">${esc(cls.name)}</button>`;
+    dstGrid+=`<button class="class-pick-btn" id="dst-${i}" onclick="toggleDst(${i})">${esc(cls.name)}</button>`;
+  });
+  document.getElementById('copy-src-grid').innerHTML=srcGrid;
+  document.getElementById('copy-dst-grid').innerHTML=dstGrid;
+  document.getElementById('copy-week-start').value=state.currentWeek;
+  document.getElementById('copy-week-end').value=state.currentWeek;
+  document.getElementById('copy-msg').textContent='';
+  window._copySrcIdx=null;
+  window._copyDstIdxs=new Set();
+  openModal('copy-modal');
+}
+
+function selectSrc(i){
+  window._copySrcIdx=i;
+  document.querySelectorAll('#copy-src-grid .class-pick-btn').forEach((b,idx)=>{
+    b.classList.toggle('selected',idx===i);
+  });
+}
+
+function toggleDst(i){
+  if(!window._copyDstIdxs)window._copyDstIdxs=new Set();
+  if(window._copyDstIdxs.has(i))window._copyDstIdxs.delete(i);
+  else window._copyDstIdxs.add(i);
+  document.querySelectorAll('#copy-dst-grid .class-pick-btn').forEach((b,idx)=>{
+    b.classList.toggle('selected',window._copyDstIdxs.has(idx));
+  });
+}
+
+function executeBatchCopy(){
+  const msg=document.getElementById('copy-msg');
+  const srcCi=window._copySrcIdx;
+  const dstCis=[...window._copyDstIdxs];
+  if(srcCi==null){msg.className='copy-msg err';msg.textContent='請選擇來源班級';return;}
+  if(!dstCis.length){msg.className='copy-msg err';msg.textContent='請選擇至少一個目標班級';return;}
+
+  const wStart=parseInt(document.getElementById('copy-week-start').value)||1;
+  const wEnd=parseInt(document.getElementById('copy-week-end').value)||state.totalWeeks;
+  const copyNormal=document.getElementById('copy-normal').checked;
+  const copyFlex=document.getElementById('copy-flex').checked;
+  const copyEighth=document.getElementById('copy-eighth').checked;
+
+  if(wStart>wEnd){msg.className='copy-msg err';msg.textContent='週次範圍錯誤';return;}
+
+  let count=0;
+  for(let w=wStart;w<=wEnd;w++){
+    for(let di=0;di<5;di++){
+      const srcDs=state.classes[srcCi]?.schedule[di];
+      if(!srcDs)continue;
+
+      const variants=[];
+      if(copyNormal&&!srcDs.isFlex)variants.push('n');
+      if(copyFlex&&srcDs.isFlex)variants.push('n');
+      if(copyEighth&&srcDs.hasEighth)variants.push('8');
+
+      dstCis.forEach(dstCi=>{
+        const dstDs=state.classes[dstCi]?.schedule[di];
+        if(!dstDs)return;
+        variants.forEach(variant=>{
+          FIELD_LABELS.forEach((_,fi)=>{
+            const srcKey=`w${w}_d${di}_c${srcCi}_${variant}_f${fi}`;
+            const dstKey=`w${w}_d${di}_c${dstCi}_${variant}_f${fi}`;
+            if(state.data[srcKey]!==undefined){
+              state.data[dstKey]=state.data[srcKey];
+              count++;
+            }
+          });
+        });
+      });
+    }
+  }
+
+  saveState();render();
+  msg.className='copy-msg ok';
+  msg.textContent=`✓ 已複製 ${Math.floor(count/3)} 個節次到 ${dstCis.length} 個班級`;
+}
+
 // MODAL
-function openModal(id) {
-  if (id === 'settings-modal') populateSettings();
-  if (id === 'special-modal') renderSpecialList();
+function openModal(id){
+  if(id==='settings-modal')populateSettings();
+  if(id==='special-modal')renderSpecialList();
   document.getElementById(id).classList.add('open');
 }
-function closeModal(id) {
-  document.getElementById(id).classList.remove('open');
-}
-document.querySelectorAll('.modal-overlay').forEach(el => {
-  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('open');});
 });
 
 // SETTINGS
-function populateSettings() {
-  document.getElementById('set-year').value = state.year;
-  document.getElementById('set-sem').value = state.semester;
-  document.getElementById('set-start').value = state.startDate || '';
-  document.getElementById('set-weeks').value = state.totalWeeks;
+function populateSettings(){
+  document.getElementById('set-year').value=state.year;
+  document.getElementById('set-sem').value=state.semester;
+  document.getElementById('set-start').value=state.startDate||'';
+  document.getElementById('set-weeks').value=state.totalWeeks;
   renderClassSetups();
 }
-
-function renderClassSetups() {
-  document.getElementById('class-setups').innerHTML =
-    state.classes.map((cls, ci) => buildClassCard(cls, ci)).join('');
+function renderClassSetups(){
+  document.getElementById('class-setups').innerHTML=state.classes.map((cls,ci)=>buildClassCard(cls,ci)).join('');
 }
-
-function buildClassCard(cls, ci) {
-  const days = ['一','二','三','四','五'];
-  const dHtml = days.map((dl, di) => {
-    const ds = cls.schedule[di];
-    const pVal = ds ? ds.period.replace('第','').replace('節','') : '0';
-    return `<div class="day-col">
+function buildClassCard(cls,ci){
+  const days=['一','二','三','四','五'];
+  const dHtml=days.map((dl,di)=>{
+    const ds=cls.schedule[di];
+    const pVal=ds?ds.period.replace('第','').replace('節',''):'0';
+    return`<div class="day-col">
       <label>週${dl}</label>
       <select id="cs${ci}d${di}p" onchange="updateSched(${ci},${di})">
         <option value="0">—</option>
         ${[1,2,3,4,5,6,7].map(p=>`<option value="${p}"${pVal==p?' selected':''}>${p}節</option>`).join('')}
       </select>
-      <div class="checkbox-row">
-        <input type="checkbox" id="cs${ci}d${di}f" ${ds?.isFlex?'checked':''} onchange="updateSched(${ci},${di})">
-        <label for="cs${ci}d${di}f">彈性</label>
-      </div>
-      <div class="checkbox-row">
-        <input type="checkbox" id="cs${ci}d${di}e" ${ds?.hasEighth?'checked':''} onchange="updateSched(${ci},${di})">
-        <label for="cs${ci}d${di}e">第8節</label>
-      </div>
+      <div class="checkbox-row"><input type="checkbox" id="cs${ci}d${di}f" ${ds?.isFlex?'checked':''} onchange="updateSched(${ci},${di})"><label for="cs${ci}d${di}f">彈性</label></div>
+      <div class="checkbox-row"><input type="checkbox" id="cs${ci}d${di}e" ${ds?.hasEighth?'checked':''} onchange="updateSched(${ci},${di})"><label for="cs${ci}d${di}e">第8節</label></div>
     </div>`;
   }).join('');
-  return `<div class="class-setup-card">
+  return`<div class="class-setup-card">
     <h5>
       <input value="${esc(cls.name)}" placeholder="班級（如 313）"
-        style="background:none;border:none;border-bottom:1.5px solid var(--accent);
-               font:700 14px var(--font);color:var(--accent);width:90px;outline:none;padding:2px 0"
+        style="background:none;border:none;border-bottom:1.5px solid var(--accent);font:700 14px var(--font);color:var(--accent);width:90px;outline:none;padding:2px 0"
         oninput="state.classes[${ci}].name=this.value">
-      <button onclick="removeClass(${ci})"
-        style="background:none;border:none;color:var(--rule-strong);cursor:pointer;font-size:18px;padding:0 4px">✕</button>
+      <button onclick="removeClass(${ci})" style="background:none;border:none;color:var(--rule-strong);cursor:pointer;font-size:18px;padding:0 4px">✕</button>
     </h5>
     <div class="day-schedule">${dHtml}</div>
   </div>`;
 }
-
-function updateSched(ci, di) {
-  const p = parseInt(document.getElementById(`cs${ci}d${di}p`).value);
-  const f = document.getElementById(`cs${ci}d${di}f`).checked;
-  const e = document.getElementById(`cs${ci}d${di}e`).checked;
-  state.classes[ci].schedule[di] = p === 0 ? null : { period:`第${p}節`, isFlex:f, hasEighth:e };
+function updateSched(ci,di){
+  const p=parseInt(document.getElementById(`cs${ci}d${di}p`).value);
+  const f=document.getElementById(`cs${ci}d${di}f`).checked;
+  const e=document.getElementById(`cs${ci}d${di}e`).checked;
+  state.classes[ci].schedule[di]=p===0?null:{period:`第${p}節`,isFlex:f,hasEighth:e};
+}
+function addClassSetup(){state.classes.push({name:'',schedule:[null,null,null,null,null]});renderClassSetups();}
+function removeClass(ci){if(!confirm('確定刪除此班級？'))return;state.classes.splice(ci,1);renderClassSetups();}
+function saveSettings(){
+  state.year=document.getElementById('set-year').value.trim()||'115';
+  state.semester=document.getElementById('set-sem').value;
+  state.startDate=document.getElementById('set-start').value;
+  state.totalWeeks=parseInt(document.getElementById('set-weeks').value)||20;
+  saveState();render();closeModal('settings-modal');
 }
 
-function addClassSetup() {
-  state.classes.push({ name:'', schedule:[null,null,null,null,null] });
-  renderClassSetups();
-}
-
-function removeClass(ci) {
-  if (!confirm('確定刪除此班級？')) return;
-  state.classes.splice(ci, 1);
-  renderClassSetups();
-}
-
-function saveSettings() {
-  state.year = document.getElementById('set-year').value.trim() || '115';
-  state.semester = document.getElementById('set-sem').value;
-  state.startDate = document.getElementById('set-start').value;
-  state.totalWeeks = parseInt(document.getElementById('set-weeks').value) || 20;
-  saveState();
-  render();
-  closeModal('settings-modal');
-}
-
-// JSON IMPORT - Schedule
-function importScheduleJSON() {
-  const raw = document.getElementById('schedule-json').value.trim();
-  const msg = document.getElementById('schedule-msg');
-  try {
-    const arr = JSON.parse(raw);
-    if (!Array.isArray(arr)) throw new Error('格式錯誤：需為陣列');
-    arr.forEach((cls, i) => {
-      if (!cls.name) throw new Error(`第${i+1}個班級缺少 name`);
-      if (!Array.isArray(cls.schedule) || cls.schedule.length !== 5)
-        throw new Error(`${cls.name} 的 schedule 需為5個元素的陣列`);
+// JSON IMPORT
+function importScheduleJSON(){
+  const raw=document.getElementById('schedule-json').value.trim();
+  const msg=document.getElementById('schedule-msg');
+  try{
+    const arr=JSON.parse(raw);
+    if(!Array.isArray(arr))throw new Error('需為陣列');
+    arr.forEach((cls,i)=>{
+      if(!cls.name)throw new Error(`第${i+1}個班級缺少 name`);
+      if(!Array.isArray(cls.schedule)||cls.schedule.length!==5)throw new Error(`${cls.name} schedule 需為5個元素`);
     });
-    state.classes = arr;
-    saveState();
-    renderClassSetups();
-    render();
-    msg.className = 'import-msg ok';
-    msg.textContent = `✓ 成功匯入 ${arr.length} 個班級`;
-  } catch(e) {
-    msg.className = 'import-msg err';
-    msg.textContent = '✗ ' + e.message;
-  }
+    state.classes=arr;saveState();renderClassSetups();render();
+    msg.className='import-msg ok';msg.textContent=`✓ 成功匯入 ${arr.length} 個班級`;
+  }catch(e){msg.className='import-msg err';msg.textContent='✗ '+e.message;}
 }
-
-// JSON IMPORT - Calendar
-function importCalendarJSON() {
-  const raw = document.getElementById('calendar-json').value.trim();
-  const msg = document.getElementById('calendar-msg');
-  try {
-    const arr = JSON.parse(raw);
-    if (!Array.isArray(arr)) throw new Error('格式錯誤：需為陣列');
-    const validTypes = ['exam','review','holiday','other'];
-    arr.forEach((item, i) => {
-      if (!item.date) throw new Error(`第${i+1}項缺少 date`);
-      if (!validTypes.includes(item.type)) throw new Error(`第${i+1}項 type 無效`);
-      if (!item.note) throw new Error(`第${i+1}項缺少 note`);
+function importCalendarJSON(){
+  const raw=document.getElementById('calendar-json').value.trim();
+  const msg=document.getElementById('calendar-msg');
+  try{
+    const arr=JSON.parse(raw);
+    if(!Array.isArray(arr))throw new Error('需為陣列');
+    const validTypes=['exam','review','holiday','other'];
+    arr.forEach((item,i)=>{
+      if(!item.date)throw new Error(`第${i+1}項缺少 date`);
+      if(!validTypes.includes(item.type))throw new Error(`第${i+1}項 type 無效`);
+      if(!item.note)throw new Error(`第${i+1}項缺少 note`);
     });
-    // Merge (avoid duplicates by date)
-    arr.forEach(item => {
-      const exists = state.specialDays.findIndex(s => s.date === item.date);
-      if (exists >= 0) state.specialDays[exists] = item;
+    arr.forEach(item=>{
+      const exists=state.specialDays.findIndex(s=>s.date===item.date);
+      if(exists>=0)state.specialDays[exists]=item;
       else state.specialDays.push(item);
     });
-    state.specialDays.sort((a,b) => a.date.localeCompare(b.date));
-    saveState();
-    renderSpecialList();
-    render();
-    msg.className = 'import-msg ok';
-    msg.textContent = `✓ 成功匯入 ${arr.length} 筆特殊日`;
-  } catch(e) {
-    msg.className = 'import-msg err';
-    msg.textContent = '✗ ' + e.message;
-  }
+    state.specialDays.sort((a,b)=>a.date.localeCompare(b.date));
+    saveState();renderSpecialList();render();
+    msg.className='import-msg ok';msg.textContent=`✓ 成功匯入 ${arr.length} 筆特殊日`;
+  }catch(e){msg.className='import-msg err';msg.textContent='✗ '+e.message;}
 }
 
-// SPECIAL DAYS - manual
-function renderSpecialList() {
-  const typeLabel = {exam:'段考',review:'複習考',holiday:'放假日',other:'其他'};
-  const c = document.getElementById('special-list');
-  if (!state.specialDays.length) {
-    c.innerHTML = `<div style="text-align:center;padding:16px;color:var(--ink-light);font-size:13px">尚未設定特殊日</div>`;
-    return;
-  }
-  c.innerHTML = state.specialDays.map((s, i) => `
+// SPECIAL DAYS
+function renderSpecialList(){
+  const tl={exam:'段考',review:'複習考',holiday:'放假日',other:'其他'};
+  const c=document.getElementById('special-list');
+  if(!state.specialDays.length){c.innerHTML=`<div style="text-align:center;padding:16px;color:var(--ink-light);font-size:13px">尚未設定特殊日</div>`;return;}
+  c.innerHTML=state.specialDays.map((s,i)=>`
     <div class="special-item">
-      <div>
-        <span class="type-badge ${s.type}">${typeLabel[s.type]||s.type}</span>
-        <span style="font-size:13px">${s.date}　${esc(s.note)}</span>
-      </div>
+      <div><span class="type-badge ${s.type}">${tl[s.type]||s.type}</span><span style="font-size:13px">${s.date}　${esc(s.note)}</span></div>
       <button class="del-btn" onclick="removeSpecial(${i})">✕</button>
     </div>`).join('');
 }
-
-function addSpecialDay() {
-  const dateStart = document.getElementById('sp-date-start').value;
-  const dateEnd = document.getElementById('sp-date-end').value || dateStart;
-  const type = document.getElementById('sp-type').value;
-  const note = document.getElementById('sp-note').value.trim();
-  if (!dateStart) { alert('請選擇開始日期'); return; }
-  if (!note) { alert('請填寫說明'); return; }
-
-  // Generate all dates in range
-  const start = new Date(dateStart);
-  const end = new Date(dateEnd);
-  if (end < start) { alert('結束日期不能早於開始日期'); return; }
-
-  const cur = new Date(start);
-  while (cur <= end) {
-    const dk = cur.toISOString().slice(0,10);
-    const exists = state.specialDays.findIndex(s => s.date === dk);
-    const entry = { date: dk, type, note };
-    if (exists >= 0) state.specialDays[exists] = entry;
+function addSpecialDay(){
+  const ds=document.getElementById('sp-date-start').value;
+  const de=document.getElementById('sp-date-end').value||ds;
+  const type=document.getElementById('sp-type').value;
+  const note=document.getElementById('sp-note').value.trim();
+  if(!ds){alert('請選擇開始日期');return;}
+  if(!note){alert('請填寫說明');return;}
+  const start=new Date(ds),end=new Date(de);
+  if(end<start){alert('結束日期不能早於開始日期');return;}
+  const cur=new Date(start);
+  while(cur<=end){
+    const dk=cur.toISOString().slice(0,10);
+    const exists=state.specialDays.findIndex(s=>s.date===dk);
+    const entry={date:dk,type,note};
+    if(exists>=0)state.specialDays[exists]=entry;
     else state.specialDays.push(entry);
-    cur.setDate(cur.getDate() + 1);
+    cur.setDate(cur.getDate()+1);
   }
-
-  state.specialDays.sort((a,b) => a.date.localeCompare(b.date));
-  saveState();
-  renderSpecialList();
-  render();
-  document.getElementById('sp-date-start').value = '';
-  document.getElementById('sp-date-end').value = '';
-  document.getElementById('sp-note').value = '';
+  state.specialDays.sort((a,b)=>a.date.localeCompare(b.date));
+  saveState();renderSpecialList();render();
+  document.getElementById('sp-date-start').value='';
+  document.getElementById('sp-date-end').value='';
+  document.getElementById('sp-note').value='';
 }
+function removeSpecial(i){state.specialDays.splice(i,1);saveState();renderSpecialList();render();}
 
-function removeSpecial(i) {
-  state.specialDays.splice(i, 1);
-  saveState();
-  renderSpecialList();
-  render();
-}
+// EXPORT ALL WEEKS
+function exportAllWeeks(){
+  const classes=state.classes;
+  if(!classes.length){alert('請先設定班級課表');return;}
 
-// EXPORT
-function exportWord() {
-  const classes = state.classes;
-  if (!classes.length) { alert('請先設定班級課表'); return; }
+  const typeBg={exam:'#FDECEA',review:'#FFF8E1',holiday:'#FFF3EA',other:'#F5F5F5'};
+  const typeClr={exam:'#C0392B',review:'#856404',holiday:'#8B5E3C',other:'#666'};
+  const tl={exam:'段考',review:'複習考',holiday:'放假',other:'特殊'};
 
-  const typeColors = {exam:'#C0392B',review:'#856404',holiday:'#8B5E3C',other:'#666'};
-  const typeBg = {exam:'#FDECEA',review:'#FFF8E1',holiday:'#FFF3EA',other:'#F5F5F5'};
-  const typeLabel = {exam:'段考',review:'複習考',holiday:'放假',other:'特殊'};
+  const headers=classes.map(c=>`<th style="background:#1C1C1E;color:white;padding:8px;text-align:center;border:1px solid #444;font-size:12pt">${esc(c.name)}</th>`).join('');
 
-  let rows = '';
-  for (let di = 0; di < 5; di++) {
-    const date = getDayDate(state.currentWeek, di);
-    const sp = getSpecialDay(date);
-    const spType = sp?.type || '';
-    const rowBg = spType ? typeBg[spType] : '#FFFFFF';
+  let pages='';
+  for(let w=1;w<=state.totalWeeks;w++){
+    let rows='';
+    for(let di=0;di<5;di++){
+      const date=getDayDate(w,di);
+      const sp=getSpecialDay(date);
+      const spType=sp?.type||'';
+      const rowBg=spType?typeBg[spType]:'#FFFFFF';
 
-    const spHtml = spType
-      ? `<br><span style="font-size:8pt;color:${typeColors[spType]}">${typeLabel[spType]}</span><br><span style="font-size:8pt;color:${typeColors[spType]}">${esc(sp.note)}</span>`
-      : '';
+      const spHtml=spType?`<br><span style="font-size:8pt;color:${typeClr[spType]}">${tl[spType]}</span><br><span style="font-size:8pt;color:${typeClr[spType]}">${esc(sp.note)}</span>`:'';
 
-    let classCells = '';
-    classes.forEach((cls, ci) => {
-      const ds = cls.schedule[di];
-      if (!ds) {
-        classCells += `<td style="background:#F5F5F5;text-align:center;color:#999;border:1px solid #DDD;padding:4px;">—</td>`;
-      } else {
-        const cellBg = ds.isFlex ? '#EEF3FB' : rowBg;
-        const hdrColor = ds.isFlex ? '#2C5F9E' : (spType ? typeColors[spType] : '#666');
-        const hdrLabel = ds.isFlex ? `${ds.period}（彈性）` : ds.period;
+      let classCells='';
+      classes.forEach((cls,ci)=>{
+        const ds=cls.schedule[di];
+        if(!ds){
+          classCells+=`<td style="background:#F5F5F5;text-align:center;color:#999;border:1px solid #DDD;padding:4px">—</td>`;
+        } else {
+          const cellBg=ds.isFlex?'#EEF3FB':rowBg;
+          const hdrClr=ds.isFlex?'#2C5F9E':(spType?typeClr[spType]:'#888');
+          const hdrLbl=ds.isFlex?`${ds.period}（彈性）`:ds.period;
 
-        const fields = FIELD_LABELS.map((lbl, fi) => {
-          const key = `w${state.currentWeek}_d${di}_c${ci}_n_f${fi}`;
-          const val = (state.data[key]||'').replace(/\n/g,'<br>');
-          return `<tr>
-            <td style="font-size:8pt;color:#999;border:1px solid #EEE;padding:3px 4px;width:22px;text-align:center;background:rgba(0,0,0,0.02)">${lbl}</td>
-            <td style="font-size:10pt;border:1px solid #EEE;padding:3px 5px">${val||'&nbsp;'}</td>
-          </tr>`;
-        }).join('');
-
-        let cell = `<td style="background:${cellBg};border:1px solid #DDD;padding:5px;vertical-align:top;">
-          <div style="font-size:8pt;color:${hdrColor};font-weight:bold;margin-bottom:4px">${hdrLabel}</div>
-          <table style="width:100%;border-collapse:collapse">${fields}</table>`;
-
-        if (ds.hasEighth) {
-          const fields8 = FIELD_LABELS.map((lbl, fi) => {
-            const key = `w${state.currentWeek}_d${di}_c${ci}_8_f${fi}`;
-            const val = (state.data[key]||'').replace(/\n/g,'<br>');
-            return `<tr>
-              <td style="font-size:8pt;color:#999;border:1px solid #EEE;padding:3px 4px;width:22px;text-align:center;background:rgba(0,0,0,0.02)">${lbl}</td>
-              <td style="font-size:10pt;border:1px solid #EEE;padding:3px 5px">${val||'&nbsp;'}</td>
+          const makeFieldRows=(variant)=>FIELD_LABELS.map((lbl,fi)=>{
+            const key=`w${w}_d${di}_c${ci}_${variant}_f${fi}`;
+            const val=(state.data[key]||'').replace(/\n/g,'<br>');
+            return`<tr>
+              <td style="font-size:8pt;color:#999;border:1px solid #EEE;padding:2px 4px;width:20px;text-align:center;background:rgba(0,0,0,.02)">${lbl}</td>
+              <td style="font-size:10pt;border:1px solid #EEE;padding:2px 5px">${val||'&nbsp;'}</td>
             </tr>`;
           }).join('');
-          cell += `<div style="font-size:8pt;color:#6B3FA0;font-weight:bold;margin:5px 0 3px">第8節（補課）</div>
-            <table style="width:100%;border-collapse:collapse">${fields8}</table>`;
-        }
-        cell += `</td>`;
-        classCells += cell;
-      }
-    });
 
-    rows += `<tr>
-      <td style="background:${rowBg};border:1px solid #DDD;padding:6px;text-align:center;font-weight:bold;width:56px;vertical-align:middle;font-size:11pt">
-        ${DAYS_ZH[di]}<br><span style="font-weight:normal;font-size:10pt">${formatMD(date)}</span>${spHtml}
-      </td>${classCells}
-    </tr>`;
+          let cell=`<td style="background:${cellBg};border:1px solid #DDD;padding:5px;vertical-align:top">
+            <div style="font-size:8pt;color:${hdrClr};font-weight:bold;margin-bottom:3px">${hdrLbl}</div>
+            <table style="width:100%;border-collapse:collapse">${makeFieldRows('n')}</table>`;
+          if(ds.hasEighth){
+            cell+=`<div style="font-size:8pt;color:#6B3FA0;font-weight:bold;margin:5px 0 3px">第8節（補課）</div>
+              <table style="width:100%;border-collapse:collapse">${makeFieldRows('8')}</table>`;
+          }
+          cell+=`</td>`;
+          classCells+=cell;
+        }
+      });
+
+      rows+=`<tr>
+        <td style="background:${rowBg};border:1px solid #DDD;padding:6px;text-align:center;font-weight:bold;width:48px;vertical-align:middle;font-size:11pt">
+          ${DAYS_ZH[di]}<br><span style="font-weight:normal;font-size:10pt">${formatMD(date)}</span>${spHtml}
+        </td>${classCells}
+      </tr>`;
+    }
+
+    const wNote=state.data[`w${w}_note`]||'';
+    pages+=`<div style="page-break-after:always;padding:16px">
+      <h2 style="text-align:center;margin-bottom:4px;font-size:14pt">${state.year}學年度${state.semester}學期　教學進度表</h2>
+      <p style="text-align:center;margin-bottom:10px;color:#666;font-size:11pt">第 ${w} 週</p>
+      ${wNote?`<p style="margin-bottom:8px;color:#444;font-size:10pt">本週備注：${esc(wNote)}</p>`:''}
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr><th style="background:#1C1C1E;color:white;padding:8px;border:1px solid #444;width:48px"></th>${headers}</tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
   }
 
-  const headers = classes.map(c =>
-    `<th style="background:#1C1C1E;color:white;padding:8px;text-align:center;border:1px solid #444;font-size:13pt">${esc(c.name)}</th>`
-  ).join('');
-
-  const wNote = state.data[`w${state.currentWeek}_note`] || '';
-  const html = `<html xmlns:o='urn:schemas-microsoft-com:office:office'
+  const html=`<html xmlns:o='urn:schemas-microsoft-com:office:office'
     xmlns:w='urn:schemas-microsoft-com:office:word'
     xmlns='http://www.w3.org/TR/REC-html40'>
   <head><meta charset='utf-8'>
-  <style>body{font-family:'Microsoft YaHei','PingFang TC',sans-serif;font-size:11pt}table{border-collapse:collapse;width:100%}</style>
-  </head><body>
-    <h2 style="text-align:center;margin-bottom:4px">${state.year}學年度${state.semester}學期　教學進度表</h2>
-    <p style="text-align:center;margin-bottom:12px;color:#666">第 ${state.currentWeek} 週</p>
-    ${wNote?`<p style="margin-bottom:10px;color:#444">本週備注：${esc(wNote)}</p>`:''}
-    <table><thead><tr>
-      <th style="background:#1C1C1E;color:white;padding:8px;border:1px solid #444;width:56px"></th>
-      ${headers}
-    </tr></thead><tbody>${rows}</tbody></table>
-  </body></html>`;
+  <style>
+    body{font-family:'Microsoft YaHei','PingFang TC',sans-serif;font-size:11pt}
+    table{border-collapse:collapse;width:100%}
+    @page{size:A4 landscape;margin:1cm}
+  </style></head>
+  <body>${pages}</body></html>`;
 
-  const blob = new Blob([html], {type:'application/msword'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `教學進度表_第${state.currentWeek}週.doc`;
-  a.click();
-  URL.revokeObjectURL(url);
+  // Filename: 教學進度_YYYYMMDD
+  const now=new Date();
+  const dateStr=`${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+  const blob=new Blob([html],{type:'application/msword'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`教學進度_${dateStr}.doc`;
+  a.click();URL.revokeObjectURL(url);
 }
 
 // INIT
 loadState();
-if (state.classes.length === 0) {
-  state.classes = [
+if(!state.classes.length){
+  state.classes=[
     {name:'313',schedule:[{period:'第2節',isFlex:false,hasEighth:false},{period:'第4節',isFlex:false,hasEighth:false},null,{period:'第1節',isFlex:false,hasEighth:false},{period:'第4節',isFlex:true,hasEighth:true}]},
     {name:'314',schedule:[{period:'第1節',isFlex:false,hasEighth:false},null,{period:'第3節',isFlex:false,hasEighth:false},{period:'第2節',isFlex:true,hasEighth:false},{period:'第4節',isFlex:false,hasEighth:false}]},
     {name:'315',schedule:[null,{period:'第3節',isFlex:false,hasEighth:false},{period:'第1節',isFlex:true,hasEighth:false},{period:'第4節',isFlex:false,hasEighth:false},{period:'第2節',isFlex:false,hasEighth:true}]},
