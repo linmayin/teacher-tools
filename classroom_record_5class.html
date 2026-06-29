@@ -153,7 +153,7 @@ tr:hover td{background:var(--surface2);}
       <div id="note-date-row" style="display:flex;gap:8px;align-items:flex-end;margin-bottom:8px">
         <div class="f1">
           <label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:4px">班級</label>
-          <select id="note-cls" style="height:38px;font-size:13px"></select>
+          <select id="note-cls" onchange="renderNoteList()" style="width:100%;height:38px;font-size:13px;border:1.5px solid var(--border);border-radius:9px;background:var(--surface2);color:var(--text);padding:0 10px;-webkit-appearance:none;appearance:none"></select>
         </div>
         <div class="f1">
           <label style="font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.6px;display:block;margin-bottom:4px">日期</label>
@@ -163,9 +163,9 @@ tr:hover td{background:var(--surface2);}
       <textarea id="note-text" placeholder="例：缺席：03、15號；第三節有消防演習" style="width:100%;height:80px;padding:10px;border:1.5px solid var(--border);border-radius:9px;background:var(--surface2);font-size:13px;color:var(--text);font-family:inherit;resize:none;"></textarea>
       <div style="display:flex;gap:8px;margin-top:8px">
         <button class="btn btn-primary f1" onclick="saveNote()">💾 儲存記事</button>
-        <button class="btn f1" onclick="renderNoteList()">📋 查看記事</button>
+        <button class="btn f1" onclick="toggleNoteList()">📋 查看記事</button>
       </div>
-      <div id="note-list" style="margin-top:10px"></div>
+      <div id="note-list" style="margin-top:10px;display:none"></div>
     </div>
   </div>
 
@@ -431,13 +431,22 @@ function importRoster(input){
   reader.readAsText(file,'utf-8');
 }
 
+function toggleNoteList(){
+  var el=document.getElementById('note-list');
+  if(el.style.display==='none'){
+    el.style.display='block';
+    renderNoteList();
+  } else {
+    el.style.display='none';
+  }
+}
+
 function saveNote(){
   var cls=document.getElementById('note-cls').value;
   var date=document.getElementById('note-date').value;
   var text=document.getElementById('note-text').value.trim();
   if(!date){showToast('請選擇日期');return;}
   if(!text){showToast('請輸入記事內容');return;}
-  // 同班同日只保留一則，有則更新
   var idx=notes.findIndex(function(n){return n.cls===cls&&n.date===date;});
   if(idx>=0){
     notes[idx].text=text;
@@ -447,14 +456,20 @@ function saveNote(){
     showToast('記事已儲存 ✓');
   }
   saveNotes();
+  document.getElementById('note-text').value='';
+  document.getElementById('note-list').style.display='block';
   renderNoteList();
 }
 
 function renderNoteList(){
   var cls=document.getElementById('note-cls').value;
+  if(!cls)return;
   var el=document.getElementById('note-list');
   var clsNotes=notes.filter(function(n){return n.cls===cls;}).sort(function(a,b){return b.date.localeCompare(a.date);});
-  if(!clsNotes.length){el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:6px 0">尚無記事</div>';return;}
+  if(!clsNotes.length){
+    el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px 0;text-align:center">「'+cls+'」尚無記事</div>';
+    return;
+  }
   el.innerHTML=clsNotes.map(function(n){
     return '<div style="border:1px solid var(--border);border-radius:9px;padding:10px;margin-bottom:8px;background:var(--surface2)">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
