@@ -197,6 +197,39 @@
   .copy-msg.ok{color:var(--accent);}
   .copy-msg.err{color:var(--exam-text);}
 
+  /* Holiday row */
+  .holiday-row td { pointer-events:none; }
+  .holiday-cell {
+    background: var(--holiday-bg) !important;
+    border-color: var(--holiday-border) !important;
+    display:flex; align-items:center; justify-content:center;
+    min-height:100px; border-radius:8px;
+    border: 1px solid var(--holiday-border);
+    color: var(--holiday-text); font-size:13px; font-weight:600;
+  }
+  .holiday-row .day-cell { pointer-events:auto; }
+
+  /* Reschedule */
+  .reschedule-src .period-block {
+    opacity:0.45; pointer-events:none; position:relative;
+  }
+  .reschedule-src .period-block::after {
+    content:'🔄 調課';
+    position:absolute; inset:0; display:flex;
+    align-items:center; justify-content:center;
+    font-size:12px; font-weight:700; color:var(--ink-light);
+    background:rgba(242,242,247,0.7); border-radius:8px;
+  }
+  .period-block.reschedule-block {
+    background:#fff8f0; border-color:#f0b86e;
+  }
+  .period-block.reschedule-block .period-block-header { color:#b45309; }
+  .period-block.reschedule-block:focus-within { border-color:#b45309; }
+
+  /* Reschedule modal */
+  .rs-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+  .rs-col h4 { font-size:11px; font-weight:700; color:var(--ink-light); text-transform:uppercase; letter-spacing:.8px; margin-bottom:8px; }
+
   /* Toast */
   #save-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:var(--ink);color:white;padding:8px 18px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;z-index:300;pointer-events:none;white-space:nowrap;}
   #save-toast.show{opacity:1;}
@@ -223,6 +256,7 @@
     <div id="header-actions">
       <button class="hdr-btn" onclick="openModal('settings-modal')">⚙ 設定</button>
       <button class="hdr-btn" onclick="openModal('special-modal')">📅 特殊日</button>
+      <button class="hdr-btn" onclick="openModal('reschedule-modal')">🔄 調課</button>
       <button class="hdr-btn primary" onclick="exportAllWeeks()">↓ 匯出全學期</button>
     </div>
   </div>
@@ -364,13 +398,63 @@
   </div>
 </div>
 
+<!-- RESCHEDULE MODAL -->
+<div class="modal-overlay" id="reschedule-modal">
+  <div class="modal" style="max-width:560px">
+    <h3>調課設定 <button class="modal-close" onclick="closeModal('reschedule-modal')">✕</button></h3>
+    <p style="font-size:12px;color:var(--ink-light);margin-bottom:16px;line-height:1.6">設定某班某節課從原定日期移到另一天。來源格鎖定不可輸入，目標格新增「調課補課」區塊。</p>
+
+    <div class="rs-grid">
+      <div class="rs-col">
+        <h4>來源（原本的課）</h4>
+        <div class="form-row"><label>班級</label>
+          <select class="form-input" id="rs-src-class"></select></div>
+        <div class="form-row"><label>週次</label>
+          <input type="number" class="form-input" id="rs-src-week" min="1" max="25" style="max-width:70px"></div>
+        <div class="form-row"><label>星期</label>
+          <select class="form-input" id="rs-src-day">
+            <option value="0">週一</option><option value="1">週二</option>
+            <option value="2">週三</option><option value="3">週四</option>
+            <option value="4">週五</option>
+          </select></div>
+        <div class="form-row"><label>節次類型</label>
+          <select class="form-input" id="rs-src-variant">
+            <option value="n">一般節</option>
+            <option value="flex">彈性</option>
+            <option value="8">第八節</option>
+          </select></div>
+      </div>
+      <div class="rs-col">
+        <h4>目標（調到的日期）</h4>
+        <div class="form-row"><label>週次</label>
+          <input type="number" class="form-input" id="rs-dst-week" min="1" max="25" style="max-width:70px"></div>
+        <div class="form-row"><label>星期</label>
+          <select class="form-input" id="rs-dst-day">
+            <option value="0">週一</option><option value="1">週二</option>
+            <option value="2">週三</option><option value="3">週四</option>
+            <option value="4">週五</option>
+          </select></div>
+      </div>
+    </div>
+    <div class="form-row"><label>說明</label>
+      <input class="form-input" id="rs-note" placeholder="例：因校外教學補課"></div>
+
+    <button class="save-btn" onclick="addReschedule()">新增調課</button>
+
+    <div class="setting-section" style="margin-top:20px">
+      <h4>已設定的調課</h4>
+      <div id="reschedule-list"></div>
+    </div>
+  </div>
+</div>
+
 <script>
 const DAYS_ZH=['週一','週二','週三','週四','週五'];
 const FIELD_LABELS=['考試','進度','作業'];
 const TYPE_LABEL={exam:'段考',review:'複習考',holiday:'放假',other:'特殊'};
 const TYPE_COLORS={exam:'var(--exam-text)',review:'var(--review-text)',holiday:'var(--holiday-text)',other:'var(--ink-light)'};
 
-let state={year:'115',semester:'上',startDate:'2025-09-01',totalWeeks:20,currentWeek:1,classes:[],specialDays:[],data:{}};
+let state={year:'115',semester:'上',startDate:'2025-09-01',totalWeeks:20,currentWeek:1,classes:[],specialDays:[],reschedules:[],data:{}};
 
 // drag state
 let dragSrc=null; // {week,di,ci,blockType}
@@ -397,6 +481,7 @@ function loadState(){
           return cls;
         });
       }
+      if(!parsed.reschedules||!Array.isArray(parsed.reschedules))parsed.reschedules=[];
       Object.assign(state,parsed);
     }
   }catch(e){
@@ -489,7 +574,8 @@ function renderMain(){
     const sp=getSpecialDay(date);
     const spType=sp?.type||'';
 
-    html+=`<tr>`;
+    const isHoliday = spType==='holiday';
+    html+=`<tr class="${isHoliday?'holiday-row':''}">`;
     // Day label (no period hint)
     const dlCls=spType?`day-label sp-${spType}`:'day-label';
     const spTag=spType?`<div class="special-tag ${spType}">${TYPE_LABEL[spType]||''}</div>`:'';
@@ -801,7 +887,7 @@ function executeBatchCopy(){
 function openModal(id){
   if(id==='settings-modal')populateSettings();
   if(id==='special-modal')renderSpecialList();
-  document.getElementById(id).classList.add('open');
+  if(id!=='reschedule-modal') document.getElementById(id).classList.add('open');
 }
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.modal-overlay').forEach(el=>{
@@ -940,6 +1026,65 @@ function addSpecialDay(){
   document.getElementById('sp-note').value='';
 }
 function removeSpecial(i){state.specialDays.splice(i,1);saveState();renderSpecialList();render();}
+
+// RESCHEDULE
+function openRescheduleModal(){
+  const classes=state.classes;
+  const srcSel=document.getElementById('rs-src-class');
+  srcSel.innerHTML=classes.map((cls,i)=>`<option value="${i}">${cls.name}</option>`).join('');
+  document.getElementById('rs-src-week').value=state.currentWeek;
+  document.getElementById('rs-dst-week').value=state.currentWeek;
+  renderRescheduleList();
+  document.getElementById('reschedule-modal').classList.add('open');
+}
+
+function addReschedule(){
+  const ci=parseInt(document.getElementById('rs-src-class').value);
+  const srcWeek=parseInt(document.getElementById('rs-src-week').value);
+  const srcDi=parseInt(document.getElementById('rs-src-day').value);
+  const srcVariant=document.getElementById('rs-src-variant').value;
+  const dstWeek=parseInt(document.getElementById('rs-dst-week').value);
+  const dstDi=parseInt(document.getElementById('rs-dst-day').value);
+  const note=document.getElementById('rs-note').value.trim();
+
+  if(isNaN(ci)||isNaN(srcWeek)||isNaN(dstWeek)){alert('請填寫所有欄位');return;}
+
+  const id='rs_'+Date.now();
+  state.reschedules.push({id,ci,srcWeek,srcDi,srcVariant,dstWeek,dstDi,note});
+  saveState();
+  renderRescheduleList();
+  render();
+  document.getElementById('rs-note').value='';
+}
+
+function removeReschedule(id){
+  state.reschedules=state.reschedules.filter(r=>r.id!==id);
+  saveState();
+  renderRescheduleList();
+  render();
+}
+
+function renderRescheduleList(){
+  const el=document.getElementById('reschedule-list');
+  if(!el)return;
+  if(!state.reschedules.length){
+    el.innerHTML='<div style="text-align:center;padding:16px;color:var(--ink-light);font-size:13px">尚未設定調課</div>';
+    return;
+  }
+  const varLabel={n:'一般節',flex:'彈性',8:'第八節'};
+  el.innerHTML=state.reschedules.map(r=>{
+    const cls=state.classes[r.ci]?.name||'?';
+    return`<div class="special-item">
+      <div style="font-size:13px">
+        <span class="type-badge" style="background:#fff8f0;color:#b45309;border:1px solid #f0b86e">調課</span>
+        ${cls}　第${r.srcWeek}週${['週一','週二','週三','週四','週五'][r.srcDi]}(${varLabel[r.srcVariant]||r.srcVariant})
+        → 第${r.dstWeek}週${['週一','週二','週三','週四','週五'][r.dstDi]}
+        ${r.note?'　'+r.note:''}
+      </div>
+      <button class="del-btn" onclick="removeReschedule('${r.id}')">✕</button>
+    </div>`;
+  }).join('');
+}
 
 // EXPORT ALL WEEKS
 function exportAllWeeks(){
