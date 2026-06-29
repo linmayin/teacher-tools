@@ -233,7 +233,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
           <option value="">全部班級</option>
         </select>
       </div>
-      <button class="btn btn-full" onclick="exportSummaryCSV()">⬇ 匯出統整 CSV</button>
+      <button class="btn btn-full" onclick="exportSummaryCSV()">⬇ 匯出期末統整（Excel）</button>
     </div>
     <div class="metric-grid" id="sum-metrics"></div>
     <div class="card" style="padding:0 14px">
@@ -281,7 +281,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     </div>
     <div class="card">
       <div class="card-title">資料管理</div>
-      <button class="btn btn-full" onclick="exportAllCSV()" style="margin-bottom:8px">⬇ 匯出全部資料</button>
+      <button class="btn btn-full" onclick="exportAllCSV()" style="margin-bottom:8px">⬇ 匯出明細記錄（Excel）</button>
       <label class="btn btn-full" style="cursor:pointer">
         ⬆ 匯入 CSV 資料
         <input type="file" accept=".csv" id="import-file" style="display:none" onchange="importCSV(this)">
@@ -702,51 +702,86 @@ function exportCSV(){
   dl(csv,'課堂記錄_'+new Date().toLocaleDateString('sv')+'.csv');
 }
 
+function dlXlsx(wb, name){
+  var wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  var blob=new Blob([wbout],{type:'application/octet-stream'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=name;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+}
+
 function exportSummaryCSV(){
   var sc=document.getElementById('sum-class').value;
-  var sub=records.filter(function(r){return!sc||r.cls===sc;});
   var base=cfg.baseScore||95;
   var classList=sc?[sc]:cfg.classes;
   var map={};
-  sub.forEach(function(r){
+  records.filter(function(r){return!sc||r.cls===sc;}).forEach(function(r){
     var k=r.cls+'__'+r.num;
     if(!map[k])map[k]={cls:r.cls,num:r.num,total:0,count:0,hw:0,talk:0};
     map[k].total+=r.score;map[k].count++;
     if(r.item==='功課未交')map[k].hw++;
     if(r.item==='上課講話')map[k].talk++;
   });
-  var rows=[];
+
+  var wb=XLSX.utils.book_new();
+  var today=new Date().toLocaleDateString('sv');
+
   classList.forEach(function(cls){
+    var sheetData=[['座號','姓名','基本分','加扣分','課堂分數','記錄次數','功課未交','上課講話']];
     for(var i=1;i<=33;i++){
       var k=cls+'__'+i;
-      var d=map[k]||{cls:cls,num:i,total:0,count:0,hw:0,talk:0};
+      var d=map[k]||{total:0,count:0,hw:0,talk:0};
       var finalScore=calcFinalScore(d.total);
       var deltaStr=d.total>0?'+'+d.total:String(d.total);
       var name=getStudentName(cls,i);
-      rows.push(cls+','+String(i).padStart(2,'0')+','+(name||'')+','+base+','+deltaStr+','+finalScore+','+d.count+','+d.hw+','+d.talk);
+      sheetData.push([String(i).padStart(2,'0'),name||'',base,deltaStr,finalScore,d.count,d.hw||0,d.talk||0]);
     }
+    // 班級記事
+    var clsNotes=notes.filter(function(n){return n.cls===cls;}).sort(function(a,b){return b.date.localeCompare(a.date);});
+    if(clsNotes.length){
+      sheetData.push([]);
+      sheetData.push(['── 特殊班級記事 ──']);
+      sheetData.push(['日期','記事內容']);
+      clsNotes.forEach(function(n){sheetData.push([n.date,n.text]);});
+    }
+    var ws=XLSX.utils.aoa_to_sheet(sheetData);
+    ws['!cols']=[{wch:6},{wch:10},{wch:6},{wch:6},{wch:8},{wch:8},{wch:8},{wch:8}];
+    XLSX.utils.book_append_sheet(wb,ws,cls);
   });
-  if(!rows.length){showToast('沒有資料可匯出');return;}
-  // 加入特殊記事區塊
-  var noteRows=['\n=== 特殊班級記事 ===','班級,日期,記事內容'];
-  var noteSubset=sc?notes.filter(function(n){return n.cls===sc;}):notes;
-  noteSubset.sort(function(a,b){return a.cls.localeCompare(b.cls)||b.date.localeCompare(a.date);}).forEach(function(n){
-    noteRows.push(n.cls+','+n.date+',"'+n.text.replace(/"/g,'""')+'"');
-  });
-  var csv='\uFEFF班級,座號,姓名,基本分,加扣分,課堂分數,記錄次數,功課未交,上課講話\n'
-    +rows.join('\n')
-    +noteRows.join('\n');
-  dl(csv,'期末統整_'+new Date().toLocaleDateString('sv')+'.csv');
-  showToast('已匯出統整與記事');
+
+  dlXlsx(wb,'課堂紀錄期末統整_'+today+'.xlsx');
+  showToast('已匯出期末統整 Excel ✓');
 }
 
 function exportAllCSV(){
   if(!records.length){showToast('沒有資料可匯出');return;}
-  var csv='\uFEFF日期,班級,座號,項目,分數\n'+records.map(function(r){
-    return r.date+','+r.cls+','+String(r.num).padStart(2,'0')+','+r.item+','+r.score;
-  }).join('\n');
-  dl(csv,'全部記錄_'+new Date().toLocaleDateString('sv')+'.csv');
-  showToast('已匯出 '+records.length+' 筆資料');
+  var wb=XLSX.utils.book_new();
+  var today=new Date().toLocaleDateString('sv');
+
+  cfg.classes.forEach(function(cls){
+    var clsRecs=records.filter(function(r){return r.cls===cls;})
+      .sort(function(a,b){return b.date.localeCompare(a.date)||a.num-b.num;});
+    var sheetData=[['日期','座號','姓名','項目','分數']];
+    clsRecs.forEach(function(r){
+      var name=getStudentName(cls,r.num);
+      sheetData.push([r.date,String(r.num).padStart(2,'0'),name||'',r.item,r.score]);
+    });
+    // 班級記事
+    var clsNotes=notes.filter(function(n){return n.cls===cls;}).sort(function(a,b){return b.date.localeCompare(a.date);});
+    if(clsNotes.length){
+      sheetData.push([]);
+      sheetData.push(['── 特殊班級記事 ──']);
+      sheetData.push(['日期','記事內容']);
+      clsNotes.forEach(function(n){sheetData.push([n.date,n.text]);});
+    }
+    var ws=XLSX.utils.aoa_to_sheet(sheetData);
+    ws['!cols']=[{wch:12},{wch:6},{wch:10},{wch:14},{wch:6}];
+    XLSX.utils.book_append_sheet(wb,ws,cls);
+  });
+
+  dlXlsx(wb,'課堂紀錄明細記錄_'+today+'.xlsx');
+  showToast('已匯出明細記錄 Excel ✓');
 }
 
 function importCSV(input){
