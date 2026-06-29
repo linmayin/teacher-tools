@@ -598,30 +598,35 @@ function renderMain(){
     classes.forEach((cls,ci)=>{
       const ds=cls.schedule[di];
       html+=`<td class="class-cell"><div class="cell-wrapper">`;
-      if(!ds){
-        html+=`<div class="period-block no-class"><div class="no-class-dash">—</div></div>`;
-      } else {
-        // Check if this slot is a reschedule source (locked)
-        const srcRsN=state.reschedules.some(r=>r.ci===ci&&r.srcWeek===state.currentWeek&&r.srcDi===di&&r.srcVariant!=='8');
-        const srcRs8=state.reschedules.some(r=>r.ci===ci&&r.srcWeek===state.currentWeek&&r.srcDi===di&&r.srcVariant==='8');
-        // Check for reschedule destinations arriving at this slot
+      {
+        // Check for reschedule destinations arriving at this slot (regardless of ds)
         const dstRsList=state.reschedules.filter(r=>r.ci===ci&&r.dstWeek===state.currentWeek&&r.dstDi===di);
 
-        if(ds.period || ds.isFlex){
-          if(srcRsN){
-            html+=`<div class="reschedule-src">${makePeriodBlock(di,ci,ds,spType,'n')}</div>`;
-          } else {
-            html+=makePeriodBlock(di,ci,ds,spType,'n');
+        if(!ds){
+          if(!dstRsList.length){
+            html+=`<div class="period-block no-class"><div class="no-class-dash">—</div></div>`;
+          }
+        } else {
+          // Check if this slot is a reschedule source (locked)
+          const srcRsN=state.reschedules.some(r=>r.ci===ci&&r.srcWeek===state.currentWeek&&r.srcDi===di&&r.srcVariant!=='8');
+          const srcRs8=state.reschedules.some(r=>r.ci===ci&&r.srcWeek===state.currentWeek&&r.srcDi===di&&r.srcVariant==='8');
+
+          if(ds.period || ds.isFlex){
+            if(srcRsN){
+              html+=`<div class="reschedule-src">${makePeriodBlock(di,ci,ds,spType,'n')}</div>`;
+            } else {
+              html+=makePeriodBlock(di,ci,ds,spType,'n');
+            }
+          }
+          if(ds.hasEighth){
+            if(srcRs8){
+              html+=`<div class="reschedule-src">${makePeriodBlock(di,ci,ds,spType,'8')}</div>`;
+            } else {
+              html+=makePeriodBlock(di,ci,ds,spType,'8');
+            }
           }
         }
-        if(ds.hasEighth){
-          if(srcRs8){
-            html+=`<div class="reschedule-src">${makePeriodBlock(di,ci,ds,spType,'8')}</div>`;
-          } else {
-            html+=makePeriodBlock(di,ci,ds,spType,'8');
-          }
-        }
-        // Render reschedule destination blocks
+        // Render reschedule destination blocks (works whether ds exists or not)
         dstRsList.forEach(r=>{
           const rKey=`rs_${r.id}_f`;
           const srcDs=state.classes[ci]?.schedule[r.srcDi];
