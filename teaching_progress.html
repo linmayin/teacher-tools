@@ -64,6 +64,7 @@
   #main{padding:12px 12px 100px;overflow-x:auto;}
   .week-note-row{background:var(--paper);border:1px solid var(--rule);border-radius:var(--radius);padding:8px 14px;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
   .week-note-row label{font-size:12px;color:var(--ink-light);min-width:56px;font-weight:600;}
+
   .week-note-row input{flex:1;border:none;font-family:var(--font);font-size:13px;color:var(--ink);outline:none;background:transparent;}
   .legend{display:flex;gap:14px;flex-wrap:wrap;padding:8px 12px;background:var(--paper);border-radius:var(--radius);border:1px solid var(--rule);margin-bottom:10px;}
   .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink-light);}
@@ -439,9 +440,10 @@ function renderMain(){
 
   const wKey=`w${state.currentWeek}_note`;
   html+=`<div class="week-note-row">
-    <label>本週備注</label>
+    <label>本週備註</label>
     <input value="${esc(state.data[wKey]||'')}" placeholder="本週特別事項…" oninput="saveField('${wKey}',this.value)">
   </div>`;
+
 
   if(!classes.length){
     html+=`<div style="text-align:center;padding:60px 20px;color:var(--ink-light)">
@@ -478,8 +480,8 @@ function renderMain(){
       if(!ds){
         html+=`<div class="period-block no-class"><div class="no-class-dash">—</div></div>`;
       } else {
-        html+=makePeriodBlock(di,ci,ds,spType,'n');
-        if(ds.hasEighth) html+=makePeriodBlock(di,ci,ds,spType,'8');
+        if(ds.period) html+=makePeriodBlock(di,ci,ds,spType,"n");
+        if(ds.hasEighth) html+=makePeriodBlock(di,ci,ds,spType,"8");
       }
       html+=`</div></td>`;
     });
@@ -501,7 +503,7 @@ function makePeriodBlock(di,ci,ds,spType,variant){
   else if(spType==='exam'){blockCls+=' exam-block';hdrCls+=' exam-hdr';}
   else if(spType==='review'){blockCls+=' review-block';hdrCls+=' review-hdr';}
 
-  const hdrLabel=isEighth?'第8節（補課）':isFlex?`${ds.period}（彈性）`:ds.period;
+  const hdrLabel=isEighth?'第8節（補課）':isFlex?`${ds.period}（彈性）`:(ds.period||'');
   const w=state.currentWeek;
 
   let fields='';
@@ -723,7 +725,7 @@ function getClassSequence(ci, copyNormal, copyFlex, copyEighth){
   for(let di=0;di<5;di++){
     const ds=state.classes[ci]?.schedule[di];
     if(!ds)continue;
-    if(copyNormal&&!ds.isFlex) seq.push({di,variant:'n'});
+    if(copyNormal&&!ds.isFlex&&ds.period) seq.push({di,variant:"n"});
     if(copyFlex&&ds.isFlex)    seq.push({di,variant:'n'});
     if(copyEighth&&ds.hasEighth) seq.push({di,variant:'8'});
   }
@@ -820,7 +822,13 @@ function updateSched(ci,di){
   const p=parseInt(document.getElementById(`cs${ci}d${di}p`).value);
   const f=document.getElementById(`cs${ci}d${di}f`).checked;
   const e=document.getElementById(`cs${ci}d${di}e`).checked;
-  state.classes[ci].schedule[di]=p===0?null:{period:`第${p}節`,isFlex:f,hasEighth:e};
+  if(p===0&&!e){
+    state.classes[ci].schedule[di]=null;
+  } else if(p===0&&e){
+    state.classes[ci].schedule[di]={period:null,isFlex:false,hasEighth:true};
+  } else {
+    state.classes[ci].schedule[di]={period:`第${p}節`,isFlex:f,hasEighth:e};
+  }
 }
 function addClassSetup(){state.classes.push({name:'',schedule:[null,null,null,null,null]});renderClassSetups();}
 function removeClass(ci){if(!confirm('確定刪除此班級？'))return;state.classes.splice(ci,1);renderClassSetups();}
@@ -971,7 +979,7 @@ function exportAllWeeks(){
     pages+=`<div style="page-break-after:always;padding:16px">
       <h2 style="text-align:center;margin-bottom:4px;font-size:14pt">${state.year}學年度${state.semester}學期　教學進度表</h2>
       <p style="text-align:center;margin-bottom:10px;color:#666;font-size:11pt">第 ${w} 週</p>
-      ${wNote?`<p style="margin-bottom:8px;color:#444;font-size:10pt">本週備注：${esc(wNote)}</p>`:''}
+      ${wNote?`<p style="margin-bottom:8px;color:#444;font-size:10pt">本週備註：${esc(wNote)}</p>`:''}
       <table style="width:100%;border-collapse:collapse">
         <thead><tr><th style="background:#1C1C1E;color:white;padding:8px;border:1px solid #444;width:48px"></th>${headers}</tr></thead>
         <tbody>${rows}</tbody>
