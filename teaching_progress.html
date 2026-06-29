@@ -592,7 +592,7 @@ function renderMain(){
       if(!ds){
         html+=`<div class="period-block no-class"><div class="no-class-dash">—</div></div>`;
       } else {
-        if(ds.period) html+=makePeriodBlock(di,ci,ds,spType,"n");
+        if(ds.period || ds.isFlex) html+=makePeriodBlock(di,ci,ds,spType,"n");
         if(ds.hasEighth) html+=makePeriodBlock(di,ci,ds,spType,"8");
       }
       html+=`</div></td>`;
