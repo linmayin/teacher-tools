@@ -449,7 +449,6 @@
       <input class="form-input" id="rs-note" placeholder="例：因校外教學補課"></div>
 
     <button class="save-btn" onclick="addReschedule()">新增調課</button>
-    <div id="rs-debug" style="font-size:11px;color:#888;margin-top:8px;word-break:break-all;padding:6px;background:#f5f5f5;border-radius:6px;min-height:20px"></div>
 
     <div class="setting-section" style="margin-top:20px">
       <h4>已設定的調課</h4>
@@ -1150,11 +1149,8 @@ function addReschedule(){
 
 
   const id='rs_'+Date.now();
-  const rsEntry={id,ci,srcWeek,srcDi,srcVariant,dstWeek,dstDi,dstPeriod,note};
-  state.reschedules.push(rsEntry);
-  // Show debug info on screen
-  const dbg=document.getElementById('rs-debug');
-  if(dbg) dbg.textContent='存入：'+JSON.stringify(rsEntry);
+  state.reschedules.push({id,ci,srcWeek,srcDi,srcVariant,dstWeek,dstDi,dstPeriod,note});
+
   saveState();
   renderRescheduleList();
   render();
