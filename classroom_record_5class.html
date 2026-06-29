@@ -414,11 +414,9 @@ function importRoster(input){
   var ext=file.name.split('.').pop().toLowerCase();
 
   function processRows(rows){
-    // rows: array of arrays, first row is header
     if(!roster[cls])roster[cls]={};
     var count=0;
     var startRow=0;
-    // 自動偵測標題列（跳過）
     if(rows.length>0){
       var first=rows[0];
       if(isNaN(parseInt(first[0])))startRow=1;
@@ -427,8 +425,9 @@ function importRoster(input){
       var row=rows[i];
       if(!row||row.length<2)continue;
       var num=parseInt(row[0]);
-      var name=String(row[1]||'').trim();
-      if(isNaN(num)||!name)continue;
+      // 清除全形空格、半形空格
+      var name=String(row[1]||'').replace(/[\s\u3000]+/g,'').trim();
+      if(isNaN(num)||num<1||!name)continue;
       roster[cls][num]=name;
       count++;
     }
@@ -443,12 +442,14 @@ function importRoster(input){
     var reader=new FileReader();
     reader.onload=function(e){
       try{
-        var wb=XLSX.read(e.target.result,{type:'array'});
+        var data=new Uint8Array(e.target.result);
+        var wb=XLSX.read(data,{type:'array'});
         var ws=wb.Sheets[wb.SheetNames[0]];
-        var rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+        var rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:false});
         processRows(rows);
       }catch(err){
-        showToast('讀取失敗，請確認檔案格式');
+        console.error(err);
+        showToast('讀取失敗：'+err.message);
       }
     };
     reader.readAsArrayBuffer(file);
