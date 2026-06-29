@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>教學進度表</title>
 <style>
   :root {
@@ -838,7 +841,7 @@ function getClassSequence(ci, copyNormal, copyFlex, copyEighth){
     const ds=state.classes[ci]?.schedule[di];
     if(!ds)continue;
     if(copyNormal&&!ds.isFlex&&ds.period) seq.push({di,variant:"n"});
-    if(copyFlex&&ds.isFlex)    seq.push({di,variant:'n'});
+    if(copyFlex&&ds.isFlex) seq.push({di,variant:"n"});
     if(copyEighth&&ds.hasEighth) seq.push({di,variant:'8'});
   }
   return seq;
