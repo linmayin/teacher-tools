@@ -289,15 +289,14 @@ function init(){
   if(!cfg.baseScore)cfg.baseScore=95;
   selClass=cfg.classes[0]||'';
   document.getElementById('rec-date').value=new Date().toLocaleDateString('sv');
-  document.getElementById('note-date').value=new Date().toLocaleDateString('sv');
   document.getElementById('today-pill').textContent=new Date().toLocaleDateString('zh-TW',{month:'long',day:'numeric',weekday:'short'});
   document.getElementById('base-display').textContent=cfg.baseScore;
   buildClassChips();
   buildNumGrid();
   buildDropdowns();
-  updateNoteHeader();
   buildRosterClsDropdown();
   buildSettings();
+  updateNoteHeader();
   renderLog();
   renderSummary();
   updateSelCount();
