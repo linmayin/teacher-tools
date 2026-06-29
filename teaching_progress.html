@@ -601,6 +601,7 @@ function renderMain(){
       {
         // Check for reschedule destinations arriving at this slot (regardless of ds)
         const dstRsList=state.reschedules.filter(r=>r.ci===ci&&r.dstWeek===state.currentWeek&&r.dstDi===di);
+        if(state.reschedules.length&&di===0&&ci===0) console.log('DEBUG reschedules:',JSON.stringify(state.reschedules),'currentWeek:',state.currentWeek,'ci:',ci,'di:',di,'dstRsList:',dstRsList.length);
 
         if(!ds){
           if(!dstRsList.length){
@@ -1143,7 +1144,9 @@ function addReschedule(){
   // Auto-detect srcVariant from schedule
   const srcDs=state.classes[ci]?.schedule[srcDi];
   if(!srcDs){alert('來源班級該天沒有課');return;}
-  const srcVariant=srcDs.hasEighth&&!srcDs.period&&!srcDs.isFlex?'8':'n';
+  // srcVariant: '8' only if purely eighth-node day; 'n' for normal/flex
+  const srcVariant=(!srcDs.period&&!srcDs.isFlex&&srcDs.hasEighth)?'8':'n';
+  console.log('addReschedule: ci=',ci,'srcDi=',srcDi,'srcVariant=',srcVariant,'dstDi=',dstDi,'dstWeek=',dstWeek);
 
   const id='rs_'+Date.now();
   state.reschedules.push({id,ci,srcWeek,srcDi,srcVariant,dstWeek,dstDi,dstPeriod,note});
