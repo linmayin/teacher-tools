@@ -905,26 +905,29 @@ function renderNoteList(){
   var clsNotes=notes.filter(function(n){return n.cls===cls;}).sort(function(a,b){return b.date.localeCompare(a.date);});
   if(!clsNotes.length){el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px 0;text-align:center">「'+cls+'」尚無記事</div>';return;}
   el.innerHTML=clsNotes.map(function(n){
+    var eid=n.id;
     return '<div style="border:1px solid var(--border);border-radius:9px;padding:10px;margin-bottom:8px;background:var(--surface2)">'
       +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
       +'<span style="font-size:12px;font-weight:600;color:var(--text2)">'+n.date+'</span>'
       +'<div style="display:flex;gap:6px">'
-      +'<button class="btn btn-sm" onclick="editNote(''+n.id+'')">編輯</button>'
-      +'<button class="btn btn-sm btn-danger" onclick="deleteNote(''+n.id+'')">刪除</button>'
+      +'<button class="btn btn-sm" onclick="editNote(this)" data-id="'+eid+'">編輯</button>'
+      +'<button class="btn btn-sm btn-danger" onclick="deleteNote(this)" data-id="'+eid+'">刪除</button>'
       +'</div></div>'
       +'<div style="font-size:13px;color:var(--text);white-space:pre-wrap">'+n.text+'</div>'
       +'</div>';
   }).join('');
 }
 
-function editNote(id){
+function editNote(btn){
+  var id=btn.dataset.id;
   var n=notes.find(function(x){return x.id===id;});if(!n)return;
   document.getElementById('note-text').value=n.text;
   document.getElementById('note-text').focus();
   showToast('已載入，修改後按儲存');
 }
 
-function deleteNote(id){
+function deleteNote(btn){
+  var id=btn.dataset.id;
   if(!confirm('確定刪除此筆記事？'))return;
   notes=notes.filter(function(n){return n.id!==id;});
   saveNotes();renderNoteList();
