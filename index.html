@@ -21,10 +21,11 @@ html,body{min-height:100%;background:#f5f4f0;font-family:'PingFang TC','Noto San
 .card{background:#fff;border:1px solid #e0dbd3;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.07);overflow:hidden;margin-bottom:14px;text-decoration:none;display:block;transition:transform 0.12s,box-shadow 0.12s;}
 .card:active{transform:scale(0.98);box-shadow:0 2px 10px rgba(0,0,0,0.06);}
 .card-stripe{height:5px;}
-.s-blue{background:#2d5be3;}.s-green{background:#1e7e4a;}.s-amber{background:#b45309;}.s-slate{background:#5c6bc0;}.s-rose{background:#be185d;}
+.s-blue{background:#2d5be3;}.s-green{background:#1e7e4a;}.s-amber{background:#b45309;}.s-slate{background:#5c6bc0;}.s-rose{background:#be185d;}.s-teal{background:#2d6a4f;}
 .card-body{padding:14px 16px 16px;}
 .card-header{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
 .card-icon{width:44px;height:44px;border-radius:10px;object-fit:cover;flex-shrink:0;}
+.card-icon-emoji{width:44px;height:44px;border-radius:10px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:26px;}
 .card-name{font-size:15px;font-weight:700;color:#1a1814;letter-spacing:-0.2px;}
 .device-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;margin-bottom:8px;}
 .badge-phone{background:#edf0fd;color:#2d5be3;}.badge-pc{background:#fef3c7;color:#b45309;}
@@ -34,10 +35,10 @@ html,body{min-height:100%;background:#f5f4f0;font-family:'PingFang TC','Noto San
 .note-box code{font-family:monospace;background:#eee;padding:1px 4px;border-radius:3px;font-size:10px;}
 .tag-row{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px;}
 .tag{font-size:10px;font-weight:500;padding:2px 8px;border-radius:20px;}
-.t-blue{background:#edf0fd;color:#2d5be3;}.t-green{background:#edf7f2;color:#1e7e4a;}.t-amber{background:#fef3c7;color:#b45309;}.t-slate{background:#eef0fb;color:#5c6bc0;}.t-rose{background:#fdf2f8;color:#be185d;}
+.t-blue{background:#edf0fd;color:#2d5be3;}.t-green{background:#edf7f2;color:#1e7e4a;}.t-amber{background:#fef3c7;color:#b45309;}.t-slate{background:#eef0fb;color:#5c6bc0;}.t-rose{background:#fdf2f8;color:#be185d;}.t-teal{background:#e8f4ee;color:#2d6a4f;}
 .btn{display:flex;align-items:center;justify-content:center;gap:6px;height:38px;border-radius:9px;font-size:13px;font-weight:600;color:#fff;transition:opacity 0.12s;}
 .btn:active{opacity:0.8;}
-.btn-blue{background:#2d5be3;}.btn-green{background:#1e7e4a;}.btn-amber{background:#b45309;}.btn-slate{background:#5c6bc0;}.btn-rose{background:#be185d;}
+.btn-blue{background:#2d5be3;}.btn-green{background:#1e7e4a;}.btn-amber{background:#b45309;}.btn-slate{background:#5c6bc0;}.btn-rose{background:#be185d;}.btn-teal{background:#2d6a4f;}
 .footer{text-align:center;font-size:11px;color:#a09a93;line-height:1.9;padding-top:4px;}
 </style>
 </head>
@@ -64,16 +65,11 @@ html,body{min-height:100%;background:#f5f4f0;font-family:'PingFang TC','Noto San
       <span class="device-badge badge-phone">📱 適合以手機開啟</span>
       <div class="card-desc">記錄學生課堂加扣分，支援四個班級，可依班級、日期篩選，期末匯出 CSV 統整。</div>
       <div class="note-box">
-        <b>使用說明</b><br>
-        上方選擇班級與日期後，點選座號即可登記加扣分與事由。每筆記錄即時存入瀏覽器。<br><br>
-        <b>注意事項</b><br>
-        • 班級名稱可在設定中自訂<br>
-        • 建議每學期末匯出 CSV 備份，清除瀏覽器資料會導致記錄消失
+        <b>使用說明</b><br>上方選擇班級與日期後，點選座號即可登記加扣分與事由。每筆記錄即時存入瀏覽器。<br><br>
+        <b>注意事項</b><br>• 班級名稱可在設定中自訂<br>• 建議每學期末匯出 CSV 備份，清除瀏覽器資料會導致記錄消失
       </div>
       <div class="tag-row">
-        <span class="tag t-blue">四個班級</span>
-        <span class="tag t-blue">座號 1–40</span>
-        <span class="tag t-blue">匯出 CSV</span>
+        <span class="tag t-blue">四個班級</span><span class="tag t-blue">座號 1–40</span><span class="tag t-blue">匯出 CSV</span>
       </div>
       <div class="btn btn-blue">開啟工具 →</div>
     </div>
@@ -89,16 +85,11 @@ html,body{min-height:100%;background:#f5f4f0;font-family:'PingFang TC','Noto San
       <span class="device-badge badge-phone">📱 適合以手機開啟</span>
       <div class="card-desc">功能同四班版，擴充至五個班級，適合授課班級較多的老師使用。</div>
       <div class="note-box">
-        <b>使用說明</b><br>
-        操作方式與四班版完全相同，僅班級數量擴充至五班。兩個工具的資料各自獨立儲存，互不影響。<br><br>
-        <b>注意事項</b><br>
-        • 若只有四個授課班級，建議使用四班版以保持介面簡潔<br>
-        • 同樣建議定期匯出 CSV 備份
+        <b>使用說明</b><br>操作方式與四班版完全相同，僅班級數量擴充至五班。兩個工具的資料各自獨立儲存，互不影響。<br><br>
+        <b>注意事項</b><br>• 若只有四個授課班級，建議使用四班版以保持介面簡潔<br>• 同樣建議定期匯出 CSV 備份
       </div>
       <div class="tag-row">
-        <span class="tag t-blue">五個班級</span>
-        <span class="tag t-blue">座號 1–40</span>
-        <span class="tag t-blue">匯出 CSV</span>
+        <span class="tag t-blue">五個班級</span><span class="tag t-blue">座號 1–40</span><span class="tag t-blue">匯出 CSV</span>
       </div>
       <div class="btn btn-blue">開啟工具 →</div>
     </div>
@@ -116,17 +107,11 @@ html,body{min-height:100%;background:#f5f4f0;font-family:'PingFang TC','Noto San
       <span class="device-badge badge-phone">📱 適合以手機開啟</span>
       <div class="card-desc">記錄導師班學生優缺點支數，自動換算嘉獎／警告，一鍵結轉，匯出合併列印 CSV。</div>
       <div class="note-box">
-        <b>使用說明</b><br>
-        點選座號後登記優點或缺點支數，系統自動換算為嘉獎／警告。期中或期末可使用「一鍵結轉」將本期累積數轉入下一期，並清空本期記錄。匯出 CSV 可直接用於通知單合併列印。<br><br>
-        <b>注意事項</b><br>
-        • 結轉前請先匯出 CSV 備份，結轉後本期數字將清零<br>
-        • 每學期開始建議確認座號人數（預設 1–35）
+        <b>使用說明</b><br>點選座號後登記優點或缺點支數，系統自動換算為嘉獎／警告。期中或期末可使用「一鍵結轉」將本期累積數轉入下一期，並清空本期記錄。匯出 CSV 可直接用於通知單合併列印。<br><br>
+        <b>注意事項</b><br>• 結轉前請先匯出 CSV 備份，結轉後本期數字將清零<br>• 每學期開始建議確認座號人數（預設 1–35）
       </div>
       <div class="tag-row">
-        <span class="tag t-green">座號 1–35</span>
-        <span class="tag t-green">自動換算</span>
-        <span class="tag t-green">一鍵結轉</span>
-        <span class="tag t-green">合併列印</span>
+        <span class="tag t-green">座號 1–35</span><span class="tag t-green">自動換算</span><span class="tag t-green">一鍵結轉</span><span class="tag t-green">合併列印</span>
       </div>
       <div class="btn btn-green">開啟工具 →</div>
     </div>
@@ -142,16 +127,11 @@ html,body{min-height:100%;background:#f5f4f0;font-family:'PingFang TC','Noto San
       <span class="device-badge badge-phone">📱 適合以手機開啟</span>
       <div class="card-desc">登記學生生活常規違規事項，支援拍照後由 Claude 解析匯入，自動記錄座號、項目與星期。</div>
       <div class="note-box">
-        <b>使用說明</b><br>
-        拍下紙本登記表後，請貼給 Claude 解析，Claude 會輸出格式為「座號,項目,星期」的 CSV 區塊，複製後貼入工具的匯入欄位即可。每日一張照片對應一次匯入。<br><br>
-        <b>注意事項</b><br>
-        • 匯入格式：<code>座號,項目,星期</code>，例如 <code>3,作業缺交,一</code><br>
-        • 同一天重複匯入會累加，請勿重複貼入同一張照片的資料
+        <b>使用說明</b><br>拍下紙本登記表後，請貼給 Claude 解析，Claude 會輸出格式為「座號,項目,星期」的 CSV 區塊，複製後貼入工具的匯入欄位即可。每日一張照片對應一次匯入。<br><br>
+        <b>注意事項</b><br>• 匯入格式：<code>座號,項目,星期</code>，例如 <code>3,作業缺交,一</code><br>• 同一天重複匯入會累加，請勿重複貼入同一張照片的資料
       </div>
       <div class="tag-row">
-        <span class="tag t-amber">照片匯入</span>
-        <span class="tag t-amber">CSV 解析</span>
-        <span class="tag t-amber">多日管理</span>
+        <span class="tag t-amber">照片匯入</span><span class="tag t-amber">CSV 解析</span><span class="tag t-amber">多日管理</span>
       </div>
       <div class="btn btn-amber">開啟工具 →</div>
     </div>
@@ -169,21 +149,35 @@ html,body{min-height:100%;background:#f5f4f0;font-family:'PingFang TC','Noto San
       <span class="device-badge badge-phone">📱 適合以手機開啟</span>
       <div class="card-desc">以語音輸入方式快速登記各班學生成績，支援多班級、多科目，自動辨識座號與分數，期末匯出 CSV。</div>
       <div class="note-box">
-        <b>使用說明</b><br>
-        先在「設定」頁設定好班級名稱、人數與評量科目。登記時選擇班級與科目後，按麥克風鍵依序念出「座號 分數」（例如「1號 85」），系統會自動辨識並填入。全班念完後可逐一確認再儲存。<br><br>
-        <b>注意事項</b><br>
-        • 需允許瀏覽器使用麥克風權限，建議使用 Chrome<br>
-        • 語音辨識需要網路連線（使用裝置內建語音辨識服務）<br>
-        • 建議在安靜環境使用，避免背景噪音影響辨識準確度<br>
-        • 資料儲存於本機瀏覽器，定期匯出 CSV 備份
+        <b>使用說明</b><br>先在「設定」頁設定好班級名稱、人數與評量科目。登記時選擇班級與科目後，按麥克風鍵依序念出「座號 分數」（例如「1號 85」），系統會自動辨識並填入。全班念完後可逐一確認再儲存。<br><br>
+        <b>注意事項</b><br>• 需允許瀏覽器使用麥克風權限，建議使用 Chrome<br>• 語音辨識需要網路連線（使用裝置內建語音辨識服務）<br>• 建議在安靜環境使用，避免背景噪音影響辨識準確度<br>• 資料儲存於本機瀏覽器，定期匯出 CSV 備份
       </div>
       <div class="tag-row">
-        <span class="tag t-rose">語音輸入</span>
-        <span class="tag t-rose">多班級</span>
-        <span class="tag t-rose">多科目</span>
-        <span class="tag t-rose">匯出 CSV</span>
+        <span class="tag t-rose">語音輸入</span><span class="tag t-rose">多班級</span><span class="tag t-rose">多科目</span><span class="tag t-rose">匯出 CSV</span>
       </div>
       <div class="btn btn-rose">開啟工具 →</div>
+    </div>
+  </a>
+
+  <div class="section-label section-gap">教學進度</div>
+
+  <a class="card" href="teaching_progress.html">
+    <div class="card-stripe s-teal"></div>
+    <div class="card-body">
+      <div class="card-header">
+        <img class="card-icon" src="data:image/png;base64,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" alt="教">
+        <span class="card-name">教學進度表</span>
+      </div>
+      <span class="device-badge badge-phone">📱 適合以手機開啟</span>
+      <div class="card-desc">依週次管理各班教學進度，可記錄每週上課內容、彈性課、段考與複習週，支援拖曳排序與週次切換。</div>
+      <div class="note-box">
+        <b>使用說明</b><br>選擇週次後，依各班填入當週教學內容。可標記課型（一般／彈性／段考／複習／假日），並視需要拖曳調整順序。進度資料即時儲存於本機瀏覽器。<br><br>
+        <b>注意事項</b><br>• 換裝置或清除瀏覽器資料會導致進度消失，建議定期匯出備份<br>• 各班資料獨立儲存，互不影響
+      </div>
+      <div class="tag-row">
+        <span class="tag t-teal">週次管理</span><span class="tag t-teal">多班級</span><span class="tag t-teal">課型標記</span><span class="tag t-teal">拖曳排序</span>
+      </div>
+      <div class="btn btn-teal">開啟工具 →</div>
     </div>
   </a>
 
@@ -193,23 +187,17 @@ html,body{min-height:100%;background:#f5f4f0;font-family:'PingFang TC','Noto San
     <div class="card-stripe s-slate"></div>
     <div class="card-body">
       <div class="card-header">
-        <span class="card-icon" style="display:flex;align-items:center;justify-content:center;font-size:28px;background:#eef0fb;border-radius:10px;">🖥️</span>
+        <span class="card-icon-emoji" style="background:#eef0fb;">🖥️</span>
         <span class="card-name">段考看板</span>
       </div>
       <span class="device-badge badge-pc">💻 適合以電腦開啟</span>
       <div class="card-desc">段考期間投影使用，顯示即時時鐘、科目時程與倒數，自動高亮目前進行中科目，整點提示音。</div>
       <div class="note-box">
-        <b>使用說明</b><br>
-        開啟後全螢幕投影至教室螢幕。系統依據當前時間自動高亮目前科目並顯示剩餘時間。開考前可在設定中調整科目名稱與時間。<br><br>
-        <b>注意事項</b><br>
-        • 建議使用 Chrome 瀏覽器以確保提示音正常播放<br>
-        • 科目時程設定儲存於本機，換電腦使用需重新設定<br>
-        • 保持瀏覽器分頁在前景，背景分頁可能導致時鐘延遲
+        <b>使用說明</b><br>開啟後全螢幕投影至教室螢幕。系統依據當前時間自動高亮目前科目並顯示剩餘時間。開考前可在設定中調整科目名稱與時間。<br><br>
+        <b>注意事項</b><br>• 建議使用 Chrome 瀏覽器以確保提示音正常播放<br>• 科目時程設定儲存於本機，換電腦使用需重新設定<br>• 保持瀏覽器分頁在前景，背景分頁可能導致時鐘延遲
       </div>
       <div class="tag-row">
-        <span class="tag t-slate">即時時鐘</span>
-        <span class="tag t-slate">自動高亮</span>
-        <span class="tag t-slate">提示音</span>
+        <span class="tag t-slate">即時時鐘</span><span class="tag t-slate">自動高亮</span><span class="tag t-slate">提示音</span>
       </div>
       <div class="btn btn-slate">開啟工具 →</div>
     </div>
