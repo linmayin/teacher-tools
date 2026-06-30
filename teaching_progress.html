@@ -318,6 +318,10 @@
       <button class="add-btn" onclick="addClassSetup()">＋ 新增班級</button>
     </div>
     <button class="save-btn" onclick="saveSettings()">儲存設定</button>
+    <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--rule)">
+      <button class="save-btn" style="background:#c0392b" onclick="newSemesterInit()">🔄 新學期初始化</button>
+      <div style="font-size:11px;color:var(--ink-light);margin-top:6px;text-align:center">清除進度內容、特殊日、調課記錄，可選擇是否清除課表</div>
+    </div>
   </div>
 </div>
 
@@ -329,6 +333,11 @@
       <h4>行事曆 JSON 匯入</h4>
       <div class="json-import-box">
         <textarea class="json-ta" id="calendar-json" placeholder="貼上 Claude 產生的行事曆 JSON…"></textarea>
+        <div class="form-row" style="margin-bottom:8px">
+          <label style="font-size:12px;color:var(--ink-light);min-width:72px">課程結束日</label>
+          <input class="form-input" type="date" id="cal-end-date" style="max-width:190px">
+          <span style="font-size:11px;color:var(--ink-light)">填入後自動計算總週數</span>
+        </div>
         <button class="import-btn" onclick="importCalendarJSON()">匯入行事曆</button>
         <div class="import-msg" id="calendar-msg"></div>
       </div>
@@ -1056,21 +1065,35 @@ function importCalendarJSON(){
     });
     state.specialDays.sort((a,b)=>a.date.localeCompare(b.date));
 
-    // Auto-update totalWeeks if calendar has dates beyond current setting
+    // Auto-update totalWeeks
     if(state.startDate){
-      let maxWeek=state.totalWeeks;
-      arr.forEach(item=>{
-        const itemDate=new Date(item.date);
-        const mon=getWeekMonday(1);
-        if(!mon)return;
-        const diffDays=Math.floor((itemDate-mon)/86400000);
+      const mon1=getWeekMonday(1);
+      let newWeeks=state.totalWeeks;
+      let weekSource='';
+
+      // Priority 1: course-end-date field
+      const endDateVal=document.getElementById('cal-end-date')?.value;
+      if(endDateVal&&mon1){
+        const endDate=new Date(endDateVal);
+        const diffDays=Math.floor((endDate-mon1)/86400000);
         const weekNum=Math.floor(diffDays/7)+1;
-        if(weekNum>maxWeek)maxWeek=weekNum;
-      });
-      if(maxWeek>state.totalWeeks){
-        state.totalWeeks=maxWeek;
+        if(weekNum>0){newWeeks=weekNum;weekSource=`課程結束日 ${endDateVal}`;}
+      }
+      // Priority 2: latest date from calendar items
+      if(!endDateVal&&mon1){
+        arr.forEach(item=>{
+          const itemDate=new Date(item.date);
+          const diffDays=Math.floor((itemDate-mon1)/86400000);
+          const weekNum=Math.floor(diffDays/7)+1;
+          if(weekNum>newWeeks)newWeeks=weekNum;
+        });
+        if(newWeeks>state.totalWeeks)weekSource='行事曆最晚日期';
+      }
+
+      if(newWeeks!==state.totalWeeks){
+        state.totalWeeks=newWeeks;
         msg.className='import-msg ok';
-        msg.textContent=`✓ 成功匯入 ${arr.length} 筆特殊日，總週數已自動更新為 ${maxWeek} 週`;
+        msg.textContent=`✓ 成功匯入 ${arr.length} 筆特殊日，總週數依${weekSource}更新為 ${newWeeks} 週`;
       } else {
         msg.className='import-msg ok';
         msg.textContent=`✓ 成功匯入 ${arr.length} 筆特殊日`;
@@ -1184,6 +1207,41 @@ function renderRescheduleList(){
       <button class="del-btn" onclick="removeReschedule('${r.id}')">✕</button>
     </div>`;
   }).join('');
+}
+
+// NEW SEMESTER INIT
+function newSemesterInit(){
+  // Step 1: ask about clearing schedule
+  const clearSchedule=confirm('是否一併清除班級課表設定？\n\n點「確定」= 清除課表（需重新匯入）\n點「取消」= 保留課表');
+
+  // Step 2: confirm action
+  const msg=clearSchedule?
+    '將清除：進度內容、特殊日、調課記錄、班級課表\n學年度和學期資訊需重新設定。\n\n確定執行新學期初始化？':
+    '將清除：進度內容、特殊日、調課記錄（保留班級課表）\n學年度和學期資訊需重新設定。\n\n確定執行新學期初始化？';
+
+  if(!confirm(msg))return;
+
+  // Clear data
+  state.data={};
+  state.specialDays=[];
+  state.reschedules=[];
+  state.currentWeek=1;
+  state.totalWeeks=20;
+  state.startDate='';
+
+  if(clearSchedule) state.classes=[];
+
+  // Reset semester info
+  state.year='';
+  state.semester='上';
+
+  saveState();
+  render();
+  closeModal('settings-modal');
+
+  // Re-open settings so user can fill in new semester info
+  setTimeout(()=>openModal('settings-modal'),100);
+  alert('初始化完成！請重新設定學年度、學期、開始日期和週數。');
 }
 
 // EXPORT ALL WEEKS
