@@ -2,6 +2,7 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
+<link rel="apple-touch-icon" href="icon_duan.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>段考看板</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -716,7 +717,12 @@ function toggleMode() {
   syncDisplayFields();
   document.body.classList.toggle('show-mode', isShowMode);
   document.getElementById('modeBtn').textContent = isShowMode ? '⬡ 切換編輯模式' : '⬡ 切換展示模式';
-  if (!isShowMode) saveState();
+  if (isShowMode) {
+    // 趁使用者觸碰按鈕的當下初始化 AudioContext（iOS 限制）
+    getAudioCtx();
+  } else {
+    saveState();
+  }
 }
 
 ['examNumInput','examDayInput','totalInput','presentInput','absentInput','noteInput'].forEach(id => {
@@ -761,10 +767,22 @@ function updateClock() {
   });
 }
 
-// chime
+// chime — shared AudioContext, initialized on user gesture
+let sharedAudioCtx = null;
+
+function getAudioCtx() {
+  if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
+    sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (sharedAudioCtx.state === 'suspended') {
+    sharedAudioCtx.resume();
+  }
+  return sharedAudioCtx;
+}
+
 function playChime() {
   try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = getAudioCtx();
     const notes = [523.25, 659.25, 783.99];
     let t = ctx.currentTime;
     notes.forEach((freq, idx) => {
