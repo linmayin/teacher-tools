@@ -78,12 +78,13 @@
   }
 
   .title-box {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     background: #1a1f35;
     border: 1px solid var(--border);
     border-radius: 6px;
     padding: 2px 10px;
-    min-width: 0;
     text-align: center;
   }
 
@@ -96,7 +97,7 @@
     font-weight: inherit;
     font-family: inherit;
     text-align: center;
-    width: 100%;
+    width: 2em;
   }
 
   .title-en {
@@ -507,7 +508,7 @@
     <div class="header-left">
       <div class="title-zh">
         第
-        <span class="title-box" style="min-width:0;padding:2px 10px;">
+        <span class="title-box" >
           <span class="show-only" id="examNumDisplay">一</span>
           <input class="editable-box edit-only" id="examNumInput" value="一" placeholder="一">
         </span>
@@ -515,7 +516,7 @@
       </div>
       <div class="title-en">
         Day
-        <span class="title-box" style="min-width:0;padding:2px 10px;">
+        <span class="title-box" >
           <span class="show-only" id="examDayDisplay">1</span>
           <input class="editable-box edit-only" id="examDayInput" value="1" placeholder="1">
         </span>
