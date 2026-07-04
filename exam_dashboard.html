@@ -2,7 +2,6 @@
 <html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
-<link rel="apple-touch-icon" href="icon_duan.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>段考看板</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
@@ -84,7 +83,7 @@
     border: 1px solid var(--border);
     border-radius: 6px;
     padding: 2px 10px;
-    min-width: 44px;
+    min-width: 0;
     text-align: center;
   }
 
@@ -112,7 +111,7 @@
   }
 
   .title-en .title-box {
-    min-width: 36px;
+    min-width: 0;
   }
 
   .clock-block {
@@ -508,7 +507,7 @@
     <div class="header-left">
       <div class="title-zh">
         第
-        <span class="title-box" style="min-width:54px;">
+        <span class="title-box" style="min-width:0;padding:2px 10px;">
           <span class="show-only" id="examNumDisplay">一</span>
           <input class="editable-box edit-only" id="examNumInput" value="一" placeholder="一">
         </span>
@@ -516,7 +515,7 @@
       </div>
       <div class="title-en">
         Day
-        <span class="title-box" style="min-width:44px;">
+        <span class="title-box" style="min-width:0;padding:2px 10px;">
           <span class="show-only" id="examDayDisplay">1</span>
           <input class="editable-box edit-only" id="examDayInput" value="1" placeholder="1">
         </span>
