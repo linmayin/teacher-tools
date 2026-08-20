@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>抽籤選號</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="favicon.png">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:#1a1a2e;color:#fff;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:20px 16px 40px}
@@ -54,7 +56,7 @@ h1{font-size:22px;font-weight:700;letter-spacing:2px;margin-bottom:20px;color:#e
 <div class="settings">
   <div class="settings-row">
     <label>總人數</label>
-    <input type="number" id="totalInput" value="33" min="1" max="60">
+    <input type="number" id="totalInput" value="32" min="1" max="60">
     <button class="btn" style="flex:none;padding:8px 14px;font-size:13px;border-radius:8px;border:1.5px solid #6c63ff;background:#0f3460;color:#a78bfa" onclick="applyTotal()">套用</button>
   </div>
   <div class="settings-row" style="flex-direction:column;align-items:flex-start">
@@ -81,7 +83,7 @@ h1{font-size:22px;font-weight:700;letter-spacing:2px;margin-bottom:20px;color:#e
 <div class="overview-grid" id="overviewGrid"></div>
 
 <script>
-let total = 33;
+let total = 32;
 let absentSet = new Set();
 let drawnSet = new Set();
 let currentNum = null;
