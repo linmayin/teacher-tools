@@ -186,10 +186,11 @@
   .pick-banner .seat-badge { font-family: var(--font-mono); color: var(--accent-strong); font-size: 22px; }
   .ui-message { background: var(--danger-bg); color: var(--danger); border-radius: 10px; padding: 9px 14px; font-size: 13.5px; font-weight: 600; margin-bottom: 12px; }
 
-  .pick-table th, .pick-table td { font-size: 15px; padding: 10px 12px; }
+  .pick-table { table-layout: fixed; }
+  .pick-table th, .pick-table td { font-size: 15px; padding: 7px 10px; }
   .pick-table input[type="text"] { width: 100%; }
-  .pick-table .must-input { width: 90px; font-family: var(--font-mono); text-align: center; }
-  .pick-table td.name-cell { font-weight: 600; min-width: 160px; }
+  .pick-table .must-input { width: 100% !important; max-width: 84px; font-family: var(--font-mono); text-align: center; }
+  .pick-table td.name-cell { font-weight: 600; line-height: 1.3; }
 
   .slot-row { display: flex; gap: 6px; flex-wrap: wrap; }
   .slot-input { width: 46px !important; text-align: center; font-family: var(--font-mono); font-variant-numeric: tabular-nums; padding: 7px 4px !important; }
@@ -802,6 +803,22 @@
     state.lottery = { round: 1, progress: { "1": [], "2": [], "3": [], "4": [] }, currentSeat: null };
     scheduleSave(); render();
   }
+  // Clears everyone's must/waitlist/special-application entries so the sheet
+  // is blank for a new term's fill-in round — WITHOUT touching the club
+  // list, class settings, or the lottery draw order/progress (rounds 2–4
+  // depend on round 1's original order, so that must be left alone).
+  function clearAllPicks() {
+    if (!window.confirm("確定要清空所有社團的必上／候補／特殊社團甄選登記資料嗎？\n\n社團清單、班級設定、抽籤順序都不會受影響，適合新學期切換到下一次選填、重新開放填寫時使用。")) return;
+    state.clubs.forEach(function (c) {
+      if (c.special) {
+        state.specialApps[c.id] = [null, null, null, null, null];
+      } else {
+        state.generalPicks[c.id] = { must: null, waitlist: [null, null, null, null, null] };
+      }
+    });
+    uiMessage = null;
+    scheduleSave(); render();
+  }
 
   // ---- export ----------------------------------------------
   // Note: the artifact "downloads" capability only offers a fixed set of
@@ -1075,7 +1092,8 @@
           : '<div class="pick-banner" style="color:var(--ink-faint); font-weight:500;">尚未開始抽籤</div>') +
         (uiMessage ? '<div class="ui-message">⚠ ' + escapeHtml(uiMessage) + '</div>' : '') +
         '<div class="table-wrap pick-scroll"><table class="pick-table">' +
-          '<thead><tr><th>社團名稱</th><th style="width:110px;">必上（座號）</th><th>候補（最多 5 位）</th></tr></thead>' +
+          '<colgroup><col /><col style="width:104px;" /><col style="width:300px;" /></colgroup>' +
+          '<thead><tr><th>社團名稱</th><th>必上（座號）</th><th>候補（最多 5 位）</th></tr></thead>' +
           '<tbody>' + (rows || '<tr><td colspan="3" class="empty-state">目前沒有一般社團，請到「設定與社團清單」新增。</td></tr>') + '</tbody>' +
         '</table></div>' +
       '</div>';
@@ -1165,8 +1183,10 @@
           '<p class="hint">第 1 次為真正隨機抽籤；第 2～4 次會依第 1 次的結果自動算出固定順序（詳見下方規則），不需要重新抽籤，藉此讓每位同學四次下來的平均優先順位一致。</p>' +
           '<div class="field-row"><label for="round-select">目前輪次</label><select id="round-select" data-field="round">' + roundOptions + '</select></div>' +
           '<p class="note">第 1 次抽籤順序：' + escapeHtml(round1Preview) + (round1Done ? '（已完成，共 ' + state.classSize + ' 人）' : '（進行中，' + state.lottery.progress["1"].length + ' / ' + state.classSize + ' 人）') + '</p>' +
+          '<p class="hint" style="margin-top:14px;">💡 <b>下學期換下一次選填時該怎麼做：</b>①「目前輪次」改選下一次（例如第 2 次）；②按下方「清空本學期選填資料」把必上／候補／特殊社團登記清成空白，讓學生重新填寫——社團清單、班級人數、抽籤順序都不會被動到。</p>' +
           '<div class="field-row" style="margin-top:10px;">' +
-            '<button type="button" class="btn danger" data-action="new-cycle">開始新的兩年循環（清空抽籤紀錄）</button>' +
+            '<button type="button" class="btn danger" data-action="clear-picks">清空本學期選填資料（保留社團清單與抽籤順序）</button>' +
+            '<button type="button" class="btn ghost" data-action="new-cycle">開始新的兩年循環（連抽籤順序一起清空）</button>' +
           '</div>' +
         '</div>' +
 
@@ -1264,6 +1284,7 @@
     else if (action === "draw") { drawNext(); }
     else if (action === "reset-round") { resetRoundProgress(); }
     else if (action === "new-cycle") { startNewCycle(); }
+    else if (action === "clear-picks") { clearAllPicks(); }
   });
 
   app.addEventListener("change", function (e) {
