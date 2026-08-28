@@ -1,0 +1,1309 @@
+<title>社團選填檢查器</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" />
+<style>
+  :root {
+    --bg: #f3f5f9;
+    --surface: #ffffff;
+    --surface-alt: #eaedf4;
+    --border: #d9dfea;
+    --border-strong: #c2cade;
+    --ink: #1b2233;
+    --ink-muted: #5b6478;
+    --ink-faint: #8790a3;
+    --accent: #2f5d8a;
+    --accent-strong: #1f4266;
+    --accent-bg: #e6eef6;
+    --special: #9a3b3b;
+    --special-bg: #f7e9e9;
+    --success: #2e7d4f;
+    --success-bg: #e4f3ea;
+    --warning: #b4740e;
+    --warning-bg: #fbf0dd;
+    --danger: #b23b3b;
+    --danger-bg: #fbeaea;
+    --shadow: 0 1px 2px rgba(27, 34, 51, 0.06), 0 8px 24px -12px rgba(27, 34, 51, 0.18);
+    --font-display: "Noto Serif TC", "PMingLiU", serif;
+    --font-body: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+    --font-mono: "JetBrains Mono", "SFMono-Regular", Menlo, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #11141c; --surface: #1a1f2b; --surface-alt: #222838; --border: #333c52; --border-strong: #46516c;
+      --ink: #e7eaf2; --ink-muted: #9aa3ba; --ink-faint: #6d768c;
+      --accent: #7fb0e0; --accent-strong: #a4c8ea; --accent-bg: #1f2e40;
+      --special: #e2938f; --special-bg: #3a2626;
+      --success: #7fce9f; --success-bg: #1e3327;
+      --warning: #e3bb6a; --warning-bg: #3a2e14;
+      --danger: #e2938f; --danger-bg: #3a2323;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #11141c; --surface: #1a1f2b; --surface-alt: #222838; --border: #333c52; --border-strong: #46516c;
+    --ink: #e7eaf2; --ink-muted: #9aa3ba; --ink-faint: #6d768c;
+    --accent: #7fb0e0; --accent-strong: #a4c8ea; --accent-bg: #1f2e40;
+    --special: #e2938f; --special-bg: #3a2626;
+    --success: #7fce9f; --success-bg: #1e3327;
+    --warning: #e3bb6a; --warning-bg: #3a2e14;
+    --danger: #e2938f; --danger-bg: #3a2323;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 8px 24px -12px rgba(0,0,0,0.5);
+  }
+
+  /* The live draw+fill screen always stays pure white/ink regardless of theme —
+     it is projected on a classroom screen and must read clearly under room lights. */
+  .stage-white { --bg: #ffffff; --surface: #ffffff; --surface-alt: #f4f6fa; --border: #dde3ee; --border-strong: #c7d0e2; --ink: #171c28; --ink-muted: #56607a; }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  #app { max-width: 1280px; margin: 0 auto; padding: 20px 20px 64px; }
+  a { color: var(--accent); }
+  button { font-family: inherit; }
+  input, select, textarea { font-family: inherit; font-size: inherit; color: inherit; }
+  ::selection { background: var(--accent-bg); }
+
+  .header { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 22px 4px 16px; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
+  .header h1 { font-family: var(--font-display); font-weight: 700; font-size: 26px; letter-spacing: 0.01em; margin: 0; text-wrap: balance; }
+  .header .subtitle { color: var(--ink-muted); font-size: 13px; margin-top: 4px; }
+  .save-indicator { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--ink-muted); padding: 6px 12px; border-radius: 999px; background: var(--surface-alt); border: 1px solid var(--border); white-space: nowrap; }
+  .save-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink-faint); flex: none; }
+  .save-indicator[data-state="saved"] .save-dot { background: var(--success); }
+  .save-indicator[data-state="saving"] .save-dot { background: var(--warning); animation: pulse 1s ease-in-out infinite; }
+  .save-indicator[data-state="pending"] .save-dot { background: var(--warning); }
+  .save-indicator[data-state="error"] .save-dot, .save-indicator[data-state="unavailable"] .save-dot, .save-indicator[data-state="readonly"] .save-dot { background: var(--danger); }
+  .save-indicator[data-state="localonly"] .save-dot { background: var(--warning); }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+  .status-strip { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 20px; }
+  .status-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; box-shadow: var(--shadow); }
+  .status-card .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 600; font-size: 22px; line-height: 1.1; }
+  .status-card .label { color: var(--ink-muted); font-size: 12.5px; margin-top: 3px; }
+  .status-card.ok .num { color: var(--success); }
+  .status-card.warn .num { color: var(--warning); }
+  .status-card.bad .num { color: var(--danger); }
+
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 22px; overflow-x: auto; }
+  .tab-btn { appearance: none; background: none; border: none; border-bottom: 2px solid transparent; padding: 10px 14px; font-size: 14.5px; font-weight: 500; color: var(--ink-muted); cursor: pointer; white-space: nowrap; }
+  @media (hover: hover) { .tab-btn:hover { color: var(--ink); } }
+  .tab-btn[aria-selected="true"] { color: var(--accent-strong); border-bottom-color: var(--accent); font-weight: 700; }
+  .tab-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .panel { display: flex; flex-direction: column; gap: 20px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px 20px; box-shadow: var(--shadow); }
+  .card h2 { font-family: var(--font-display); font-size: 17px; margin: 0 0 4px; }
+  .card .hint { color: var(--ink-muted); font-size: 13px; margin: 0 0 14px; }
+
+  .field-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .field-row label { font-weight: 500; font-size: 14px; }
+  input[type="number"], input[type="text"], select { background: var(--bg); border: 1px solid var(--border-strong); border-radius: 8px; padding: 7px 10px; color: var(--ink); }
+  input[type="number"] { width: 90px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 10px; }
+  table { border-collapse: collapse; width: 100%; min-width: 560px; }
+  th, td { padding: 9px 12px; border-bottom: 1px solid var(--border); text-align: left; font-size: 13.5px; vertical-align: middle; }
+  thead th { background: var(--surface-alt); color: var(--ink-muted); font-weight: 600; font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; position: sticky; top: 0; }
+  tbody tr:last-child td { border-bottom: none; }
+  @media (hover: hover) { tbody tr:hover { background: var(--surface-alt); } }
+  td.seat, th.seat { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 600; width: 56px; }
+
+  .tag { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 700; padding: 2px 8px; border-radius: 999px; letter-spacing: 0.02em; }
+  .tag.special { background: var(--special-bg); color: var(--special); }
+  .tag.general { background: var(--surface-alt); color: var(--ink-muted); }
+  .pill { display: inline-flex; align-items: center; gap: 5px; font-size: 12.5px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+  .pill.ok { background: var(--success-bg); color: var(--success); }
+  .pill.warn { background: var(--warning-bg); color: var(--warning); }
+  .pill.bad { background: var(--danger-bg); color: var(--danger); }
+  .pill.neutral { background: var(--surface-alt); color: var(--ink-muted); }
+
+  .btn { appearance: none; cursor: pointer; touch-action: manipulation; border-radius: 8px; font-weight: 600; font-size: 13.5px; padding: 8px 14px; border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.danger { color: var(--danger); border-color: var(--danger); background: transparent; }
+  .btn.ghost { border-color: transparent; background: transparent; }
+  .btn.small { padding: 4px 9px; font-size: 12px; border-radius: 6px; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+  @media (hover: hover) {
+    .btn:hover { background: var(--surface-alt); }
+    .btn.primary:hover { background: var(--accent-strong); border-color: var(--accent-strong); }
+    .btn.danger:hover { background: var(--danger-bg); }
+    .btn.ghost:hover { background: var(--surface-alt); }
+  }
+
+  textarea { width: 100%; min-height: 110px; resize: vertical; background: var(--bg); border: 1px solid var(--border-strong); border-radius: 8px; padding: 10px 12px; line-height: 1.55; font-family: var(--font-mono); font-size: 13px; }
+
+  .note { font-size: 12.5px; color: var(--ink-muted); margin-top: 6px; }
+  .warn-text { color: var(--warning); font-size: 12.5px; margin-top: 4px; }
+  .empty-state { color: var(--ink-faint); font-style: normal; padding: 18px 0; text-align: center; font-size: 13.5px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px) { .two-col { grid-template-columns: 1fr; } }
+
+  .club-manage-row { display: grid; grid-template-columns: 44px 1fr auto auto; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--border); }
+  .club-manage-row:last-child { border-bottom: none; }
+  .club-manage-row .idx { font-family: var(--font-mono); color: var(--ink-faint); font-size: 12.5px; }
+  .club-manage-row input[type="text"] { width: 100%; }
+
+  .review-club-line { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+  .review-club-line:last-child { border-bottom: none; }
+  .review-club-line .name { font-weight: 500; }
+  .review-club-line .who { color: var(--ink-muted); font-size: 12.5px; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+  .footer-note { text-align: center; color: var(--ink-faint); font-size: 12px; margin-top: 28px; }
+
+  /* ---- live draw + fill stage ---- */
+  .stage-white { border-radius: 18px; border: 1px solid var(--border); box-shadow: var(--shadow); padding: 20px; }
+  .split-grid { display: grid; grid-template-columns: minmax(320px, 1fr) minmax(420px, 1.4fr); gap: 22px; align-items: start; }
+  @media (max-width: 880px) { .split-grid { grid-template-columns: 1fr; } }
+  @media (min-width: 881px) {
+    /* Keep the lottery side fixed in place; only the club list on the right scrolls. */
+    .split-grid > .lot-col:first-child { position: sticky; top: 12px; }
+    .pick-scroll { max-height: calc(100vh - 300px); min-height: 320px; overflow-y: auto; }
+  }
+
+  .round-banner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; background: var(--accent-bg); border: 1px solid var(--border); border-radius: 12px; padding: 10px 16px; margin-bottom: 16px; }
+  .round-banner .round-title { font-weight: 700; color: var(--accent-strong); font-size: 15px; }
+  .round-banner .round-rule { color: var(--ink-muted); font-size: 12.5px; }
+
+  .lot-col h2 { font-family: var(--font-display); font-size: 18px; margin: 0 0 14px; text-align: center; }
+  .lot-display { text-align: center; padding: 18px 8px 10px; border: 1px dashed var(--border-strong); border-radius: 16px; margin-bottom: 16px; }
+  .lot-label { font-size: 13px; color: var(--ink-muted); letter-spacing: 0.08em; margin-bottom: 6px; }
+  .lot-number { font-family: var(--font-mono); font-weight: 700; font-variant-numeric: tabular-nums; font-size: clamp(64px, 11vw, 148px); line-height: 1; color: var(--accent-strong); min-height: 1.1em; }
+  .lot-number.empty { color: var(--ink-faint); font-size: clamp(36px, 6vw, 56px); }
+  .lot-number.rolling { color: var(--ink-muted); }
+  .lot-stats { font-size: 15px; color: var(--ink-muted); margin-top: 8px; }
+  .lot-stats b { color: var(--ink); font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .lot-btn-row { display: flex; gap: 10px; margin-bottom: 18px; }
+  .lot-btn-row .btn { flex: 1; padding: 18px 10px; font-size: 18px; border-radius: 14px; }
+  .lot-overview { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 6px; }
+  .lot-cell { padding: 10px 4px; border-radius: 8px; text-align: center; font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-weight: 700; font-size: 14px; border: 1.5px solid var(--border-strong); background: var(--surface-alt); color: var(--ink-muted); }
+  .lot-cell.drawn { background: var(--surface); color: var(--ink-faint); border-color: var(--border); text-decoration: line-through; }
+  .lot-cell.current { background: var(--accent); border-color: var(--accent); color: #fff; box-shadow: 0 0 0 4px var(--accent-bg); }
+
+  .pick-banner { background: var(--surface-alt); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; margin-bottom: 14px; font-size: 16px; font-weight: 600; text-align: center; }
+  .pick-banner .seat-badge { font-family: var(--font-mono); color: var(--accent-strong); font-size: 22px; }
+  .ui-message { background: var(--danger-bg); color: var(--danger); border-radius: 10px; padding: 9px 14px; font-size: 13.5px; font-weight: 600; margin-bottom: 12px; }
+
+  .pick-table th, .pick-table td { font-size: 15px; padding: 10px 12px; }
+  .pick-table input[type="text"] { width: 100%; }
+  .pick-table .must-input { width: 90px; font-family: var(--font-mono); text-align: center; }
+  .pick-table td.name-cell { font-weight: 600; min-width: 160px; }
+
+  .slot-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .slot-input { width: 46px !important; text-align: center; font-family: var(--font-mono); font-variant-numeric: tabular-nums; padding: 7px 4px !important; }
+  .slot-input.filled { border-color: var(--accent); background: var(--accent-bg); font-weight: 700; }
+
+  @media (prefers-reduced-motion: reduce) { .save-indicator[data-state="saving"] .save-dot { animation: none; } }
+</style>
+
+<div id="app"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var STORAGE_PATH = "data/state.json";
+  var LOCAL_KEY = "clubSignup:v1:state";
+
+  var DEFAULT_CLUBS = [
+    { id: 1, name: "國樂團", special: true },
+    { id: 2, name: "合唱團", special: true },
+    { id: 3, name: "弦樂團", special: true },
+    { id: 4, name: "管樂團", special: true },
+    { id: 5, name: "童軍團", special: true },
+    { id: 6, name: "BBC巧福社", special: true },
+    { id: 7, name: "日本文化與語言社", special: true },
+    { id: 8, name: "創意數理研究社", special: true },
+    { id: 9, name: "美術藝能社", special: true },
+    { id: 10, name: "籃球社", special: true },
+    { id: 11, name: "桌球社", special: false },
+    { id: 12, name: "羽球社", special: false },
+    { id: 13, name: "匹克球社", special: false },
+    { id: 14, name: "樂樂棒球社", special: false },
+    { id: 15, name: "健康促進社", special: false },
+    { id: 16, name: "環保服務社", special: false },
+    { id: 17, name: "熱舞社", special: false },
+    { id: 18, name: "電影欣賞社", special: false },
+    { id: 19, name: "文藝欣賞社", special: false },
+    { id: 20, name: "西洋流行歌曲欣賞研究社", special: false },
+    { id: 21, name: "家政社", special: false },
+    { id: 22, name: "紙雕創作社", special: false },
+    { id: 23, name: "吉麗熱音社", special: false },
+    { id: 24, name: "造型氣球社", special: false },
+    { id: 25, name: "麵包花與捏塑創意藝術社", special: false },
+    { id: 26, name: "繩藝編織創作藝術社", special: false },
+    { id: 27, name: "魔術社", special: false },
+    { id: 28, name: "桌遊社", special: false },
+    { id: 29, name: "桌上型密室逃脫社", special: false },
+    { id: 30, name: "插畫研究社", special: false }
+  ];
+
+  var ROUND_RULES = {
+    1: "隨機抽籤決定順序",
+    2: "第 1 次順序完全反轉（最後一號優先）",
+    3: "從正中間往前排到 1 號，再接最後一號往回排到中間",
+    4: "從正中間之後往後排到最後一號，再接 1 號往回排到中間"
+  };
+
+  function defaultState() {
+    return {
+      classSize: 32,
+      className: "",
+      clubs: DEFAULT_CLUBS.map(function (c) { return { id: c.id, name: c.name, special: c.special }; }),
+      nextClubId: 31,
+      specialApps: {},
+      generalPicks: {},
+      lottery: { round: 1, progress: { "1": [], "2": [], "3": [], "4": [] }, currentSeat: null },
+      updatedAt: 0
+    };
+  }
+
+  function normalizeState(raw) {
+    var base = defaultState();
+    if (!raw || typeof raw !== "object") return base;
+    var s = {};
+    s.classSize = (typeof raw.classSize === "number" && raw.classSize > 0) ? Math.floor(raw.classSize) : base.classSize;
+    s.className = (typeof raw.className === "string") ? raw.className : base.className;
+    s.clubs = Array.isArray(raw.clubs) ? raw.clubs.map(function (c) {
+      return { id: Number(c.id), name: String(c.name || "未命名社團"), special: !!c.special };
+    }).filter(function (c) { return !isNaN(c.id); }) : base.clubs;
+    if (s.clubs.length === 0) s.clubs = base.clubs;
+    var maxId = s.clubs.reduce(function (m, c) { return Math.max(m, c.id); }, 0);
+    s.nextClubId = (typeof raw.nextClubId === "number" && raw.nextClubId > maxId) ? raw.nextClubId : (maxId + 1);
+
+    s.specialApps = {};
+    s.clubs.filter(function (c) { return c.special; }).forEach(function (c) {
+      var arr = raw.specialApps && raw.specialApps[c.id];
+      s.specialApps[c.id] = toSlots(arr);
+    });
+
+    s.generalPicks = {};
+    s.clubs.filter(function (c) { return !c.special; }).forEach(function (c) {
+      var gp = raw.generalPicks && raw.generalPicks[c.id];
+      if (gp && typeof gp === "object") {
+        s.generalPicks[c.id] = {
+          must: (typeof gp.must === "number") ? gp.must : null,
+          waitlist: toSlots(gp.waitlist)
+        };
+      } else {
+        s.generalPicks[c.id] = { must: null, waitlist: [null, null, null, null, null] };
+      }
+    });
+
+    s.lottery = { round: 1, progress: { "1": [], "2": [], "3": [], "4": [] }, currentSeat: null };
+    if (raw.lottery && typeof raw.lottery === "object") {
+      var r = Number(raw.lottery.round);
+      s.lottery.round = (r >= 1 && r <= 4) ? r : 1;
+      if (raw.lottery.progress && typeof raw.lottery.progress === "object") {
+        ["1", "2", "3", "4"].forEach(function (k) {
+          var arr = raw.lottery.progress[k];
+          if (Array.isArray(arr)) s.lottery.progress[k] = arr.filter(function (n) { return typeof n === "number"; });
+        });
+      }
+      s.lottery.currentSeat = (typeof raw.lottery.currentSeat === "number") ? raw.lottery.currentSeat : null;
+    }
+    s.updatedAt = (typeof raw.updatedAt === "number") ? raw.updatedAt : 0;
+    return s;
+  }
+
+  function clubById(state, id) {
+    for (var i = 0; i < state.clubs.length; i++) if (state.clubs[i].id === id) return state.clubs[i];
+    return null;
+  }
+  function generalClubs(state) { return state.clubs.filter(function (c) { return !c.special; }); }
+  function specialClubs(state) { return state.clubs.filter(function (c) { return c.special; }); }
+  function getGP(state, clubId) {
+    if (!state.generalPicks[clubId]) state.generalPicks[clubId] = { must: null, waitlist: [null, null, null, null, null] };
+    return state.generalPicks[clubId];
+  }
+  var SLOT_COUNT = 5;
+  function toSlots(arr) {
+    var out = [null, null, null, null, null];
+    if (!Array.isArray(arr)) return out;
+    var seen = {}; var i = 0;
+    for (var k = 0; k < arr.length && i < SLOT_COUNT; k++) {
+      var v = arr[k];
+      if (typeof v === "number" && !seen[v]) { seen[v] = true; out[i] = v; i++; }
+    }
+    return out;
+  }
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, function (ch) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]; });
+  }
+
+  // ---- lottery order math ----------------------------------------------
+  function computeRoundOrder(baseOrder, round) {
+    var N = baseOrder.length;
+    if (N === 0) return [];
+    if (round === 1) return baseOrder.slice();
+    if (round === 2) return baseOrder.slice().reverse();
+    var mid = Math.ceil(N / 2);
+    var idxs = [];
+    if (round === 3) {
+      for (var i = mid; i >= 1; i--) idxs.push(i);
+      for (var j = N; j >= mid + 1; j--) idxs.push(j);
+    } else if (round === 4) {
+      for (var k = mid + 1; k <= N; k++) idxs.push(k);
+      for (var m = 1; m <= mid; m++) idxs.push(m);
+    } else {
+      return baseOrder.slice();
+    }
+    return idxs.map(function (i) { return baseOrder[i - 1]; });
+  }
+
+  // ---- seat-level assignment aggregation --------------------------------
+  function seatAssignments(state) {
+    var map = {};
+    for (var seat = 1; seat <= state.classSize; seat++) map[seat] = { mustClubs: [], waitlistClubs: [] };
+    generalClubs(state).forEach(function (c) {
+      var gp = getGP(state, c.id);
+      if (gp.must && map[gp.must]) map[gp.must].mustClubs.push(c.id);
+      var seen = {};
+      gp.waitlist.forEach(function (seat) {
+        if (!seat || seen[seat] || !map[seat]) return;
+        seen[seat] = true;
+        map[seat].waitlistClubs.push(c.id);
+      });
+    });
+    return map;
+  }
+
+  function specialSeatMap(state) {
+    // seat -> array of special club ids the seat is registered for (audition)
+    var map = {};
+    specialClubs(state).forEach(function (c) {
+      (state.specialApps[c.id] || []).forEach(function (seat) {
+        if (!seat) return;
+        if (!map[seat]) map[seat] = [];
+        if (map[seat].indexOf(c.id) === -1) map[seat].push(c.id);
+      });
+    });
+    return map;
+  }
+
+  function seatStatus(state, seat, assignments, specialMap) {
+    if (specialMap && specialMap[seat] && specialMap[seat].length) {
+      return { state: "ok", label: "已完成（特殊社團甄選登記）" };
+    }
+    var a = assignments[seat];
+    if (!a) return { state: "empty", label: "尚未選擇" };
+    if (a.mustClubs.length >= 1) {
+      if (a.mustClubs.length > 1) return { state: "bad", label: "必上出現在多個社團，請確認" };
+      if (a.waitlistClubs.length > 0) return { state: "warn", label: "已必上，但仍在候補名單中，請確認" };
+      return { state: "ok", label: "已完成（必上）" };
+    }
+    var n = a.waitlistClubs.length;
+    if (n === 0) return { state: "empty", label: "尚未選擇" };
+    if (n < 3) return { state: "warn", label: "候補僅 " + n + " 個，尚缺 " + (3 - n) + " 個" };
+    if (n > 3) return { state: "bad", label: "候補超過三個（" + n + " 個），請確認" };
+    return { state: "ok", label: "已完成（候補三志願）" };
+  }
+
+  function summarize(state) {
+    var assignments = seatAssignments(state);
+    var specialMap = specialSeatMap(state);
+    var complete = 0, empty = 0, incomplete = 0;
+    for (var seat = 1; seat <= state.classSize; seat++) {
+      var r = seatStatus(state, seat, assignments, specialMap);
+      if (r.state === "ok") complete++;
+      else if (r.state === "empty") empty++;
+      else incomplete++;
+    }
+    return { total: state.classSize, complete: complete, empty: empty, incomplete: incomplete };
+  }
+
+  // ---- app state ----------------------------------------------------
+  var state = defaultState();
+  var currentTab = "draw";
+  var saveState = "idle";
+  var saveTimer = null;
+  var artifactNS = null;
+  var downloadsNS = null;
+  var importText = "";
+  var uiMessage = null;
+  var rolling = false;
+  var rollTimer = null;
+  var audioCtx = null;
+
+  var app = document.getElementById("app");
+
+  function getAudioCtx() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); return audioCtx; }
+  function playTick() {
+    try {
+      var ctx = getAudioCtx(); var o = ctx.createOscillator(); var g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = 600 + Math.random() * 400; o.type = "sine";
+      g.gain.setValueAtTime(0.08, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+      o.start(); o.stop(ctx.currentTime + 0.05);
+    } catch (e) {}
+  }
+  function playWin() {
+    try {
+      var ctx = getAudioCtx(); var freqs = [523, 659, 784, 1047];
+      freqs.forEach(function (f, i) {
+        var o = ctx.createOscillator(); var g = ctx.createGain();
+        o.connect(g); g.connect(ctx.destination);
+        o.frequency.value = f; o.type = "sine";
+        var t = ctx.currentTime + i * 0.12;
+        g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.15, t + 0.04);
+        g.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+        o.start(t); o.stop(t + 0.3);
+      });
+    } catch (e) {}
+  }
+
+  function updateSaveIndicatorOnly() {
+    var el = document.querySelector("[data-role='save-indicator']");
+    if (!el) return;
+    var map = {
+      idle: "尚未變更",
+      pending: "編輯中…",
+      saving: "儲存中…",
+      saved: "已自動保存（雲端）",
+      error: "雲端保存失敗，稍後將再試一次（資料已保留在本機）",
+      unavailable: "已自動保存在本機瀏覽器（僅限此裝置與此瀏覽器；建議定期用下方「匯出備份」存一份）",
+      readonly: "唯讀檢視，無法保存雲端（資料已保留在本機）",
+      localonly: "雲端自動保存目前無法使用，已改存在本機瀏覽器（僅限此裝置，換裝置或清除瀏覽器資料前請先匯出備份）"
+    };
+    el.setAttribute("data-state", saveState);
+    el.querySelector("span:last-child").textContent = map[saveState] || "";
+  }
+
+  // Local-storage safety net: written synchronously on every edit so that
+  // even if the cloud publish never succeeds (or this frame turns out to be
+  // a read-only / publicly-shared view where it never can), the data
+  // survives a reload of THIS SAME browser. It is per-device/per-browser
+  // only — it is not a substitute for real cross-device sync.
+  function persistLocal() {
+    try {
+      localStorage.setItem(LOCAL_KEY, JSON.stringify({ state: state, savedAt: Date.now() }));
+    } catch (e) { /* storage unavailable (private mode, quota, etc.) — ignore */ }
+  }
+  function readLocal() {
+    try {
+      var raw = localStorage.getItem(LOCAL_KEY);
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      return (parsed && parsed.state && typeof parsed.savedAt === "number") ? parsed : null;
+    } catch (e) { return null; }
+  }
+
+  // Once a publish rejects with a PERMANENT/lifecycle code (not_writer,
+  // not_granted, not_declared, capability_disabled, capability_removed,
+  // consent_required) we stop attempting cloud saves for the rest of this
+  // view: those codes never resolve by retrying, and retrying anyway is
+  // what previously showed a permanent "保存失敗" while quietly never
+  // saving anything. From then on this view runs local-storage-only.
+  var localOnlyMode = false;
+  var PERMANENT_CODES = { not_writer: 1, not_granted: 1, not_declared: 1, capability_disabled: 1, capability_removed: 1, consent_required: 1 };
+
+  var errorRetryTimer = null;
+  var upstreamRetried = false;
+
+  function scheduleSave() {
+    state.updatedAt = Date.now();
+    persistLocal();
+    saveState = localOnlyMode ? "localonly" : "pending";
+    updateSaveIndicatorOnly();
+    if (saveTimer) clearTimeout(saveTimer);
+    if (errorRetryTimer) { clearTimeout(errorRetryTimer); errorRetryTimer = null; }
+    upstreamRetried = false;
+    if (localOnlyMode) return;
+    saveTimer = setTimeout(doSave, 1100);
+  }
+
+  function doSave() {
+    if (!artifactNS) { saveState = "unavailable"; updateSaveIndicatorOnly(); return; }
+    saveState = "saving"; updateSaveIndicatorOnly();
+    var payload = {}; payload[STORAGE_PATH] = JSON.stringify(state);
+    artifactNS.publish(payload).then(function () {
+      saveState = "saved"; upstreamRetried = false; updateSaveIndicatorOnly();
+    }).catch(function (err) {
+      var code = err && err.code;
+      if (code === "conflict") { loadFromServer(true); return; }
+      if (PERMANENT_CODES[code]) {
+        localOnlyMode = true;
+        saveState = "localonly";
+        updateSaveIndicatorOnly();
+        return; // never retry a permanent lifecycle rejection
+      }
+      if (code === "upstream_error" && !upstreamRetried) {
+        // per capability docs: retry upstream_error at most once, after a short randomized delay
+        upstreamRetried = true;
+        saveState = "error"; updateSaveIndicatorOnly();
+        if (errorRetryTimer) clearTimeout(errorRetryTimer);
+        errorRetryTimer = setTimeout(doSave, 1500 + Math.random() * 1500);
+        return;
+      }
+      // rate_limited: don't retry-loop, just slow down — the next edit's
+      // scheduleSave will try again naturally.
+      // too_large / invalid_content / transform_error / bad_request / unknown:
+      // retrying won't help either; surface the failure and stop.
+      saveState = "error"; updateSaveIndicatorOnly();
+      try { console.warn("club-signup save failed:", code, err && err.message); } catch (e) {}
+    });
+  }
+
+  function loadFromServer(isReload) {
+    var local = readLocal();
+    // No artifact capability at all (e.g. hosted plainly on GitHub Pages) —
+    // there is no data/state.json to fetch, so go straight to the local
+    // browser backup (or a fresh default) instead of firing a doomed
+    // network request on every load.
+    if (!artifactNS) {
+      if (local) {
+        state = normalizeState(local.state);
+        if (!isReload) uiMessage = "已載入本機瀏覽器的資料";
+      } else if (!isReload) {
+        state = defaultState();
+      }
+      if (isReload) render();
+      return Promise.resolve();
+    }
+    return fetch(STORAGE_PATH, { cache: "no-store" }).then(function (res) {
+      if (!res.ok) throw new Error("no data yet");
+      return res.json();
+    }).then(function (json) {
+      var remoteState = normalizeState(json);
+      if (local && local.savedAt > (remoteState.updatedAt || 0)) {
+        state = normalizeState(local.state);
+        if (!isReload) uiMessage = "已使用本機備份資料還原（此裝置尚未成功同步到雲端）";
+      } else {
+        state = remoteState;
+      }
+      if (isReload) render();
+    }).catch(function () {
+      if (local) {
+        state = normalizeState(local.state);
+        if (!isReload) uiMessage = "目前無法連線雲端，已載入本機備份資料";
+      } else if (!isReload) {
+        state = defaultState();
+      }
+    });
+  }
+
+  function getCapability(name) {
+    if (typeof window.claude === "undefined" || !window.claude.use) return Promise.resolve(null);
+    return window.claude.use(name).catch(function () { return null; });
+  }
+
+  function flushSaveNow() {
+    if (saveTimer) { clearTimeout(saveTimer); saveTimer = null; }
+    persistLocal();
+    if (!localOnlyMode && artifactNS) doSave();
+  }
+
+  function flash(msg) { uiMessage = msg; render(); }
+
+  // ---- mutators: settings / clubs ----------------------------------------------
+  function setClassSize(n) {
+    if (isNaN(n) || n < 1) return;
+    state.classSize = Math.min(200, Math.floor(n));
+    scheduleSave(); render();
+  }
+  function setClassName(v) {
+    state.className = v.trim();
+    scheduleSave(); render();
+  }
+  function addClub() {
+    var id = state.nextClubId++;
+    state.clubs.push({ id: id, name: "新社團", special: false });
+    state.generalPicks[id] = { must: null, waitlist: [null, null, null, null, null] };
+    scheduleSave(); render();
+    var input = document.querySelector('[data-field="club-name"][data-club="' + id + '"]');
+    if (input) { input.focus(); input.select(); }
+  }
+  function renameClub(id, name) {
+    var c = clubById(state, Number(id)); if (!c) return;
+    c.name = name.trim() || "未命名社團";
+    scheduleSave(); render();
+  }
+  function toggleSpecial(id) {
+    var c = clubById(state, Number(id)); if (!c) return;
+    c.special = !c.special;
+    if (c.special) {
+      delete state.generalPicks[id];
+      if (!state.specialApps[id]) state.specialApps[id] = [null, null, null, null, null];
+    } else {
+      delete state.specialApps[id];
+      state.generalPicks[id] = { must: null, waitlist: [null, null, null, null, null] };
+    }
+    scheduleSave(); render();
+  }
+  function deleteClub(id) {
+    id = Number(id);
+    var c = clubById(state, id); if (!c) return;
+    if (!window.confirm("確定要刪除「" + c.name + "」嗎？已登記此社團的資料也會一併清除。")) return;
+    state.clubs = state.clubs.filter(function (x) { return x.id !== id; });
+    delete state.specialApps[id];
+    delete state.generalPicks[id];
+    scheduleSave(); render();
+  }
+  function applyImport() {
+    var lines = importText.split("\n").map(function (l) { return l.trim(); }).filter(Boolean);
+    if (lines.length === 0) { window.alert("請先貼上社團清單再套用。"); return; }
+    var parsed = [];
+    lines.forEach(function (line) {
+      var parts = line.split(/[,，\t]/).map(function (p) { return p.trim(); });
+      var name, special = false;
+      if (parts.length >= 3) { name = parts[1]; special = /^(是|special|true|1|特殊)$/i.test(parts[2]); }
+      else if (parts.length === 2) { name = parts[0]; special = /^(是|special|true|1|特殊)$/i.test(parts[1]); }
+      else { name = parts[0]; }
+      if (name) parsed.push({ name: name, special: special });
+    });
+    if (parsed.length === 0) { window.alert("無法解析輸入內容，請確認格式。"); return; }
+    if (!window.confirm("將以 " + parsed.length + " 筆資料取代目前的社團清單，所有已登記的必上／候補／甄選資料都會被清除，確定要套用嗎？")) return;
+    var id = 1;
+    state.clubs = parsed.map(function (p) { return { id: id++, name: p.name, special: p.special }; });
+    state.nextClubId = id;
+    state.specialApps = {};
+    state.generalPicks = {};
+    generalClubs(state).forEach(function (c) { state.generalPicks[c.id] = { must: null, waitlist: [null, null, null, null, null] }; });
+    importText = "";
+    scheduleSave(); render();
+  }
+
+  // ---- mutators: special club registration (5 fixed slots per club) ----------------------------------------------
+  function getSpecialSlots(state, clubId) {
+    if (!state.specialApps[clubId]) state.specialApps[clubId] = [null, null, null, null, null];
+    return state.specialApps[clubId];
+  }
+  function setSpecialSeatSlot(clubId, slot, raw) {
+    uiMessage = null;
+    var slots = getSpecialSlots(state, clubId);
+    var trimmed = raw.trim();
+    if (trimmed === "") { slots[slot] = null; scheduleSave(); render(); return; }
+    var v = parseInt(trimmed, 10);
+    if (isNaN(v) || v < 1 || v > state.classSize) { flash("座號需介於 1 到 " + state.classSize + " 之間，已忽略「" + raw + "」。"); return; }
+    if (slots.indexOf(v) !== -1 && slots.indexOf(v) !== slot) { flash("座號 " + v + " 已經登記在這個社團的其他格子裡了。"); return; }
+    slots[slot] = v;
+    scheduleSave(); render();
+  }
+
+  // ---- mutators: general club must / waitlist (waitlist = 5 fixed slots) ----------------------------------------------
+  function setGeneralMust(clubId, raw) {
+    uiMessage = null;
+    var trimmed = raw.trim();
+    var gp = getGP(state, clubId);
+    if (trimmed === "") { gp.must = null; scheduleSave(); render(); return; }
+    var v = parseInt(trimmed, 10);
+    if (isNaN(v) || v < 1 || v > state.classSize) { flash("座號需介於 1 到 " + state.classSize + " 之間，已忽略「" + raw + "」。"); return; }
+    var conflictClub = null;
+    generalClubs(state).forEach(function (c) {
+      if (c.id !== clubId && getGP(state, c.id).must === v) conflictClub = c;
+    });
+    if (conflictClub) { flash("座號 " + v + " 已經是「" + conflictClub.name + "」的必上，一位同學只能有一個必上社團，已忽略這次輸入。"); return; }
+    gp.must = v;
+    scheduleSave(); render();
+  }
+  function setGeneralWaitlistSlot(clubId, slot, raw) {
+    uiMessage = null;
+    var gp = getGP(state, clubId);
+    var trimmed = raw.trim();
+    if (trimmed === "") { gp.waitlist[slot] = null; scheduleSave(); render(); return; }
+    var v = parseInt(trimmed, 10);
+    if (isNaN(v) || v < 1 || v > state.classSize) { flash("座號需介於 1 到 " + state.classSize + " 之間，已忽略「" + raw + "」。"); return; }
+    if (gp.waitlist.indexOf(v) !== -1 && gp.waitlist.indexOf(v) !== slot) { flash("座號 " + v + " 已經登記在這個社團的候補名單裡了。"); return; }
+    gp.waitlist[slot] = v;
+    scheduleSave(); render();
+  }
+
+  // ---- lottery mutators ----------------------------------------------
+  function setRound(round) {
+    round = Number(round);
+    if (round < 1 || round > 4) return;
+    if (round >= 2 && state.lottery.progress["1"].length !== state.classSize) {
+      flash("尚未完成第 1 次抽籤（需先抽滿全班 " + state.classSize + " 人），暫時無法切換到第 " + round + " 次。");
+      return;
+    }
+    state.lottery.round = round;
+    state.lottery.currentSeat = null;
+    uiMessage = null;
+    scheduleSave(); render();
+  }
+  function currentRoundSequence() {
+    return computeRoundOrder(state.lottery.progress["1"], state.lottery.round);
+  }
+  function currentRoundRemaining() {
+    var round = state.lottery.round;
+    var drawn = state.lottery.progress[String(round)] || [];
+    if (round === 1) {
+      var all = []; for (var i = 1; i <= state.classSize; i++) all.push(i);
+      return all.filter(function (n) { return drawn.indexOf(n) === -1; });
+    }
+    var seq = currentRoundSequence();
+    return seq.slice(drawn.length);
+  }
+  function drawNext() {
+    if (rolling) return;
+    var round = state.lottery.round;
+    var key = String(round);
+    var drawn = state.lottery.progress[key];
+    var remaining = currentRoundRemaining();
+    if (remaining.length === 0) return;
+    var winner;
+    if (round === 1) {
+      winner = remaining[Math.floor(Math.random() * remaining.length)];
+    } else {
+      winner = currentRoundSequence()[drawn.length];
+    }
+    rolling = true;
+    render();
+    var el = document.getElementById("lot-number");
+    if (!el) { finishDraw(winner); return; }
+    el.className = "lot-number rolling";
+    var pool = remaining.length ? remaining : [winner];
+    var speed = 40, count = 0;
+    var maxRolls = 24 + Math.floor(Math.random() * 10);
+    function roll() {
+      var rand = pool[Math.floor(Math.random() * pool.length)];
+      el.textContent = rand;
+      playTick();
+      count++;
+      if (count > maxRolls * 0.6) speed = Math.min(speed + 18, 220);
+      clearTimeout(rollTimer);
+      if (count >= maxRolls) {
+        setTimeout(function () { finishDraw(winner); }, 100);
+      } else {
+        rollTimer = setTimeout(roll, speed);
+      }
+    }
+    rollTimer = setTimeout(roll, speed);
+  }
+  function finishDraw(winner) {
+    var key = String(state.lottery.round);
+    state.lottery.progress[key].push(winner);
+    state.lottery.currentSeat = winner;
+    rolling = false;
+    playWin();
+    scheduleSave();
+    render();
+  }
+  function resetRoundProgress() {
+    var round = state.lottery.round;
+    var msg = round === 1
+      ? "重置第 1 次抽籤將會清空第 2～4 次的固定順序基準，確定要重置嗎？"
+      : "確定要重置第 " + round + " 次的抽籤進度嗎？";
+    if (!window.confirm(msg)) return;
+    if (round === 1) {
+      state.lottery.progress = { "1": [], "2": [], "3": [], "4": [] };
+    } else {
+      state.lottery.progress[String(round)] = [];
+    }
+    state.lottery.currentSeat = null;
+    scheduleSave(); render();
+  }
+  function startNewCycle() {
+    if (!window.confirm("將清空目前的抽籤順序與所有輪次進度，重新從第 1 次開始，確定嗎？（適合新學年度／新班級開始使用時）")) return;
+    state.lottery = { round: 1, progress: { "1": [], "2": [], "3": [], "4": [] }, currentSeat: null };
+    scheduleSave(); render();
+  }
+
+  // ---- export ----------------------------------------------
+  // Note: the artifact "downloads" capability only offers a fixed set of
+  // file extensions and .xlsx is not one of them, so a true Excel binary
+  // can't be generated from inside this live page. CSV is offered instead —
+  // it opens directly in Excel/Numbers with the same columns as the paper
+  // form (班級／座號／確定中選社團代號／候補志願1-3), and the club-code
+  // legend is included below the table.
+  // Shared download trigger: uses the Claude platform's downloads capability
+  // when available, otherwise falls back to a plain browser download link —
+  // which is what actually runs when this page is hosted plainly (e.g. on
+  // GitHub Pages) instead of viewed inside a Claude artifact frame.
+  function triggerDownload(filename, data, blobType) {
+    if (downloadsNS) {
+      downloadsNS.save({ filename: filename, data: data }).catch(function (err) {
+        window.alert("下載失敗（" + ((err && err.code) || "unknown") + "），請稍後再試。");
+      });
+      return;
+    }
+    var blob = (typeof Blob !== "undefined" && data instanceof Blob) ? data : new Blob([data], { type: blobType || "application/octet-stream" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a"); a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function pad2(n) { return (n < 10 ? "0" : "") + n; }
+  function timestampSlug(d) {
+    d = d || new Date();
+    return d.getFullYear() + pad2(d.getMonth() + 1) + pad2(d.getDate()) + "-" + pad2(d.getHours()) + pad2(d.getMinutes());
+  }
+
+  // ---- full-state backup (.json) — for restoring data, not for printing ----
+  function exportBackup() {
+    state.updatedAt = Date.now();
+    var payload = { app: "club-signup", version: 1, exportedAt: Date.now(), state: state };
+    var filename = "社團選填備份" + (state.className ? "_" + state.className : "") + "_" + timestampSlug() + ".json";
+    triggerDownload(filename, JSON.stringify(payload, null, 2), "application/json;charset=utf-8");
+  }
+
+  function importBackupFile(file) {
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      var parsed;
+      try {
+        parsed = JSON.parse(String(reader.result));
+      } catch (e) {
+        window.alert("這個檔案不是有效的備份檔（JSON 格式錯誤），請確認選擇的是「匯出備份」產生的 .json 檔。");
+        return;
+      }
+      var raw = (parsed && parsed.state && typeof parsed.state === "object") ? parsed.state : parsed;
+      if (!raw || typeof raw !== "object" || !Array.isArray(raw.clubs)) {
+        window.alert("這個檔案看起來不是社團選填的備份檔，找不到預期的資料內容。");
+        return;
+      }
+      var incoming = normalizeState(raw);
+      var whenText = parsed && parsed.exportedAt ? new Date(parsed.exportedAt).toLocaleString("zh-TW") : "（未知時間）";
+      var summary = "備份內容：\n班級：" + (incoming.className || "（未填）") +
+        "\n人數：" + incoming.classSize + " 人" +
+        "\n匯出時間：" + whenText +
+        "\n\n匯入將會覆蓋目前畫面上的所有資料，確定要匯入嗎？";
+      if (!window.confirm(summary)) return;
+      state = incoming;
+      scheduleSave();
+      flash("已從備份檔匯入資料");
+    };
+    reader.onerror = function () {
+      window.alert("讀取檔案失敗，請再試一次。");
+    };
+    reader.readAsText(file, "utf-8");
+  }
+
+  function csvEscape(v) {
+    v = String(v == null ? "" : v);
+    if (/[",\n]/.test(v)) return '"' + v.replace(/"/g, '""') + '"';
+    return v;
+  }
+  function exportSummary() {
+    var rows = [];
+    rows.push(["高雄市立五福國民中學 社團選填總覽"]);
+    rows.push(["班級", state.className || ""]);
+    rows.push(["班級人數", state.classSize]);
+    rows.push([]);
+    rows.push(["班級", "座號", "姓名", "確定中選社團代號", "候補志願1", "候補志願2", "候補志願3", "說明"]);
+
+    var assignments = seatAssignments(state);
+    var specialMap = specialSeatMap(state);
+    for (var seat = 1; seat <= state.classSize; seat++) {
+      var special = specialMap[seat] || [];
+      if (special.length) {
+        rows.push([state.className || "", seat, "", special[0], "", "", "", special.length > 1 ? "同時登記多個特殊社團甄選：" + special.join("、") : "特殊社團甄選登記"]);
+        continue;
+      }
+      var a = assignments[seat];
+      var mustCode = a.mustClubs.length ? a.mustClubs[0] : "";
+      var wl = a.waitlistClubs.slice().sort(function (x, y) { return x - y; });
+      var note = "";
+      var st = seatStatus(state, seat, assignments, specialMap);
+      if (st.state !== "ok") note = st.label;
+      rows.push([state.className || "", seat, "", mustCode, wl[0] || "", wl[1] || "", wl[2] || "", note]);
+    }
+
+    rows.push([]);
+    rows.push(["社團代號對照"]);
+    rows.push(["社團代號", "社團名稱", "類型"]);
+    state.clubs.forEach(function (c) { rows.push([c.id, c.name, c.special ? "特殊社團" : "一般社團"]); });
+
+    rows.push([]);
+    rows.push(["本次抽籤選號順序（第 " + state.lottery.round + " 次）"]);
+    var seq = state.lottery.progress[String(state.lottery.round)] || [];
+    rows.push([seq.length ? seq.join(" → ") : "（尚未抽籤）"]);
+
+    var text = rows.map(function (r) { return r.map(csvEscape).join(","); }).join("\r\n");
+    var filename = "社團選填總覽" + (state.className ? "_" + state.className : "") + ".csv";
+    // UTF-8 BOM so Excel opens the file with correct Chinese characters instead of mojibake.
+    var withBom = "﻿" + text;
+    triggerDownload(filename, withBom, "text/csv;charset=utf-8");
+  }
+
+  // ---- word export (.docx) — laid out like the school's paper selection form ----
+  function docxCell(text, opts) {
+    opts = opts || {};
+    var run = new docx.TextRun({ text: String(text == null ? "" : text), bold: !!opts.bold, color: opts.color, size: opts.size || 20 });
+    return new docx.TableCell({
+      shading: opts.fill ? { fill: opts.fill } : undefined,
+      verticalAlign: docx.VerticalAlign.CENTER,
+      margins: { top: 60, bottom: 60, left: 80, right: 80 },
+      children: [new docx.Paragraph({ alignment: opts.align || docx.AlignmentType.CENTER, children: [run] })]
+    });
+  }
+  function docxHeaderCell(text) { return docxCell(text, { bold: true, color: "FFFFFF", fill: "2F5D8A" }); }
+
+  function buildDocxBlob() {
+    var headerRow = new docx.TableRow({
+      tableHeader: true,
+      children: ["班級", "座號", "姓名", "確定中選\n社團代號", "候補志願1", "候補志願2", "候補志願3"].map(function (h) { return docxHeaderCell(h); })
+    });
+    var assignments = seatAssignments(state);
+    var specialMap = specialSeatMap(state);
+    var studentRows = [headerRow];
+    for (var seat = 1; seat <= state.classSize; seat++) {
+      var special = specialMap[seat] || [];
+      var must = "", w1 = "", w2 = "", w3 = "";
+      if (special.length) {
+        must = String(special[0]);
+      } else {
+        var a = assignments[seat];
+        must = a.mustClubs.length ? String(a.mustClubs[0]) : "";
+        var wl = a.waitlistClubs.slice().sort(function (x, y) { return x - y; });
+        w1 = wl[0] || ""; w2 = wl[1] || ""; w3 = wl[2] || "";
+      }
+      studentRows.push(new docx.TableRow({
+        children: [docxCell(state.className || ""), docxCell(seat, { bold: true }), docxCell(""), docxCell(must), docxCell(w1), docxCell(w2), docxCell(w3)]
+      }));
+    }
+    var studentTable = new docx.Table({
+      width: { size: 100, type: docx.WidthType.PERCENTAGE },
+      rows: studentRows
+    });
+
+    var legendHeader = new docx.TableRow({ tableHeader: true, children: [docxHeaderCell("代號"), docxHeaderCell("社團名稱"), docxHeaderCell("類型")] });
+    var legendRows = state.clubs.map(function (c) {
+      return new docx.TableRow({ children: [docxCell(c.id, { bold: true }), docxCell(c.name, { align: docx.AlignmentType.LEFT }), docxCell(c.special ? "特殊社團" : "一般社團")] });
+    });
+    var legendTable = new docx.Table({ width: { size: 60, type: docx.WidthType.PERCENTAGE }, rows: [legendHeader].concat(legendRows) });
+
+    var seq = state.lottery.progress[String(state.lottery.round)] || [];
+
+    var doc = new docx.Document({
+      sections: [{
+        properties: { page: { size: { orientation: docx.PageOrientation.LANDSCAPE } } },
+        children: [
+          new docx.Paragraph({ heading: docx.HeadingLevel.HEADING_2, children: [new docx.TextRun({ text: "社團活動選填表", bold: true, size: 32 })] }),
+          new docx.Paragraph({ spacing: { after: 200 }, children: [new docx.TextRun({ text: "班級：" + (state.className || "（未填）") + "　　班級人數：" + state.classSize + "　　第 " + state.lottery.round + " 次選填", size: 22 })] }),
+          studentTable,
+          new docx.Paragraph({ spacing: { before: 300, after: 120 }, children: [new docx.TextRun({ text: "社團代號對照", bold: true, size: 24 })] }),
+          legendTable,
+          new docx.Paragraph({ spacing: { before: 240 }, children: [new docx.TextRun({ text: "本次抽籤選號順序（第 " + state.lottery.round + " 次）：" + (seq.length ? seq.join("、") : "（尚未抽籤）"), size: 20, color: "5B6478" })] })
+        ]
+      }]
+    });
+    return docx.Packer.toBlob(doc);
+  }
+
+  function exportDocx() {
+    if (typeof docx === "undefined") { window.alert("匯出功能還在載入中，請稍等幾秒再試一次。"); return; }
+    buildDocxBlob().then(function (blob) {
+      var filename = "社團選填表" + (state.className ? "_" + state.className : "") + ".docx";
+      triggerDownload(filename, blob);
+    }).catch(function () {
+      window.alert("Word 檔案產生失敗，請稍後再試一次。");
+    });
+  }
+
+  // ---- renderers ----------------------------------------------------
+  function renderHeader() {
+    return (
+      '<div class="header">' +
+        '<div><h1>社團選填檢查器</h1><div class="subtitle">抽籤選號 · 一般社團必上／候補選填 · 特殊社團甄選登記 · 自動檢查完成度</div></div>' +
+        '<div class="save-indicator" data-role="save-indicator" data-state="' + saveState + '"><span class="save-dot"></span><span>尚未變更</span></div>' +
+      '</div>'
+    );
+  }
+  function renderStatusStrip() {
+    var s = summarize(state);
+    function card(cls, num, label) { return '<div class="status-card ' + cls + '"><div class="num">' + num + '</div><div class="label">' + label + '</div></div>'; }
+    return (
+      '<div class="status-strip">' +
+        card(s.complete === s.total ? "ok" : "", s.complete + " / " + s.total, "已完成填寫") +
+        card(s.empty > 0 ? "bad" : "", s.empty, "完全未填寫") +
+        card(s.incomplete > 0 ? "warn" : "", s.incomplete, "已選但未完成") +
+        card("", "第 " + state.lottery.round + " 次", "目前選填輪次") +
+      '</div>'
+    );
+  }
+  function renderTabs() {
+    var tabs = [["draw", "抽籤與選填"], ["special", "特殊社團甄選登記"], ["settings", "設定與社團清單"], ["review", "檢查總覽"]];
+    return '<div class="tabs" role="tablist">' + tabs.map(function (t) {
+      return '<button type="button" class="tab-btn" role="tab" data-action="set-tab" data-tab="' + t[0] + '" aria-selected="' + (currentTab === t[0]) + '">' + t[1] + '</button>';
+    }).join("") + '</div>';
+  }
+
+  function renderDraw() {
+    var round = state.lottery.round;
+    var drawn = state.lottery.progress[String(round)] || [];
+    var remaining = currentRoundRemaining();
+    var current = state.lottery.currentSeat;
+
+    var cells = "";
+    for (var i = 1; i <= state.classSize; i++) {
+      var cls = "lot-cell" + (i === current ? " current" : (drawn.indexOf(i) !== -1 ? " drawn" : ""));
+      cells += '<div class="' + cls + '">' + i + '</div>';
+    }
+
+    var lotHtml =
+      '<div class="lot-col">' +
+        '<h2>🎲 抽籤選號</h2>' +
+        '<div class="lot-display">' +
+          '<div class="lot-label">本次抽中</div>' +
+          '<div class="lot-number' + (current ? "" : " empty") + '" id="lot-number">' + (current || "—") + '</div>' +
+          '<div class="lot-stats">已抽 <b>' + drawn.length + '</b> 人　／　全班 <b>' + state.classSize + '</b> 人　／　剩餘 <b>' + remaining.length + '</b> 人</div>' +
+        '</div>' +
+        '<div class="lot-btn-row">' +
+          '<button type="button" class="btn primary" id="draw-btn" data-action="draw" ' + (remaining.length === 0 || rolling ? "disabled" : "") + '>' + (remaining.length === 0 ? "✅ 全班已抽完" : "🎲 抽籤") + '</button>' +
+          '<button type="button" class="btn" data-action="reset-round" style="flex:none;">重置本輪</button>' +
+        '</div>' +
+        '<div class="lot-overview">' + cells + '</div>' +
+      '</div>';
+
+    var clubs = generalClubs(state);
+    var rows = clubs.map(function (c) {
+      var gp = getGP(state, c.id);
+      var slotInputs = gp.waitlist.map(function (v, i) {
+        return '<input type="text" inputmode="numeric" class="slot-input' + (v ? " filled" : "") + '" data-field="general-waitlist-slot" data-club="' + c.id + '" data-slot="' + i + '" value="' + (v || "") + '" />';
+      }).join("");
+      return (
+        '<tr>' +
+          '<td class="name-cell">' + escapeHtml(c.name) + '</td>' +
+          '<td><input type="text" class="must-input" inputmode="numeric" data-field="general-must" data-club="' + c.id + '" value="' + (gp.must || "") + '" placeholder="座號" /></td>' +
+          '<td><div class="slot-row">' + slotInputs + '</div></td>' +
+        '</tr>'
+      );
+    }).join("");
+
+    var fillHtml =
+      '<div class="lot-col">' +
+        '<h2>📋 一般社團選填</h2>' +
+        (current
+          ? '<div class="pick-banner">請 <span class="seat-badge">座號 ' + current + '</span> 上台選擇社團</div>'
+          : '<div class="pick-banner" style="color:var(--ink-faint); font-weight:500;">尚未開始抽籤</div>') +
+        (uiMessage ? '<div class="ui-message">⚠ ' + escapeHtml(uiMessage) + '</div>' : '') +
+        '<div class="table-wrap pick-scroll"><table class="pick-table">' +
+          '<thead><tr><th>社團名稱</th><th style="width:110px;">必上（座號）</th><th>候補（最多 5 位）</th></tr></thead>' +
+          '<tbody>' + (rows || '<tr><td colspan="3" class="empty-state">目前沒有一般社團，請到「設定與社團清單」新增。</td></tr>') + '</tbody>' +
+        '</table></div>' +
+      '</div>';
+
+    return (
+      '<div class="panel">' +
+        '<div class="round-banner"><span class="round-title">第 ' + round + ' 次選填</span><span class="round-rule">' + ROUND_RULES[round] + '</span></div>' +
+        '<div class="stage-white split-grid">' + lotHtml + fillHtml + '</div>' +
+      '</div>'
+    );
+  }
+
+  function renderSpecial() {
+    var clubs = specialClubs(state);
+    if (clubs.length === 0) return '<div class="panel"><div class="card"><p class="empty-state">目前沒有標記為特殊社團的項目，請到「設定與社團清單」頁面新增或切換標籤。</p></div></div>';
+    var rows = clubs.map(function (c) {
+      var slots = getSpecialSlots(state, c.id);
+      var count = slots.filter(Boolean).length;
+      var slotInputs = slots.map(function (v, i) {
+        return '<input type="text" inputmode="numeric" class="slot-input' + (v ? " filled" : "") + '" data-field="special-seat-slot" data-club="' + c.id + '" data-slot="' + i + '" value="' + (v || "") + '" />';
+      }).join("");
+      return (
+        '<tr>' +
+          '<td><span class="tag special">特殊</span> ' + escapeHtml(c.name) + '</td>' +
+          '<td style="min-width:260px;"><div class="slot-row">' + slotInputs + '</div></td>' +
+          '<td><span class="pill neutral">' + count + ' / 5 人</span></td>' +
+        '</tr>'
+      );
+    }).join("");
+    return (
+      '<div class="panel"><div class="card">' +
+        '<h2>特殊社團甄選登記</h2>' +
+        '<p class="hint">特殊社團需經甄選，每個社團最多登記 5 位座號。</p>' +
+        '<div class="table-wrap"><table><thead><tr><th>社團</th><th>報名座號（最多 5 位）</th><th>人數</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+      '</div></div>'
+    );
+  }
+
+  function renderSettings() {
+    var manageRows = state.clubs.map(function (c, i) {
+      return (
+        '<div class="club-manage-row">' +
+          '<div class="idx">' + (i + 1) + '</div>' +
+          '<input type="text" data-field="club-name" data-club="' + c.id + '" value="' + escapeHtml(c.name) + '" />' +
+          '<button type="button" class="btn small ' + (c.special ? "" : "ghost") + '" data-action="toggle-special" data-club="' + c.id + '" title="切換是否為特殊社團">' +
+            (c.special ? '<span class="tag special">特殊社團</span>' : '<span class="tag general">一般社團</span>') +
+          '</button>' +
+          '<button type="button" class="btn small danger" data-action="delete-club" data-club="' + c.id + '">刪除</button>' +
+        '</div>'
+      );
+    }).join("");
+
+    var round1Done = state.lottery.progress["1"].length === state.classSize;
+    var round1Preview = state.lottery.progress["1"].length
+      ? state.lottery.progress["1"].join(", ")
+      : "（尚未開始）";
+
+    var roundOptions = [1, 2, 3, 4].map(function (r) {
+      var disabled = r >= 2 && !round1Done;
+      return '<option value="' + r + '" ' + (state.lottery.round === r ? "selected" : "") + (disabled ? " disabled" : "") + '>第 ' + r + ' 次' + (disabled ? "（需先完成第1次）" : "") + '</option>';
+    }).join("");
+
+    var backupTime = state.updatedAt ? new Date(state.updatedAt).toLocaleString("zh-TW") : "尚未更動過";
+
+    return (
+      '<div class="panel">' +
+        '<div class="card">' +
+          '<h2>資料備份（.json）</h2>' +
+          '<p class="hint">本頁資料只會保存在目前這台裝置的這個瀏覽器裡，換裝置、換瀏覽器、或清除瀏覽器資料都會遺失。建議每次填寫告一段落就按「匯出備份」存一份 .json 檔到電腦或雲端硬碟；萬一資料不見了，用「匯入備份」把最新的一份讀回來即可。</p>' +
+          '<p class="note">目前資料最後更新時間：' + escapeHtml(backupTime) + '</p>' +
+          '<div class="field-row" style="margin-top:10px;">' +
+            '<button type="button" class="btn primary" data-action="export-backup">匯出備份（.json）</button>' +
+            '<button type="button" class="btn" data-action="pick-backup-file">匯入備份（.json）</button>' +
+            '<input type="file" data-field="backup-file" accept=".json,application/json" style="display:none;" />' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="card">' +
+          '<h2>班級人數</h2>' +
+          '<p class="hint">預設 32 人，可依實際班級人數調整（會保留座號超出範圍的既有資料，之後調回仍可看到）。更改人數後，若與第 1 次抽籤人數不符，需重新完成第 1 次抽籤才能鎖定第 2～4 次的固定順序。</p>' +
+          '<div class="field-row"><label for="class-size-input">班級人數</label><input id="class-size-input" type="number" min="1" max="200" data-field="class-size" value="' + state.classSize + '" /> 人' +
+          '<label for="class-name-input" style="margin-left:14px;">班級名稱</label><input id="class-name-input" type="text" data-field="class-name" value="' + escapeHtml(state.className) + '" placeholder="例如 207 或 2年7班" style="width:140px;" /></div>' +
+        '</div>' +
+
+        '<div class="card">' +
+          '<h2>抽籤輪次（兩年四學期循環）</h2>' +
+          '<p class="hint">第 1 次為真正隨機抽籤；第 2～4 次會依第 1 次的結果自動算出固定順序（詳見下方規則），不需要重新抽籤，藉此讓每位同學四次下來的平均優先順位一致。</p>' +
+          '<div class="field-row"><label for="round-select">目前輪次</label><select id="round-select" data-field="round">' + roundOptions + '</select></div>' +
+          '<p class="note">第 1 次抽籤順序：' + escapeHtml(round1Preview) + (round1Done ? '（已完成，共 ' + state.classSize + ' 人）' : '（進行中，' + state.lottery.progress["1"].length + ' / ' + state.classSize + ' 人）') + '</p>' +
+          '<div class="field-row" style="margin-top:10px;">' +
+            '<button type="button" class="btn danger" data-action="new-cycle">開始新的兩年循環（清空抽籤紀錄）</button>' +
+          '</div>' +
+        '</div>' +
+
+        '<div class="card">' +
+          '<h2>社團清單管理</h2>' +
+          '<p class="hint">點擊標籤可切換「特殊社團」（需甄選）／「一般社團」。特殊社團會出現在甄選登記頁，一般社團會出現在抽籤與選填頁。</p>' +
+          '<div>' + manageRows + '</div>' +
+          '<div style="margin-top:12px;"><button type="button" class="btn primary" data-action="add-club">＋ 新增社團</button></div>' +
+        '</div>' +
+
+        '<div class="card">' +
+          '<h2>匯入新社團清單</h2>' +
+          '<p class="hint">貼上清單，每行一筆，格式為「社團名稱,是否特殊」（特殊請填「是」或「特殊」，一般留空或填「否」），例如：<br /><code style="font-family:var(--font-mono); font-size:12px;">合唱團,是<br />桌球社,否</code></p>' +
+          '<textarea data-field="import-text" placeholder="貼上社團清單…">' + escapeHtml(importText) + '</textarea>' +
+          '<div style="margin-top:10px;"><button type="button" class="btn danger" data-action="apply-import">套用並取代目前清單</button></div>' +
+          '<p class="note">套用後將清空目前所有社團的必上／候補／甄選登記資料，請先確認已無需保留的紀錄。</p>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function renderReview() {
+    var s = summarize(state);
+    var assignments = seatAssignments(state);
+    var specialMap = specialSeatMap(state);
+    var incompleteRows = ""; var any = false;
+    for (var seat = 1; seat <= state.classSize; seat++) {
+      var r = seatStatus(state, seat, assignments, specialMap);
+      if (r.state !== "ok") { any = true; incompleteRows += '<tr><td class="seat">' + seat + '</td><td><span class="pill ' + (r.state === "bad" ? "bad" : (r.state === "empty" ? "neutral" : "warn")) + '">' + r.label + '</span></td></tr>'; }
+    }
+    var mustLines = generalClubs(state).map(function (c) {
+      var gp = getGP(state, c.id);
+      return '<div class="review-club-line"><span class="name">' + escapeHtml(c.name) + '</span><span class="who">' + (gp.must ? "座號 " + gp.must : "尚無") + '</span></div>';
+    }).join("");
+    var waitlistLines = generalClubs(state).map(function (c) {
+      var seats = getGP(state, c.id).waitlist.filter(Boolean);
+      return '<div class="review-club-line"><span class="name">' + escapeHtml(c.name) + '</span><span class="who">' + seats.length + ' 人' + (seats.length ? '：' + seats.join("、") : "") + '</span></div>';
+    }).join("");
+    var specialLines = specialClubs(state).map(function (c) {
+      var seats = getSpecialSlots(state, c.id).filter(Boolean);
+      return '<div class="review-club-line"><span class="name">' + escapeHtml(c.name) + '</span><span class="who">' + seats.length + ' 人' + (seats.length ? '：' + seats.join("、") : "") + '</span></div>';
+    }).join("");
+
+    return (
+      '<div class="panel">' +
+        '<div class="card">' +
+          '<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;"><h2 style="margin:0;">未完成名單（座號 1–' + state.classSize + '）</h2>' +
+          '<div style="display:flex; gap:8px;"><button type="button" class="btn" data-action="export-summary">匯出總覽（.csv）</button><button type="button" class="btn primary" data-action="export-docx">匯出選填表（.docx）</button></div></div>' +
+          (any
+            ? '<div class="table-wrap" style="margin-top:12px;"><table><thead><tr><th class="seat">座號</th><th>原因</th></tr></thead><tbody>' + incompleteRows + '</tbody></table></div>'
+            : '<p class="empty-state">全班 ' + s.total + ' 位同學都已完成填寫。</p>') +
+        '</div>' +
+        '<div class="two-col">' +
+          '<div class="card"><h2>一般社團必上人選</h2>' + mustLines + '</div>' +
+          '<div class="card"><h2>一般社團候補人數</h2>' + waitlistLines + '</div>' +
+        '</div>' +
+        '<div class="card"><h2>特殊社團甄選登記人數</h2>' + (specialLines || '<p class="empty-state">尚未設定特殊社團。</p>') + '</div>' +
+      '</div>'
+    );
+  }
+
+  function renderTabContent() {
+    if (currentTab === "draw") return renderDraw();
+    if (currentTab === "special") return renderSpecial();
+    if (currentTab === "settings") return renderSettings();
+    if (currentTab === "review") return renderReview();
+    return "";
+  }
+
+  function render() {
+    var scrollY = window.scrollY;
+    app.innerHTML = renderHeader() + renderStatusStrip() + renderTabs() + renderTabContent() +
+      '<p class="footer-note">資料會自動保存在這個頁面本身；重新整理或換裝置開啟同一連結都會看到最新資料。</p>';
+    window.scrollTo(0, scrollY);
+    updateSaveIndicatorOnly();
+  }
+
+  // ---- event delegation ----------------------------------------------
+  app.addEventListener("click", function (e) {
+    var btn = e.target.closest("[data-action]");
+    if (!btn) return;
+    var action = btn.dataset.action;
+    if (action === "set-tab") { currentTab = btn.dataset.tab; uiMessage = null; render(); }
+    else if (action === "add-club") { addClub(); }
+    else if (action === "delete-club") { deleteClub(btn.dataset.club); }
+    else if (action === "toggle-special") { toggleSpecial(btn.dataset.club); }
+    else if (action === "apply-import") { applyImport(); }
+    else if (action === "export-summary") { exportSummary(); }
+    else if (action === "export-docx") { exportDocx(); }
+    else if (action === "export-backup") { exportBackup(); }
+    else if (action === "pick-backup-file") {
+      var fileInput = app.querySelector('[data-field="backup-file"]');
+      if (fileInput) fileInput.click();
+    }
+    else if (action === "draw") { drawNext(); }
+    else if (action === "reset-round") { resetRoundProgress(); }
+    else if (action === "new-cycle") { startNewCycle(); }
+  });
+
+  app.addEventListener("change", function (e) {
+    var el = e.target.closest("[data-field]");
+    if (!el) return;
+    var field = el.dataset.field;
+    if (field === "class-size") setClassSize(parseInt(el.value, 10));
+    else if (field === "class-name") setClassName(el.value);
+    else if (field === "club-name") renameClub(el.dataset.club, el.value);
+    else if (field === "special-seat-slot") setSpecialSeatSlot(Number(el.dataset.club), Number(el.dataset.slot), el.value);
+    else if (field === "general-must") setGeneralMust(Number(el.dataset.club), el.value);
+    else if (field === "general-waitlist-slot") setGeneralWaitlistSlot(Number(el.dataset.club), Number(el.dataset.slot), el.value);
+    else if (field === "round") setRound(el.value);
+    else if (field === "backup-file") {
+      var file = el.files && el.files[0];
+      importBackupFile(file);
+      el.value = "";
+    }
+  });
+
+  app.addEventListener("input", function (e) {
+    var el = e.target.closest("[data-field='import-text']");
+    if (!el) return;
+    importText = el.value;
+  });
+
+  // Flush to local storage (and try one last cloud save) whenever this tab
+  // is about to be backgrounded or unloaded — e.g. the moment the native
+  // share sheet opens for a docx/csv export — instead of relying only on
+  // the 1100ms debounce timer, which can be starved right at that moment.
+  document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "hidden") flushSaveNow();
+  });
+  window.addEventListener("pagehide", flushSaveNow);
+
+  // ---- boot ----------------------------------------------------
+  render();
+  Promise.all([getCapability("artifact"), getCapability("downloads")]).then(function (res) {
+    artifactNS = res[0]; downloadsNS = res[1];
+    return loadFromServer(false);
+  }).then(function () { render(); });
+})();
+</script>
