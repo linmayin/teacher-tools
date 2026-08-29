@@ -195,8 +195,15 @@
   .pick-table td.name-cell { font-weight: 600; line-height: 1.3; }
 
   .slot-row { display: flex; gap: 6px; flex-wrap: wrap; }
+  .slot-cell { position: relative; display: inline-block; }
   .slot-input { width: 46px !important; text-align: center; font-family: var(--font-mono); font-variant-numeric: tabular-nums; padding: 7px 4px !important; }
   .slot-input.filled { border-color: var(--accent); background: var(--accent-bg); font-weight: 700; }
+  .slot-clear {
+    position: absolute; top: -7px; right: -7px; width: 18px; height: 18px; padding: 0; line-height: 16px;
+    border-radius: 50%; border: 1px solid var(--border-strong); background: var(--surface); color: var(--ink-muted);
+    font-size: 12px; font-weight: 700; cursor: pointer; touch-action: manipulation;
+  }
+  @media (hover: hover) { .slot-clear:hover { background: var(--danger-bg); color: var(--danger); border-color: var(--danger); } }
 
   .all-rounds-toggle { margin-bottom: 14px; }
   .rounds-table { width: 100%; border-collapse: collapse; }
@@ -265,6 +272,7 @@
       nextClubId: 31,
       specialApps: {},
       generalPicks: {},
+      giftedClass: [null, null, null, null, null],
       lottery: { round: 1, progress: { "1": [], "2": [], "3": [], "4": [] }, currentSeat: null },
       updatedAt: 0
     };
@@ -301,6 +309,8 @@
         s.generalPicks[c.id] = { must: null, waitlist: [null, null, null, null, null] };
       }
     });
+
+    s.giftedClass = toSlots(raw.giftedClass);
 
     s.lottery = { round: 1, progress: { "1": [], "2": [], "3": [], "4": [] }, currentSeat: null };
     if (raw.lottery && typeof raw.lottery === "object") {
@@ -393,7 +403,17 @@
     return map;
   }
 
-  function seatStatus(state, seat, assignments, specialMap) {
+  function giftedSeatSet(state) {
+    // seat -> true, for seats registered (via audition) into 資優班
+    var set = {};
+    getGiftedSlots(state).forEach(function (seat) { if (seat) set[seat] = true; });
+    return set;
+  }
+
+  function seatStatus(state, seat, assignments, specialMap, giftedSet) {
+    if (giftedSet && giftedSet[seat]) {
+      return { state: "ok", label: "已完成（資優班登記）" };
+    }
     if (specialMap && specialMap[seat] && specialMap[seat].length) {
       return { state: "ok", label: "已完成（特殊社團甄選登記）" };
     }
@@ -414,9 +434,10 @@
   function summarize(state) {
     var assignments = seatAssignments(state);
     var specialMap = specialSeatMap(state);
+    var giftedSet = giftedSeatSet(state);
     var complete = 0, empty = 0, incomplete = 0;
     for (var seat = 1; seat <= state.classSize; seat++) {
-      var r = seatStatus(state, seat, assignments, specialMap);
+      var r = seatStatus(state, seat, assignments, specialMap, giftedSet);
       if (r.state === "ok") complete++;
       else if (r.state === "empty") empty++;
       else incomplete++;
@@ -694,6 +715,45 @@
     scheduleSave(); render();
   }
 
+  // ---- mutators: 資優班 registration (5 fixed slots, not tied to any club) ----------------------------------------------
+  function getGiftedSlots(state) {
+    if (!Array.isArray(state.giftedClass)) state.giftedClass = [null, null, null, null, null];
+    return state.giftedClass;
+  }
+  function setGiftedSeatSlot(slot, raw) {
+    uiMessage = null;
+    var slots = getGiftedSlots(state);
+    var trimmed = raw.trim();
+    if (trimmed === "") { slots[slot] = null; scheduleSave(); render(); return; }
+    var v = parseInt(trimmed, 10);
+    if (isNaN(v) || v < 1 || v > state.classSize) { flash("座號需介於 1 到 " + state.classSize + " 之間，已忽略「" + raw + "」。"); return; }
+    if (slots.indexOf(v) !== -1 && slots.indexOf(v) !== slot) { flash("座號 " + v + " 已經登記在資優班的其他格子裡了。"); return; }
+    slots[slot] = v;
+    scheduleSave(); render();
+  }
+
+  // Explicit, deliberate removal of a single audition registration — for the
+  // rare exception (e.g. a student withdrawing for personal reasons) since
+  // these registrations are otherwise treated as long-standing and are never
+  // touched by the per-term "clear this term's picks" action.
+  function clearSpecialSlot(clubId, slot) {
+    clubId = Number(clubId); slot = Number(slot);
+    var c = clubById(state, clubId);
+    var slots = getSpecialSlots(state, clubId);
+    var seat = slots[slot];
+    if (!seat) return;
+    if (!window.confirm("確定要移除「" + (c ? c.name : "此社團") + "」座號 " + seat + " 的登記嗎？（例如因個人因素申請退出）")) return;
+    setSpecialSeatSlot(clubId, slot, "");
+  }
+  function clearGiftedSlot(slot) {
+    slot = Number(slot);
+    var slots = getGiftedSlots(state);
+    var seat = slots[slot];
+    if (!seat) return;
+    if (!window.confirm("確定要移除資優班座號 " + seat + " 的登記嗎？（例如因個人因素申請退出）")) return;
+    setGiftedSeatSlot(slot, "");
+  }
+
   // ---- mutators: general club must / waitlist (waitlist = 5 fixed slots) ----------------------------------------------
   function setGeneralMust(clubId, raw) {
     uiMessage = null;
@@ -826,14 +886,16 @@
   // is blank for a new term's fill-in round — WITHOUT touching the club
   // list, class settings, or the lottery draw order/progress (rounds 2–4
   // depend on round 1's original order, so that must be left alone).
+  // Clears only the per-term general-club must/waitlist picks. Special-club
+  // audition results and 資優班 registrations are treated as long-standing
+  // (once confirmed, that student is out of the rotation for good, not just
+  // this term) so this button deliberately leaves them alone — remove an
+  // individual one by hand (the × next to a filled slot) for the rare
+  // exception, e.g. a student withdrawing for personal reasons.
   function clearAllPicks() {
-    if (!window.confirm("確定要清空所有社團的必上／候補／特殊社團甄選登記資料嗎？\n\n社團清單、班級設定、抽籤順序都不會受影響，適合新學期切換到下一次選填、重新開放填寫時使用。")) return;
-    state.clubs.forEach(function (c) {
-      if (c.special) {
-        state.specialApps[c.id] = [null, null, null, null, null];
-      } else {
-        state.generalPicks[c.id] = { must: null, waitlist: [null, null, null, null, null] };
-      }
+    if (!window.confirm("確定要清空所有一般社團的必上／候補選填資料嗎？\n\n特殊社團甄選登記與資優班登記不會被清空（視為長期有效）；社團清單、班級設定、抽籤順序也都不會受影響。適合新學期切換到下一次選填、重新開放填寫時使用。")) return;
+    generalClubs(state).forEach(function (c) {
+      state.generalPicks[c.id] = { must: null, waitlist: [null, null, null, null, null] };
     });
     uiMessage = null;
     scheduleSave(); render();
@@ -916,6 +978,17 @@
     if (/[",\n]/.test(v)) return '"' + v.replace(/"/g, '""') + '"';
     return v;
   }
+  // Special-club and 資優班 registrants have no meaningful numeric "code" to
+  // put in the 確定中選社團代號 column (資優班 was never a club at all, and
+  // showing a special club's bare id there just makes people cross-reference
+  // the legend) — so both are exported as plain text names instead.
+  function specialClubNames(state, clubIds) {
+    return clubIds.map(function (id) {
+      var c = clubById(state, id);
+      return c ? c.name : ("#" + id);
+    });
+  }
+
   function exportSummary() {
     var rows = [];
     rows.push(["高雄市立五福國民中學 社團選填總覽"]);
@@ -926,17 +999,23 @@
 
     var assignments = seatAssignments(state);
     var specialMap = specialSeatMap(state);
+    var giftedSet = giftedSeatSet(state);
     for (var seat = 1; seat <= state.classSize; seat++) {
+      if (giftedSet[seat]) {
+        rows.push([state.className || "", seat, "", "資優班", "", "", "", "資優班登記"]);
+        continue;
+      }
       var special = specialMap[seat] || [];
       if (special.length) {
-        rows.push([state.className || "", seat, "", special[0], "", "", "", special.length > 1 ? "同時登記多個特殊社團甄選：" + special.join("、") : "特殊社團甄選登記"]);
+        var names = specialClubNames(state, special);
+        rows.push([state.className || "", seat, "", names.join("、"), "", "", "", special.length > 1 ? "同時登記多個特殊社團甄選：" + names.join("、") : "特殊社團甄選登記"]);
         continue;
       }
       var a = assignments[seat];
       var mustCode = a.mustClubs.length ? a.mustClubs[0] : "";
       var wl = a.waitlistClubs.slice().sort(function (x, y) { return x - y; });
       var note = "";
-      var st = seatStatus(state, seat, assignments, specialMap);
+      var st = seatStatus(state, seat, assignments, specialMap, giftedSet);
       if (st.state !== "ok") note = st.label;
       rows.push([state.className || "", seat, "", mustCode, wl[0] || "", wl[1] || "", wl[2] || "", note]);
     }
@@ -978,12 +1057,15 @@
     });
     var assignments = seatAssignments(state);
     var specialMap = specialSeatMap(state);
+    var giftedSet = giftedSeatSet(state);
     var studentRows = [headerRow];
     for (var seat = 1; seat <= state.classSize; seat++) {
       var special = specialMap[seat] || [];
       var must = "", w1 = "", w2 = "", w3 = "";
-      if (special.length) {
-        must = String(special[0]);
+      if (giftedSet[seat]) {
+        must = "資優班";
+      } else if (special.length) {
+        must = specialClubNames(state, special).join("、");
       } else {
         var a = assignments[seat];
         must = a.mustClubs.length ? String(a.mustClubs[0]) : "";
@@ -1164,12 +1246,13 @@
 
   function renderSpecial() {
     var clubs = specialClubs(state);
-    if (clubs.length === 0) return '<div class="panel"><div class="card"><p class="empty-state">目前沒有標記為特殊社團的項目，請到「設定與社團清單」頁面新增或切換標籤。</p></div></div>';
     var rows = clubs.map(function (c) {
       var slots = getSpecialSlots(state, c.id);
       var count = slots.filter(Boolean).length;
       var slotInputs = slots.map(function (v, i) {
-        return '<input type="text" inputmode="numeric" class="slot-input' + (v ? " filled" : "") + '" data-field="special-seat-slot" data-club="' + c.id + '" data-slot="' + i + '" value="' + (v || "") + '" />';
+        var input = '<input type="text" inputmode="numeric" class="slot-input' + (v ? " filled" : "") + '" data-field="special-seat-slot" data-club="' + c.id + '" data-slot="' + i + '" value="' + (v || "") + '" />';
+        var clearBtn = v ? '<button type="button" class="slot-clear" data-action="clear-special-slot" data-club="' + c.id + '" data-slot="' + i + '" title="移除這筆登記">×</button>' : '';
+        return '<span class="slot-cell">' + input + clearBtn + '</span>';
       }).join("");
       return (
         '<tr>' +
@@ -1179,12 +1262,34 @@
         '</tr>'
       );
     }).join("");
+
+    var giftedSlots = getGiftedSlots(state);
+    var giftedCount = giftedSlots.filter(Boolean).length;
+    var giftedInputs = giftedSlots.map(function (v, i) {
+      var input = '<input type="text" inputmode="numeric" class="slot-input' + (v ? " filled" : "") + '" data-field="gifted-seat-slot" data-slot="' + i + '" value="' + (v || "") + '" />';
+      var clearBtn = v ? '<button type="button" class="slot-clear" data-action="clear-gifted-slot" data-slot="' + i + '" title="移除這筆登記">×</button>' : '';
+      return '<span class="slot-cell">' + input + clearBtn + '</span>';
+    }).join("");
+
     return (
-      '<div class="panel"><div class="card">' +
-        '<h2>特殊社團甄選登記</h2>' +
-        '<p class="hint">特殊社團需經甄選，每個社團最多登記 5 位座號。</p>' +
-        '<div class="table-wrap"><table><thead><tr><th>社團</th><th>報名座號（最多 5 位）</th><th>人數</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
-      '</div></div>'
+      '<div class="panel">' +
+        '<div class="card">' +
+          '<h2>特殊社團甄選登記</h2>' +
+          '<p class="hint">特殊社團需經甄選，甄選通過即確定入社，不再參與其他社團選填。每個社團最多登記 5 位座號，一旦登記視為長期有效（不會被「清空本學期選填資料」清除）；若有學生因個人因素申請退出，點格子右上角的「×」即可個別移除。</p>' +
+          (clubs.length
+            ? '<div class="table-wrap"><table><thead><tr><th>社團</th><th>登記座號（最多 5 位）</th><th>人數</th></tr></thead><tbody>' + rows + '</tbody></table></div>'
+            : '<p class="empty-state">目前沒有標記為特殊社團的項目，請到「設定與社團清單」頁面新增或切換標籤。</p>') +
+        '</div>' +
+        '<div class="card">' +
+          '<h2>資優班登記</h2>' +
+          '<p class="hint">資優班不需選填社團；經甄選確認入班後，不再參與其他社團的必上／候補／特殊社團選填。最多登記 5 位座號，同樣視為長期有效；若有學生因個人因素申請退出，點格子右上角的「×」即可個別移除。</p>' +
+          '<div class="table-wrap"><table><thead><tr><th>項目</th><th>登記座號（最多 5 位）</th><th>人數</th></tr></thead><tbody>' +
+            '<tr><td><span class="tag special">資優班</span></td>' +
+              '<td style="min-width:260px;"><div class="slot-row">' + giftedInputs + '</div></td>' +
+              '<td><span class="pill neutral">' + giftedCount + ' / 5 人</span></td></tr>' +
+          '</tbody></table></div>' +
+        '</div>' +
+      '</div>'
     );
   }
 
@@ -1239,9 +1344,9 @@
           '<p class="hint">第 1 次為真正隨機抽籤；第 2～4 次會依第 1 次的結果自動算出固定順序（詳見下方規則），不需要重新抽籤，藉此讓每位同學四次下來的平均優先順位一致。</p>' +
           '<div class="field-row"><label for="round-select">目前輪次</label><select id="round-select" data-field="round">' + roundOptions + '</select></div>' +
           '<p class="note">第 1 次抽籤順序：' + escapeHtml(round1Preview) + (round1Done ? '（已完成，共 ' + state.classSize + ' 人）' : '（進行中，' + state.lottery.progress["1"].length + ' / ' + state.classSize + ' 人）') + '</p>' +
-          '<p class="hint" style="margin-top:14px;">💡 <b>下學期換下一次選填時該怎麼做：</b>①「目前輪次」改選下一次（例如第 2 次）；②按下方「清空本學期選填資料」把必上／候補／特殊社團登記清成空白，讓學生重新填寫——社團清單、班級人數、抽籤順序都不會被動到。</p>' +
+          '<p class="hint" style="margin-top:14px;">💡 <b>下學期換下一次選填時該怎麼做：</b>①「目前輪次」改選下一次（例如第 2 次）；②按下方「清空本學期選填資料」把一般社團的必上／候補清成空白，讓學生重新填寫——社團清單、班級人數、抽籤順序、以及特殊社團甄選登記與資優班登記（視為長期有效）都不會被動到。</p>' +
           '<div class="field-row" style="margin-top:10px;">' +
-            '<button type="button" class="btn danger" data-action="clear-picks">清空本學期選填資料（保留社團清單與抽籤順序）</button>' +
+            '<button type="button" class="btn danger" data-action="clear-picks">清空本學期選填資料（一般社團必上／候補）</button>' +
             '<button type="button" class="btn ghost" data-action="new-cycle">開始新的兩年循環（連抽籤順序一起清空）</button>' +
           '</div>' +
         '</div>' +
@@ -1268,9 +1373,10 @@
     var s = summarize(state);
     var assignments = seatAssignments(state);
     var specialMap = specialSeatMap(state);
+    var giftedSet = giftedSeatSet(state);
     var incompleteRows = ""; var any = false;
     for (var seat = 1; seat <= state.classSize; seat++) {
-      var r = seatStatus(state, seat, assignments, specialMap);
+      var r = seatStatus(state, seat, assignments, specialMap, giftedSet);
       if (r.state !== "ok") { any = true; incompleteRows += '<tr><td class="seat">' + seat + '</td><td><span class="pill ' + (r.state === "bad" ? "bad" : (r.state === "empty" ? "neutral" : "warn")) + '">' + r.label + '</span></td></tr>'; }
     }
     var mustLines = generalClubs(state).map(function (c) {
@@ -1285,6 +1391,8 @@
       var seats = getSpecialSlots(state, c.id).filter(Boolean);
       return '<div class="review-club-line"><span class="name">' + escapeHtml(c.name) + '</span><span class="who">' + seats.length + ' 人' + (seats.length ? '：' + seats.join("、") : "") + '</span></div>';
     }).join("");
+    var giftedSeats = getGiftedSlots(state).filter(Boolean);
+    var giftedLine = '<div class="review-club-line"><span class="name">資優班</span><span class="who">' + giftedSeats.length + ' 人' + (giftedSeats.length ? '：' + giftedSeats.join("、") : "") + '</span></div>';
 
     return (
       '<div class="panel">' +
@@ -1299,7 +1407,7 @@
           '<div class="card"><h2>一般社團必上人選</h2>' + mustLines + '</div>' +
           '<div class="card"><h2>一般社團候補人數</h2>' + waitlistLines + '</div>' +
         '</div>' +
-        '<div class="card"><h2>特殊社團甄選登記人數</h2>' + (specialLines || '<p class="empty-state">尚未設定特殊社團。</p>') + '</div>' +
+        '<div class="card"><h2>特殊社團／資優班登記人數</h2>' + giftedLine + (specialLines || '<p class="empty-state">尚未設定特殊社團。</p>') + '</div>' +
       '</div>'
     );
   }
@@ -1356,6 +1464,8 @@
     else if (action === "toggle-all-rounds") { showAllRounds = !showAllRounds; render(); }
     else if (action === "new-cycle") { startNewCycle(); }
     else if (action === "clear-picks") { clearAllPicks(); }
+    else if (action === "clear-special-slot") { clearSpecialSlot(btn.dataset.club, btn.dataset.slot); }
+    else if (action === "clear-gifted-slot") { clearGiftedSlot(btn.dataset.slot); }
   });
 
   app.addEventListener("change", function (e) {
@@ -1366,6 +1476,7 @@
     else if (field === "class-name") setClassName(el.value);
     else if (field === "club-name") renameClub(el.dataset.club, el.value);
     else if (field === "special-seat-slot") setSpecialSeatSlot(Number(el.dataset.club), Number(el.dataset.slot), el.value);
+    else if (field === "gifted-seat-slot") setGiftedSeatSlot(Number(el.dataset.slot), el.value);
     else if (field === "general-must") setGeneralMust(Number(el.dataset.club), el.value);
     else if (field === "general-waitlist-slot") setGeneralWaitlistSlot(Number(el.dataset.club), Number(el.dataset.slot), el.value);
     else if (field === "round") setRound(el.value);
