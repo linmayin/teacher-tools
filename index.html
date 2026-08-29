@@ -208,11 +208,14 @@ html,body{min-height:100%;background:#f5f4f0;font-family:'PingFang TC','Noto San
     <div class="card-body">
       <div class="card-header">
         <span class="card-icon-emoji">🎲</span>
-        <div>
-          <div class="card-name">抽籤選號</div>
-        </div>
+        <span class="card-name">抽籤選號</span>
       </div>
+      <span class="device-badge badge-mobile">📱 適合以平板／手機開啟</span>
       <div class="card-desc">課堂隨機抽選學生，支援設定缺席座號，已抽過的號碼自動排除，附輪轉動畫與音效。</div>
+      <div class="note-box">
+        <b>使用說明</b><br>輸入總人數後點「套用」，點選當天缺席座號（變紅色），按「抽籤」開始輪轉，抽中號碼大字顯示。每次抽完後自動將已抽號碼排除。<br><br>
+        <b>注意事項</b><br>• 按「重置」可保留缺席名單，重新開始新一輪抽籤<br>• 音效需在裝置允許自動播放的情況下才會響起<br>• 關閉頁面後資料不會保存，每次使用重新設定
+      </div>
       <div class="tag-row">
         <span class="tag t-amber">自訂人數</span>
         <span class="tag t-amber">缺席排除</span>
@@ -229,12 +232,15 @@ html,body{min-height:100%;background:#f5f4f0;font-family:'PingFang TC','Noto San
     <div class="card-stripe s-teal"></div>
     <div class="card-body">
       <div class="card-header">
-        <span class="card-icon-emoji">📋</span>
-        <div>
-          <div class="card-name">社團選填檢查器</div>
-        </div>
+        <img class="card-icon" src="club_favicon.png" alt="社">
+        <span class="card-name">社團選填檢查器</span>
       </div>
+      <span class="device-badge badge-pc">💻 適合以電腦開啟</span>
       <div class="card-desc">管理全班社團選填狀況，支援必上、候補志願登記，自動檢查衝突，匯出 CSV 供行政使用。</div>
+      <div class="note-box">
+        <b>使用說明</b><br>先在設定中建立社團清單，再依學生回報逐一登記必上社團與候補志願。系統會自動標記衝突或重複登記。完成後匯出 CSV 交給行政。<br><br>
+        <b>注意事項</b><br>• 資料儲存於本機瀏覽器，換電腦需重新輸入或匯入備份<br>• 建議定期使用「備份」功能儲存 JSON 檔，以防資料遺失<br>• 匯出 CSV 前請確認全班座號皆已完成登記
+      </div>
       <div class="tag-row">
         <span class="tag t-teal">必上登記</span>
         <span class="tag t-teal">候補志願</span>
