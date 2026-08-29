@@ -1,4 +1,6 @@
 <title>社團選填檢查器</title>
+<link rel="icon" type="image/png" href="club_favicon.png">
+<link rel="apple-touch-icon" href="club_favicon.png">
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@600;700&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" />
@@ -195,6 +197,12 @@
   .slot-row { display: flex; gap: 6px; flex-wrap: wrap; }
   .slot-input { width: 46px !important; text-align: center; font-family: var(--font-mono); font-variant-numeric: tabular-nums; padding: 7px 4px !important; }
   .slot-input.filled { border-color: var(--accent); background: var(--accent-bg); font-weight: 700; }
+
+  .all-rounds-toggle { margin-bottom: 14px; }
+  .rounds-table { width: 100%; border-collapse: collapse; }
+  .rounds-table th, .rounds-table td { font-size: 14px; padding: 6px 10px; text-align: center; font-family: var(--font-mono); font-variant-numeric: tabular-nums; border-bottom: 1px solid var(--border); }
+  .rounds-table th { background: var(--surface-alt); font-family: inherit; font-variant-numeric: normal; position: sticky; top: 0; }
+  .rounds-table td.seat { color: var(--ink-faint); font-weight: 700; }
 
   @media (prefers-reduced-motion: reduce) { .save-indicator[data-state="saving"] .save-dot { animation: none; } }
 </style>
@@ -428,6 +436,7 @@
   var rolling = false;
   var rollTimer = null;
   var audioCtx = null;
+  var showAllRounds = false;
 
   var app = document.getElementById("app");
 
@@ -729,6 +738,13 @@
   function currentRoundSequence() {
     return computeRoundOrder(state.lottery.progress["1"], state.lottery.round);
   }
+  // All four rounds' fixed orders at once — for the "show everyone all four
+  // terms' order up front" overview. Only meaningful once round 1 is fully
+  // drawn (its result is the basis rounds 2–4 are computed from).
+  function allRoundSequences() {
+    var base = state.lottery.progress["1"];
+    return { 1: base, 2: computeRoundOrder(base, 2), 3: computeRoundOrder(base, 3), 4: computeRoundOrder(base, 4) };
+  }
   function currentRoundRemaining() {
     var round = state.lottery.round;
     var drawn = state.lottery.progress[String(round)] || [];
@@ -746,12 +762,15 @@
     var drawn = state.lottery.progress[key];
     var remaining = currentRoundRemaining();
     if (remaining.length === 0) return;
-    var winner;
-    if (round === 1) {
-      winner = remaining[Math.floor(Math.random() * remaining.length)];
-    } else {
-      winner = currentRoundSequence()[drawn.length];
+    if (round !== 1) {
+      // Rounds 2–4 follow an order that's already fixed (computed from
+      // round 1's result) — there's nothing left to chance, so reveal the
+      // next person directly instead of running the random-looking roll
+      // animation, which would misleadingly suggest another live draw.
+      finishDraw(currentRoundSequence()[drawn.length]);
+      return;
     }
+    var winner = remaining[Math.floor(Math.random() * remaining.length)];
     rolling = true;
     render();
     var el = document.getElementById("lot-number");
@@ -1047,27 +1066,64 @@
     var drawn = state.lottery.progress[String(round)] || [];
     var remaining = currentRoundRemaining();
     var current = state.lottery.currentSeat;
+    var isRandomRound = (round === 1);
+    var round1Done = state.lottery.progress["1"].length === state.classSize;
 
     var cells = "";
-    for (var i = 1; i <= state.classSize; i++) {
-      var cls = "lot-cell" + (i === current ? " current" : (drawn.indexOf(i) !== -1 ? " drawn" : ""));
-      cells += '<div class="' + cls + '">' + i + '</div>';
+    if (isRandomRound) {
+      // Round 1: the real random draw — grid ordered by seat number, marking
+      // which seats have already been drawn (their eventual position doesn't
+      // matter here, only whether they've gone yet).
+      for (var i = 1; i <= state.classSize; i++) {
+        var cls = "lot-cell" + (i === current ? " current" : (drawn.indexOf(i) !== -1 ? " drawn" : ""));
+        cells += '<div class="' + cls + '">' + i + '</div>';
+      }
+    } else {
+      // Rounds 2–4: the order is already fixed, so show it AS that order —
+      // grid position = turn order, not seat number — so everyone can see
+      // the whole line-up at a glance instead of one reveal at a time.
+      var seq = currentRoundSequence();
+      seq.forEach(function (seatNum, idx) {
+        var cls = "lot-cell" + (seatNum === current ? " current" : (idx < drawn.length ? " drawn" : ""));
+        cells += '<div class="' + cls + '" title="第 ' + (idx + 1) + ' 位">' + seatNum + '</div>';
+      });
     }
 
     var lotHtml =
       '<div class="lot-col">' +
-        '<h2>🎲 抽籤選號</h2>' +
+        '<h2>' + (isRandomRound ? "🎲 抽籤選號" : "📋 依序選填（順序已固定）") + '</h2>' +
         '<div class="lot-display">' +
-          '<div class="lot-label">本次抽中</div>' +
+          '<div class="lot-label">' + (isRandomRound ? "本次抽中" : "目前輪到") + '</div>' +
           '<div class="lot-number' + (current ? "" : " empty") + '" id="lot-number">' + (current || "—") + '</div>' +
-          '<div class="lot-stats">已抽 <b>' + drawn.length + '</b> 人　／　全班 <b>' + state.classSize + '</b> 人　／　剩餘 <b>' + remaining.length + '</b> 人</div>' +
+          '<div class="lot-stats">' + (isRandomRound ? "已抽" : "已上台") + ' <b>' + drawn.length + '</b> 人　／　全班 <b>' + state.classSize + '</b> 人　／　剩餘 <b>' + remaining.length + '</b> 人</div>' +
         '</div>' +
         '<div class="lot-btn-row">' +
-          '<button type="button" class="btn primary" id="draw-btn" data-action="draw" ' + (remaining.length === 0 || rolling ? "disabled" : "") + '>' + (remaining.length === 0 ? "✅ 全班已抽完" : "🎲 抽籤") + '</button>' +
+          '<button type="button" class="btn primary" id="draw-btn" data-action="draw" ' + (remaining.length === 0 || rolling ? "disabled" : "") + '>' +
+            (remaining.length === 0 ? "✅ 全班已完成" : (isRandomRound ? "🎲 抽籤" : "➡️ 下一位")) +
+          '</button>' +
           '<button type="button" class="btn" data-action="reset-round" style="flex:none;">重置本輪</button>' +
         '</div>' +
+        (!isRandomRound ? '<p class="hint" style="margin-top:-6px; margin-bottom:14px;">此順序已依第 1 次抽籤結果自動排定，按「下一位」直接依序往下，不會再重新抽籤。</p>' : "") +
         '<div class="lot-overview">' + cells + '</div>' +
       '</div>';
+
+    var allRoundsHtml = "";
+    if (round1Done) {
+      var seqs = allRoundSequences();
+      var seqRows = "";
+      for (var pos = 0; pos < state.classSize; pos++) {
+        seqRows += '<tr><td class="seat">' + (pos + 1) + '</td>' +
+          [1, 2, 3, 4].map(function (r) { return '<td>' + seqs[r][pos] + '</td>'; }).join("") +
+          '</tr>';
+      }
+      allRoundsHtml =
+        '<div class="all-rounds-toggle"><button type="button" class="btn ghost" data-action="toggle-all-rounds">' +
+          (showAllRounds ? "▲ 隱藏四次完整順序" : "▼ 查看第 1～4 次完整順序（一目了然）") +
+        '</button></div>' +
+        (showAllRounds
+          ? '<div class="table-wrap" style="margin-bottom:16px; max-height:340px; overflow-y:auto;"><table class="rounds-table"><thead><tr><th>順序</th><th>第1次</th><th>第2次</th><th>第3次</th><th>第4次</th></tr></thead><tbody>' + seqRows + '</tbody></table></div>'
+          : "");
+    }
 
     var clubs = generalClubs(state);
     var rows = clubs.map(function (c) {
@@ -1089,7 +1145,7 @@
         '<h2>📋 一般社團選填</h2>' +
         (current
           ? '<div class="pick-banner">請 <span class="seat-badge">座號 ' + current + '</span> 上台選擇社團</div>'
-          : '<div class="pick-banner" style="color:var(--ink-faint); font-weight:500;">尚未開始抽籤</div>') +
+          : '<div class="pick-banner" style="color:var(--ink-faint); font-weight:500;">' + (isRandomRound ? "尚未開始抽籤" : "尚未開始") + '</div>') +
         (uiMessage ? '<div class="ui-message">⚠ ' + escapeHtml(uiMessage) + '</div>' : '') +
         '<div class="table-wrap pick-scroll"><table class="pick-table">' +
           '<colgroup><col /><col style="width:104px;" /><col style="width:300px;" /></colgroup>' +
@@ -1101,7 +1157,7 @@
     return (
       '<div class="panel">' +
         '<div class="round-banner"><span class="round-title">第 ' + round + ' 次選填</span><span class="round-rule">' + ROUND_RULES[round] + '</span></div>' +
-        '<div class="stage-white split-grid">' + lotHtml + fillHtml + '</div>' +
+        '<div class="stage-white">' + allRoundsHtml + '<div class="split-grid">' + lotHtml + fillHtml + '</div></div>' +
       '</div>'
     );
   }
@@ -1259,9 +1315,23 @@
   function render() {
     var scrollY = window.scrollY;
     app.innerHTML = renderHeader() + renderStatusStrip() + renderTabs() + renderTabContent() +
-      '<p class="footer-note">資料會自動保存在這個頁面本身；重新整理或換裝置開啟同一連結都會看到最新資料。</p>';
+      '<p class="footer-note">資料會自動保存在這台裝置的這個瀏覽器裡；建議定期到「設定與社團清單」匯出備份，換裝置或清除瀏覽器資料前尤其重要。</p>';
     window.scrollTo(0, scrollY);
     updateSaveIndicatorOnly();
+    syncPickScrollHeight();
+  }
+
+  // Let the right-hand club list fill exactly as much vertical space as the
+  // left lottery panel naturally takes up — instead of guessing a fixed
+  // viewport offset — so as many rows as possible are visible before the
+  // (independently scrollable) list needs to scroll at all.
+  function syncPickScrollHeight() {
+    var lotCol = app.querySelector(".split-grid > .lot-col:first-child");
+    var pickScroll = app.querySelector(".pick-scroll");
+    if (!pickScroll) return;
+    var wide = (typeof window.matchMedia === "function") ? window.matchMedia("(min-width: 881px)").matches : true;
+    if (!lotCol || !wide) { pickScroll.style.maxHeight = ""; return; }
+    pickScroll.style.maxHeight = Math.max(320, lotCol.offsetHeight) + "px";
   }
 
   // ---- event delegation ----------------------------------------------
@@ -1283,6 +1353,7 @@
     }
     else if (action === "draw") { drawNext(); }
     else if (action === "reset-round") { resetRoundProgress(); }
+    else if (action === "toggle-all-rounds") { showAllRounds = !showAllRounds; render(); }
     else if (action === "new-cycle") { startNewCycle(); }
     else if (action === "clear-picks") { clearAllPicks(); }
   });
@@ -1319,6 +1390,15 @@
     if (document.visibilityState === "hidden") flushSaveNow();
   });
   window.addEventListener("pagehide", flushSaveNow);
+
+  // Re-measure the right-hand list's height cap on resize/orientation change
+  // (e.g. rotating the iPad, or entering/leaving Split View) — debounced
+  // since resize fires rapidly during the transition.
+  var resizeSyncTimer = null;
+  window.addEventListener("resize", function () {
+    clearTimeout(resizeSyncTimer);
+    resizeSyncTimer = setTimeout(syncPickScrollHeight, 120);
+  });
 
   // ---- boot ----------------------------------------------------
   render();
