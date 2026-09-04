@@ -139,13 +139,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
     </div>
     <div class="card">
       <div class="card-title">選擇項目</div>
-      <div class="chip-wrap" id="item-chips">
-        <div class="chip sel-minus" onclick="pickItem(this,'功課未交',-1)">功課未交 −1</div>
-        <div class="chip" onclick="pickItem(this,'上課講話',-1)">上課講話 −1</div>
-        <div class="chip" onclick="pickItem(this,'上課睡覺',-1)">上課睡覺 −1</div>
-        <div class="chip" onclick="pickItem(this,'表現優異',+1)">表現優異 +1</div>
-        <div class="chip" onclick="pickItem(this,'主動回答',+1)">主動回答 +1</div>
-      </div>
+      <div class="chip-wrap" id="item-chips"></div>
     </div>
     <div class="card">
       <div class="row">
@@ -281,6 +275,22 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
       <div id="class-name-list"></div>
     </div>
     <div class="card">
+      <div class="card-title">自訂登記項目</div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:10px">預設項目無法刪除，可自由新增加分或減分項目</div>
+      <div id="custom-item-list" style="margin-bottom:10px"></div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end">
+        <div style="flex:2;min-width:90px">
+          <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px">項目名稱</label>
+          <input type="text" id="new-item-name" placeholder="例：學用品未帶" style="height:36px;font-size:14px;border:1.5px solid var(--border);border-radius:9px;padding:0 10px;background:var(--surface2);color:var(--text);width:100%">
+        </div>
+        <div style="width:72px">
+          <label style="font-size:12px;color:var(--text3);display:block;margin-bottom:4px">分數</label>
+          <input type="number" id="new-item-score" value="-1" step="1" style="height:36px;font-size:14px;border:1.5px solid var(--border);border-radius:9px;padding:0 8px;background:var(--surface2);color:var(--text);width:100%;text-align:center">
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="addCustomItem()" style="height:36px;white-space:nowrap">＋ 新增</button>
+      </div>
+    </div>
+    <div class="card">
       <div class="card-title">資料管理</div>
       <button class="btn btn-full" onclick="exportAllCSV()" style="margin-bottom:8px">⬇ 匯出明細記錄（Excel）</button>
       <label class="btn btn-full" style="cursor:pointer">
@@ -299,15 +309,104 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 
 <script>
 var DB='cr5_records_v1', CFG='cr5_config_v1', NOTES_DB='cr5_notes_v1', ROSTER_DB='cr5_roster_v1';
+var CUSTOM_ITEMS_DB='cr5_custom_items_v1';
 var records=[];
 var notes=[]; // [{id,date,cls,text}]
 var roster={}; // {cls: {num: name}}
 var cfg={classes:['班級一','班級二','班級三','班級四','班級五'],baseScore:95};
 var selClass='', curItem='功課未交', curScore=-1, selNums=new Set();
 
+// 預設項目
+var DEFAULT_ITEMS=[
+  {name:'功課未交',score:-1},
+  {name:'上課講話',score:-1},
+  {name:'上課睡覺',score:-1},
+  {name:'表現優異',score:1},
+  {name:'主動回答',score:1}
+];
+var customItems=[]; // [{name,score}]
+
+function loadCustomItems(){
+  try{var d=localStorage.getItem(CUSTOM_ITEMS_DB);if(d)customItems=JSON.parse(d);}catch(e){}
+}
+function saveCustomItems(){
+  try{localStorage.setItem(CUSTOM_ITEMS_DB,JSON.stringify(customItems));}catch(e){}
+}
+function allItems(){
+  return DEFAULT_ITEMS.concat(customItems);
+}
+
+function renderItemChips(){
+  var wrap=document.getElementById('item-chips');
+  wrap.innerHTML='';
+  allItems().forEach(function(it){
+    var div=document.createElement('div');
+    var isDefault=DEFAULT_ITEMS.some(function(d){return d.name===it.name;});
+    var isSel=(curItem===it.name);
+    div.className='chip'+(isSel?(it.score<0?' sel-minus':' sel-plus'):'');
+    div.textContent=it.name+' '+(it.score>0?'+':'')+it.score;
+    div.onclick=(function(item,score){
+      return function(){
+        document.querySelectorAll('#item-chips .chip').forEach(function(c){c.className='chip';});
+        this.className='chip '+(score<0?'sel-minus':'sel-plus');
+        curItem=item;curScore=score;
+        document.getElementById('rec-score').value=score;
+      };
+    })(it.name,it.score);
+    wrap.appendChild(div);
+  });
+}
+
+function renderCustomItemList(){
+  var list=document.getElementById('custom-item-list');
+  if(!list)return;
+  if(customItems.length===0){
+    list.innerHTML='<div style="font-size:12px;color:var(--text3)">尚無自訂項目</div>';
+    return;
+  }
+  list.innerHTML=customItems.map(function(it,i){
+    return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">'
+      +'<span style="flex:1;font-size:14px">'+it.name+'</span>'
+      +'<span style="font-size:13px;color:'+(it.score<0?'var(--minus)':'var(--plus)')+';">'+(it.score>0?'+':'')+it.score+'</span>'
+      +'<button class="btn btn-sm btn-danger" onclick="deleteCustomItem('+i+')" style="padding:2px 10px;font-size:12px">刪除</button>'
+      +'</div>';
+  }).join('');
+}
+
+function addCustomItem(){
+  var name=document.getElementById('new-item-name').value.trim();
+  var score=parseFloat(document.getElementById('new-item-score').value);
+  if(!name){showToast('請輸入項目名稱');return;}
+  if(isNaN(score)||score===0){showToast('分數不能為零');return;}
+  var all=allItems();
+  if(all.some(function(it){return it.name===name;})){showToast('項目名稱已存在');return;}
+  customItems.push({name:name,score:score});
+  saveCustomItems();
+  document.getElementById('new-item-name').value='';
+  document.getElementById('new-item-score').value='-1';
+  renderItemChips();
+  renderCustomItemList();
+  showToast('已新增項目：'+name);
+}
+
+function deleteCustomItem(idx){
+  var name=customItems[idx].name;
+  customItems.splice(idx,1);
+  saveCustomItems();
+  if(curItem===name){
+    curItem=DEFAULT_ITEMS[0].name;
+    curScore=DEFAULT_ITEMS[0].score;
+  }
+  renderItemChips();
+  renderCustomItemList();
+  showToast('已刪除：'+name);
+}
+
 function init(){
   try{var r=localStorage.getItem(DB);if(r)records=JSON.parse(r);}catch(e){}
   try{var c=localStorage.getItem(CFG);if(c)cfg=JSON.parse(c);}catch(e){}
+  loadCustomItems();
+  renderItemChips();
   try{var n=localStorage.getItem(NOTES_DB);if(n)notes=JSON.parse(n);}catch(e){}
   try{var ro=localStorage.getItem(ROSTER_DB);if(ro)roster=JSON.parse(ro);}catch(e){}
   if(!cfg.baseScore)cfg.baseScore=95;
@@ -691,7 +790,7 @@ function switchTab(name,el){
   document.getElementById('panel-'+name).className='panel active';
   if(name==='log')renderLog();
   if(name==='summary')renderSummary();
-  if(name==='settings')buildSettings();
+  if(name==='settings'){buildSettings();renderCustomItemList();}
 }
 
 function exportCSV(){
