@@ -462,9 +462,6 @@ function buildNumGrid(){
   var g=document.getElementById('num-grid');
   g.innerHTML='';
   for(var i=1;i<=33;i++){
-    if(i===11||i===21||i===31){
-      var sep=document.createElement('div');sep.className='num-row-sep';g.appendChild(sep);
-    }
     var b=document.createElement('button');
     b.className='num-btn'+(selNums.has(i)?' sel':'');
     var name=getStudentName(selClass,i);
@@ -701,7 +698,7 @@ function saveClassName(idx){
   records.forEach(function(r){if(r.cls===old)r.cls=val;});
   save();saveCfg();
   selClass=cfg.classes[0];
-  buildClassChips();buildDropdowns();
+  buildClassChips();buildDropdowns();buildRosterClsDropdown();
   renderLog();renderSummary();
   showToast('已更新為「'+val+'」');
 }
