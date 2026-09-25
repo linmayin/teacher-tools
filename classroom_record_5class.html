@@ -44,8 +44,8 @@ body{font-family:'PingFang TC','Noto Sans TC',sans-serif;background:var(--bg);co
 .chip.sel-plus{background:var(--plus);border-color:var(--plus);color:#fff;}
 
 .num-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;margin-bottom:10px;}
-.num-btn{aspect-ratio:1;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;font-weight:500;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;user-select:none;font-family:'SF Mono','Fira Mono',monospace;line-height:1.2;padding:2px;}
-.num-btn .nb-name{font-family:'PingFang TC','Noto Sans TC',sans-serif;font-size:9px;font-weight:400;opacity:0.75;overflow:hidden;max-width:100%;text-overflow:ellipsis;white-space:nowrap;}
+.num-btn{aspect-ratio:1;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:17px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;user-select:none;font-family:'SF Mono','Fira Mono',monospace;line-height:1.2;padding:2px;}
+.num-btn .nb-name{font-family:'PingFang TC','Noto Sans TC',sans-serif;font-size:12px;font-weight:500;opacity:0.9;overflow:hidden;max-width:100%;text-overflow:ellipsis;white-space:nowrap;}
 .num-btn.sel{background:var(--accent);border-color:var(--accent);color:#fff;}
 .num-row-sep{grid-column:1/-1;height:1px;background:var(--border);margin:2px 0;}
 
@@ -321,8 +321,10 @@ var DEFAULT_ITEMS=[
   {name:'功課未交',score:-1},
   {name:'上課講話',score:-1},
   {name:'上課睡覺',score:-1},
+  {name:'學用品未帶',score:-1},
   {name:'表現優異',score:1},
-  {name:'主動回答',score:1}
+  {name:'主動回答',score:1},
+  {name:'筆記書寫認真',score:1}
 ];
 var customItems=[]; // [{name,score}]
 
@@ -419,6 +421,12 @@ function init(){
   buildDropdowns();
   buildRosterClsDropdown();
   buildSettings();
+  // 自動帶入今天日期
+  var today=new Date();
+  var yyyy=today.getFullYear();
+  var mm=String(today.getMonth()+1).padStart(2,'0');
+  var dd=String(today.getDate()).padStart(2,'0');
+  document.getElementById('rec-date').value=yyyy+'-'+mm+'-'+dd;
   updateNoteHeader();
   renderLog();
   renderSummary();
@@ -462,6 +470,9 @@ function buildNumGrid(){
   var g=document.getElementById('num-grid');
   g.innerHTML='';
   for(var i=1;i<=33;i++){
+    if(i===11||i===21||i===31){
+      var sep=document.createElement('div');sep.className='num-row-sep';g.appendChild(sep);
+    }
     var b=document.createElement('button');
     b.className='num-btn'+(selNums.has(i)?' sel':'');
     var name=getStudentName(selClass,i);
@@ -698,7 +709,7 @@ function saveClassName(idx){
   records.forEach(function(r){if(r.cls===old)r.cls=val;});
   save();saveCfg();
   selClass=cfg.classes[0];
-  buildClassChips();buildDropdowns();buildRosterClsDropdown();
+  buildClassChips();buildDropdowns();
   renderLog();renderSummary();
   showToast('已更新為「'+val+'」');
 }
