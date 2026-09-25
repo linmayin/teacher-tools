@@ -709,7 +709,7 @@ function saveClassName(idx){
   records.forEach(function(r){if(r.cls===old)r.cls=val;});
   save();saveCfg();
   selClass=cfg.classes[0];
-  buildClassChips();buildDropdowns();
+  buildClassChips();buildDropdowns();buildRosterClsDropdown();
   renderLog();renderSummary();
   showToast('已更新為「'+val+'」');
 }
