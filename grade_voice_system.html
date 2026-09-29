@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>語音成績登記系統</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
   :root {
     --bg: #f0f4f8;
@@ -763,6 +764,14 @@
       <code>2,李小花</code><br>
       或每行只有姓名（自動從1號編起）。
     </div>
+    <div style="margin-bottom:10px">
+      <label style="display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;border:1.5px solid #ddd;background:#f8f8f8;cursor:pointer;font-size:14px;font-weight:500">
+        📊 上傳 Excel 或 CSV 檔
+        <input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importFromFile(this)">
+      </label>
+      <span style="font-size:12px;color:#888;margin-left:8px">（第一欄座號、第二欄姓名）</span>
+    </div>
+    <div style="font-size:12px;color:#aaa;margin-bottom:6px;text-align:center">── 或直接貼上文字 ──</div>
     <textarea class="modal-textarea" id="importTextarea" placeholder="在此貼上名單…"></textarea>
     <div class="modal-actions">
       <button class="btn btn-secondary" onclick="closeImportModal()">取消</button>
@@ -1036,6 +1045,36 @@ function renderListPreview() {
   } else {
     preview.innerHTML = `<span style="color:var(--text3);">（${cls.name} 尚未匯入名單，使用空白座位）</span>`;
   }
+}
+
+function importFromFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, {type: 'array'});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {header: 1, defval: ''});
+      const lines = [];
+      rows.forEach(function(row) {
+        if (!row || row.length === 0) return;
+        // 跳過標題行（第一欄是「座號」文字）
+        if (String(row[0]).trim() === '座號') return;
+        const seat = row[0] !== '' ? String(row[0]).trim() : '';
+        const name = row[1] !== '' ? String(row[1]).trim() : '';
+        if (name) lines.push(seat ? seat + ',' + name : name);
+      });
+      if (lines.length === 0) { showToast('找不到有效資料，請確認欄位格式', 'error'); return; }
+      document.getElementById('importTextarea').value = lines.join('\n');
+      showToast('已載入 ' + lines.length + ' 筆，請確認後按「確認匯入」', 'success');
+    } catch(err) {
+      showToast('檔案讀取失敗：' + err.message, 'error');
+    }
+    input.value = '';
+  };
+  reader.readAsArrayBuffer(file);
 }
 
 function openImportModal() {
