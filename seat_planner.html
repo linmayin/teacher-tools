@@ -26,8 +26,8 @@ body{font-family:'PingFang TC','Noto Sans TC',sans-serif;background:var(--bg);co
 .seat.empty-slot::after{content:"\2715";font-size:15px;color:#bbb}
 .seat.drop-over{border-color:var(--accent);background:var(--accent-light)}
 .seat.occupied{background:var(--accent-light);border-color:var(--accent)}
-.seat-name{font-size:13px;font-weight:500;line-height:1.2;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
-.seat-no{font-size:10px;font-weight:700;color:var(--accent);margin-top:1px}
+.seat-name{font-size:16px;font-weight:700;line-height:1.2;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
+.seat-no{font-size:12px;font-weight:700;color:var(--accent);margin-top:2px}
 .seat-remove{position:absolute;top:1px;right:3px;font-size:10px;color:#bbb;cursor:pointer;padding:2px}
 .seat-remove:active{color:var(--red)}
 .bottom-roster{background:var(--surface);border-top:2px solid var(--accent);padding:7px 10px;flex-shrink:0;display:none}
@@ -118,7 +118,6 @@ body{font-family:'PingFang TC','Noto Sans TC',sans-serif;background:var(--bg);co
 </div>
 <div class="toast" id="toast"></div>
 <script>
-
 // ===== 狀態 =====
 let rows=6,cols=6,direction='top',mode='setup';
 let grid=[];
@@ -207,7 +206,11 @@ function renderGrid(){
 
   for(let r=0;r<rows;r++){
     for(let c=0;c<cols;c++){
-      const cell=grid[r][c];
+      // 依方向決定實際顯示哪個格子（下方=180度旋轉）
+      const dr = direction==='bottom' ? rows-1-r : r;
+      const dc = direction==='bottom' ? cols-1-c : c;
+      const cell=grid[dr][dc];
+      const realR=dr, realC=dc;
       const div=document.createElement('div');
       div.style.width=w+'px';
       div.style.height=h+'px';
@@ -220,11 +223,11 @@ function renderGrid(){
         }
       } else {
         div.className='seat'+(cell?' occupied':'');
-        div.dataset.r=r; div.dataset.c=c;
+        div.dataset.r=realR; div.dataset.c=realC;
         if(cell){
           const rem=document.createElement('span');
           rem.className='seat-remove'; rem.textContent='✕';
-          rem.onclick=(e)=>{e.stopPropagation();removeSeat(r,c);};
+          rem.onclick=(e)=>{e.stopPropagation();removeSeat(realR,realC);};
           const name=document.createElement('span');
           name.className='seat-name'; name.textContent=cell.name;
           const no=document.createElement('span');
@@ -232,7 +235,7 @@ function renderGrid(){
           div.appendChild(rem); div.appendChild(name); div.appendChild(no);
           // 滑鼠拖曳
           div.draggable=true;
-          div.ondragstart=(e)=>{dragStudent=null;dragFromSeat={r,c};e.dataTransfer.effectAllowed='move';};
+          div.ondragstart=(e)=>{dragStudent=null;dragFromSeat={r:realR,c:realC};e.dataTransfer.effectAllowed='move';};
           // 觸控拖曳
           div.addEventListener('touchstart',touchStart,{passive:false});
         } else {
@@ -241,13 +244,13 @@ function renderGrid(){
             hint.style.cssText='font-size:10px;color:var(--text3)';
             hint.textContent='點擊留空';
             div.appendChild(hint);
-            div.onclick=()=>toggleEmpty(r,c);
+            div.onclick=()=>toggleEmpty(realR,realC);
           }
         }
         if(mode==='arrange'){
           div.ondragover=(e)=>{e.preventDefault();div.classList.add('drop-over');};
           div.ondragleave=()=>div.classList.remove('drop-over');
-          div.ondrop=(e)=>{e.preventDefault();div.classList.remove('drop-over');dropOnSeat(r,c);};
+          div.ondrop=(e)=>{e.preventDefault();div.classList.remove('drop-over');dropOnSeat(realR,realC);};
         }
       }
       container.appendChild(div);
@@ -494,6 +497,10 @@ function clearAll(){
 
 // ===== 匯出 Word =====
 async function exportDocx(){
+  // 等待 docx 套件載入
+  if(!window.docx||!window.docx.Document){
+    showToast('套件載入中，請稍後再試');return;
+  }
   const {Document,Packer,Paragraph,Table,TableRow,TableCell,
     TextRun,AlignmentType,WidthType,BorderStyle,ShadingType,
     VerticalAlign,HeightRule}=window.docx;
@@ -528,8 +535,8 @@ async function exportDocx(){
     });
     return new TableCell({
       children:[
-        new Paragraph({children:[new TextRun({text:seat.name,size:22,font:'標楷體'})],alignment:AlignmentType.CENTER,spacing:{before:40,after:0}}),
-        new Paragraph({children:[new TextRun({text:String(seat.no),size:17,font:'標楷體',bold:true,color:'444444'})],alignment:AlignmentType.CENTER,spacing:{before:0,after:40}})
+        new Paragraph({children:[new TextRun({text:seat.name,size:26,font:'標楷體',bold:true})],alignment:AlignmentType.CENTER,spacing:{before:40,after:0}}),
+        new Paragraph({children:[new TextRun({text:String(seat.no),size:19,font:'標楷體',bold:true,color:'333333'})],alignment:AlignmentType.CENTER,spacing:{before:0,after:40}})
       ],
       borders:bord('888888',BorderStyle.SINGLE),
       verticalAlign:VerticalAlign.CENTER,
@@ -540,7 +547,7 @@ async function exportDocx(){
   const dirLabel=direction==='top'?'▲ 講台（前方）':'▼ 講台（後方）';
   const tableRows=exportGrid.slice(0,exRows).map(row=>new TableRow({
     children:row.slice(0,exCols).map(makeCell),
-    height:{value:800,rule:HeightRule.ATLEAST}
+    height:{value:900,rule:HeightRule.ATLEAST}
   }));
 
   const children=[
