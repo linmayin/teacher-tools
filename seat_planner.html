@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>排座位工具</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
+<style>
+:root{
+  --bg:#f5f4f0;--surface:#fff;--border:#ddd;--text:#1a1814;--text2:#666;--text3:#aaa;
+  --accent:#5c7a5c;--accent-light:#eef3ee;--accent-dark:#3d5c3d;
+  --red:#c0392b;--red-bg:#fce8e8;
+  --radius:8px;--shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'PingFang TC','Noto Sans TC','Microsoft JhengHei',sans-serif;
+  background:var(--bg);color:var(--text);font-size:14px;
+  height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* Header */
+.header{background:var(--accent);color:#fff;padding:8px 12px;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0}
+.header h1{font-size:15px;font-weight:700;white-space:nowrap}
+.header-right{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}
+.mode-badge{padding:3px 8px;border-radius:12px;font-size:11px;font-weight:700;white-space:nowrap}
+.mode-setup{background:#fff3e0;color:#b45309}
+.mode-arrange{background:var(--accent-light);color:var(--accent-dark)}
+
+/* Main layout */
+.main{display:flex;flex-direction:row;flex:1;overflow:hidden;min-height:0}
+
+/* Sidebar */
+.sidebar{width:200px;min-width:200px;background:var(--surface);
+  border-left:1px solid var(--border);display:flex;flex-direction:column;
+  overflow-y:auto;overflow-x:hidden;flex-shrink:0;-webkit-overflow-scrolling:touch;min-width:200px}
+.s-section{padding:8px 10px;border-bottom:1px solid var(--border)}
+.s-title{font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px;letter-spacing:.4px}
+.field{margin-bottom:7px}
+.field label{font-size:11px;color:var(--text3);display:block;margin-bottom:2px}
+.field input,.field select{width:100%;padding:5px 7px;border:1px solid var(--border);
+  border-radius:5px;font-size:13px;font-family:inherit}
+.grid-ctrl{display:flex;align-items:center;gap:5px}
+.grid-ctrl input{width:44px;text-align:center;padding:4px}
+.grid-ctrl span{font-size:11px;color:var(--text3)}
+
+/* Buttons */
+.btn{padding:6px 10px;border-radius:6px;border:1.5px solid var(--border);
+  background:var(--surface);color:var(--text);font-size:12px;font-weight:600;
+  cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;
+  font-family:inherit;white-space:nowrap;-webkit-tap-highlight-color:transparent}
+.btn:active{transform:scale(0.95);opacity:.85}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-full{width:100%;margin-bottom:5px}
+.btn-sm{padding:4px 8px;font-size:11px}
+.btn-red{background:var(--red-bg);color:var(--red);border-color:#f5c6c6}
+.btn-hdr{padding:6px 12px;border-radius:6px;border:1.5px solid rgba(255,255,255,.5);
+  background:rgba(255,255,255,.15);color:#fff;font-size:12px;font-weight:600;
+  cursor:pointer;font-family:inherit;white-space:nowrap}
+.btn-hdr:active{background:rgba(255,255,255,.3)}
+
+/* Direction */
+.dir-btns{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.dir-btn{padding:5px 4px;border-radius:5px;border:1px solid var(--border);
+  background:var(--surface);font-size:11px;cursor:pointer;text-align:center;font-family:inherit}
+.dir-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* Student list */
+.student-list{flex:1;overflow-y:auto;overflow-x:hidden;padding:6px;
+  -webkit-overflow-scrolling:touch;min-height:0}
+.student-chip{background:var(--accent-light);border:1.5px solid var(--accent);
+  border-radius:6px;padding:5px 7px;margin-bottom:4px;
+  display:flex;align-items:center;gap:5px;font-size:12px;
+  cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none}
+.student-chip.placed{background:#f0f0f0;border-color:#ccc;color:var(--text3);cursor:default}
+.chip-no{font-size:10px;font-weight:700;color:var(--accent);min-width:20px}
+.student-chip.placed .chip-no{color:var(--text3)}
+.chip-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Canvas */
+.canvas-area{flex:1;display:flex;flex-direction:column;align-items:center;
+  overflow:auto;padding:10px 8px;gap:8px;-webkit-overflow-scrolling:touch;min-width:0;max-width:calc(100% - 200px)}
+.podium-bar{background:var(--accent);color:#fff;border-radius:6px;
+  padding:6px 28px;font-size:13px;font-weight:700;letter-spacing:1px;flex-shrink:0}
+
+/* Seat grid */
+.classroom-grid{display:grid;gap:4px;flex-shrink:0}
+.seat{border-radius:6px;border:1.5px solid var(--border);background:var(--surface);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;touch-action:none;user-select:none;-webkit-user-select:none;
+  min-width:0;overflow:hidden}
+.seat:active{opacity:.8}
+.seat.empty-slot{background:#f0f0f0;border-style:dashed;border-color:#bbb;cursor:pointer}
+.seat.empty-slot::after{content:'✕';font-size:15px;color:#bbb}
+.seat.drop-over{border-color:var(--accent);background:var(--accent-light)}
+.seat.occupied{background:var(--accent-light);border-color:var(--accent)}
+.seat-name{font-size:13px;font-weight:500;line-height:1.2;text-align:center;
+  max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
+.seat-no{font-size:10px;font-weight:700;color:var(--accent);margin-top:1px}
+.seat-remove{position:absolute;top:1px;right:3px;font-size:10px;color:#bbb;
+  cursor:pointer;line-height:1;padding:2px}
+.seat-remove:active{color:var(--red)}
+
+/* Stats */
+.stat-row{display:flex;gap:5px;align-items:center;font-size:11px;color:var(--text2);flex-wrap:wrap}
+.stat-badge{background:var(--accent-light);color:var(--accent);padding:1px 6px;border-radius:8px;font-weight:700}
+
+/* Toast */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:#1a1814;color:#fff;padding:8px 16px;border-radius:16px;
+  font-size:13px;font-weight:600;z-index:999;opacity:0;transition:opacity .2s;
+  pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+
+/* Hint text */
+.hint{font-size:10px;color:var(--text3);background:#f9f9f9;padding:5px 7px;border-radius:5px;line-height:1.4}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🪑 排座位工具</h1>
+  <div class="header-right">
+    <span id="modeBadge" class="mode-badge mode-setup">格局設定</span>
+    <button class="btn-hdr" onclick="toggleMode()">切換模式</button>
+    <button class="btn-hdr" onclick="randomAssign()">🎲 隨機</button>
+    <button class="btn-hdr" onclick="exportDocx()">⬇ Word</button>
+  </div>
+</div>
+
+<div class="main">
+  <!-- Canvas first, sidebar on right -->
+  <div class="sidebar" style="order:2">
+    <div class="s-section">
+      <div class="s-title">教室設定</div>
+      <div class="field">
+        <label>班級名稱</label>
+        <input type="text" id="className" value="我的班級" oninput="renderGrid()">
+      </div>
+      <div class="field">
+        <label>排數（橫排）</label>
+        <div class="grid-ctrl">
+          <button class="btn btn-sm" onclick="adjustGrid('rows',-1)">−</button>
+          <input type="number" id="rowCount" value="6" min="1" max="12" onchange="initGrid()">
+          <button class="btn btn-sm" onclick="adjustGrid('rows',1)">＋</button>
+          <span>排</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>列數（直列）</label>
+        <div class="grid-ctrl">
+          <button class="btn btn-sm" onclick="adjustGrid('cols',-1)">−</button>
+          <input type="number" id="colCount" value="6" min="1" max="10" onchange="initGrid()">
+          <button class="btn btn-sm" onclick="adjustGrid('cols',1)">＋</button>
+          <span>列</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>講台方向</label>
+        <div class="dir-btns">
+          <button class="dir-btn active" id="dir-top" onclick="setDirection('top')">▲ 上方</button>
+          <button class="dir-btn" id="dir-bottom" onclick="setDirection('bottom')">▼ 下方</button>
+        </div>
+      </div>
+      <div class="hint">💡 <b>格局設定</b>模式下點格子可設為留空（X）</div>
+    </div>
+
+    <div class="s-section">
+      <div class="s-title">學生名單</div>
+      <textarea id="rosterInput" placeholder="1 王小明&#10;2 李小花&#10;（座號 姓名）" style="width:100%;height:70px;padding:5px;border:1px solid var(--border);border-radius:5px;font-size:12px;font-family:inherit;resize:none"></textarea>
+      <div style="display:flex;gap:4px;margin-top:4px">
+        <button class="btn btn-primary btn-sm" style="flex:1" onclick="parseRoster()">匯入</button>
+        <label class="btn btn-sm" style="cursor:pointer;flex:1;justify-content:center">
+          📊 Excel
+          <input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importExcel(this)">
+        </label>
+      </div>
+    </div>
+
+    <div class="s-section">
+      <div class="stat-row">
+        學生：<span class="stat-badge" id="totalCount">0</span>
+        已排：<span class="stat-badge" id="placedCount">0</span>
+      </div>
+    </div>
+
+    <div class="student-list" id="studentList">
+      <div style="color:var(--text3);font-size:11px;text-align:center;padding:10px">尚未匯入名單</div>
+    </div>
+
+    <div class="s-section">
+      <button class="btn btn-sm btn-red btn-full" onclick="clearAll()">🗑 清除座位安排</button>
+    </div>
+  </div>
+
+  <!-- Canvas -->
+  <div class="canvas-area" id="canvasArea" style="order:1">
+    <div class="podium-bar" id="podiumBar">▲ 講台</div>
+    <div class="classroom-grid" id="classGrid"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== 狀態 =====
+let rows=6,cols=6,direction='top',mode='setup';
+let grid=[];
+let students=[];
+let dragStudent=null,dragFromSeat=null;
+let touchDragEl=null,touchClone=null,touchSrc=null;
+
+// ===== 格子尺寸（自動計算）=====
+function calcSeatSize(){
+  const canvas=document.getElementById('canvasArea');
+  // canvas.clientWidth 已是扣掉 sidebar 後的寬度，再減 padding
+  const w=canvas.clientWidth-24;
+  const h=canvas.clientHeight-80;
+  const sw=Math.floor((w-cols*5)/cols);
+  const sh=Math.floor((h-rows*5)/rows);
+  return {w:Math.max(60,Math.min(96,sw)),h:Math.max(48,Math.min(68,sh))};
+}
+
+// ===== 初始化 =====
+function initGrid(){
+  rows=parseInt(document.getElementById('rowCount').value)||6;
+  cols=parseInt(document.getElementById('colCount').value)||6;
+  const old=grid;
+  grid=[];
+  for(let r=0;r<rows;r++){
+    grid[r]=[];
+    for(let c=0;c<cols;c++){
+      grid[r][c]=(old[r]&&old[r][c]!==undefined)?old[r][c]:undefined;
+    }
+  }
+  renderGrid();
+}
+
+function adjustGrid(type,delta){
+  const id=type==='rows'?'rowCount':'colCount';
+  const max=type==='rows'?12:10;
+  const el=document.getElementById(id);
+  el.value=Math.max(1,Math.min(max,parseInt(el.value)+delta));
+  initGrid();
+}
+
+// ===== 方向 =====
+function setDirection(dir){
+  direction=dir;
+  document.querySelectorAll('.dir-btn').forEach(b=>b.classList.remove('active'));
+  const el=document.getElementById('dir-'+dir);
+  if(el) el.classList.add('active');
+  updatePodium();
+  renderGrid();
+}
+
+function updatePodium(){
+  const bar=document.getElementById('podiumBar');
+  const canvas=document.getElementById('canvasArea');
+  const grid=document.getElementById('classGrid');
+  bar.style.writingMode='horizontal-tb';
+  bar.style.padding='6px 28px';
+  canvas.style.flexDirection='column';
+  if(direction==='top'){
+    canvas.insertBefore(bar,grid);
+    bar.textContent='▲ 講台';
+  } else {
+    canvas.appendChild(bar);
+    bar.textContent='▼ 講台';
+  }
+}
+
+// ===== 模式切換 =====
+function toggleMode(){
+  mode=mode==='setup'?'arrange':'setup';
+  const badge=document.getElementById('modeBadge');
+  badge.textContent=mode==='setup'?'格局設定':'排座位';
+  badge.className='mode-badge '+(mode==='setup'?'mode-setup':'mode-arrange');
+  renderGrid();
+}
+
+// ===== 渲染格子 =====
+function renderGrid(){
+  const container=document.getElementById('classGrid');
+  const {w,h}=calcSeatSize();
+  container.style.gridTemplateColumns=`repeat(${cols},${w}px)`;
+  container.innerHTML='';
+
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const cell=grid[r][c];
+      const div=document.createElement('div');
+      div.style.width=w+'px';
+      div.style.height=h+'px';
+
+      if(cell===null){
+        div.className='seat empty-slot';
+        if(mode==='setup'){
+          div.onclick=()=>toggleEmpty(r,c);
+          div.title='點擊取消留空';
+        }
+      } else {
+        div.className='seat'+(cell?' occupied':'');
+        div.dataset.r=r; div.dataset.c=c;
+        if(cell){
+          const rem=document.createElement('span');
+          rem.className='seat-remove'; rem.textContent='✕';
+          rem.onclick=(e)=>{e.stopPropagation();removeSeat(r,c);};
+          const name=document.createElement('span');
+          name.className='seat-name'; name.textContent=cell.name;
+          const no=document.createElement('span');
+          no.className='seat-no'; no.textContent=cell.no+'號';
+          div.appendChild(rem); div.appendChild(name); div.appendChild(no);
+          // 滑鼠拖曳
+          div.draggable=true;
+          div.ondragstart=(e)=>{dragStudent=null;dragFromSeat={r,c};e.dataTransfer.effectAllowed='move';};
+          // 觸控拖曳
+          div.addEventListener('touchstart',touchStart,{passive:false});
+        } else {
+          if(mode==='setup'){
+            const hint=document.createElement('span');
+            hint.style.cssText='font-size:10px;color:var(--text3)';
+            hint.textContent='點擊留空';
+            div.appendChild(hint);
+            div.onclick=()=>toggleEmpty(r,c);
+          }
+        }
+        if(mode==='arrange'){
+          div.ondragover=(e)=>{e.preventDefault();div.classList.add('drop-over');};
+          div.ondragleave=()=>div.classList.remove('drop-over');
+          div.ondrop=(e)=>{e.preventDefault();div.classList.remove('drop-over');dropOnSeat(r,c);};
+        }
+      }
+      container.appendChild(div);
+    }
+  }
+  updateStats();
+}
+
+function toggleEmpty(r,c){
+  grid[r][c]=grid[r][c]===null?undefined:null;
+  renderGrid();
+}
+
+// ===== 滑鼠拖放 =====
+function dropOnSeat(r,c){
+  if(grid[r][c]===null)return;
+  if(dragFromSeat){
+    const {r:fr,c:fc}=dragFromSeat;
+    const tmp=grid[r][c]; grid[r][c]=grid[fr][fc]; grid[fr][fc]=tmp;
+    dragFromSeat=null;
+  } else if(dragStudent){
+    if(grid[r][c]){showToast('該座位已有人！');return;}
+    removeStudentFromGrid(dragStudent.no);
+    grid[r][c]=dragStudent; dragStudent=null;
+  }
+  renderGrid(); renderStudentList();
+}
+
+// ===== 觸控拖曳（iPad）=====
+function touchStart(e){
+  if(mode!=='arrange')return;
+  const srcDiv=e.currentTarget;
+  const r=parseInt(srcDiv.dataset.r),c=parseInt(srcDiv.dataset.c);
+  if(!grid[r][c])return;
+  e.preventDefault();
+  dragFromSeat={r,c}; dragStudent=null;
+
+  // 建立跟隨的分身
+  const clone=srcDiv.cloneNode(true);
+  clone.style.cssText=`position:fixed;opacity:.75;pointer-events:none;z-index:999;
+    width:${srcDiv.offsetWidth}px;height:${srcDiv.offsetHeight}px;
+    background:var(--accent-light);border:2px solid var(--accent);border-radius:6px;`;
+  document.body.appendChild(clone);
+  touchClone=clone; touchSrc=srcDiv;
+
+  const t=e.touches[0];
+  clone.style.left=(t.clientX-srcDiv.offsetWidth/2)+'px';
+  clone.style.top=(t.clientY-srcDiv.offsetHeight/2)+'px';
+
+  document.addEventListener('touchmove',touchMove,{passive:false});
+  document.addEventListener('touchend',touchEnd,{passive:false});
+}
+
+function touchMove(e){
+  e.preventDefault();
+  if(!touchClone)return;
+  const t=e.touches[0];
+  touchClone.style.left=(t.clientX-parseInt(touchClone.style.width)/2)+'px';
+  touchClone.style.top=(t.clientY-parseInt(touchClone.style.height)/2)+'px';
+  // highlight drop target
+  document.querySelectorAll('.seat.drop-over').forEach(el=>el.classList.remove('drop-over'));
+  const el=document.elementFromPoint(t.clientX,t.clientY);
+  const seat=el?.closest('.seat');
+  if(seat&&seat!==touchSrc)seat.classList.add('drop-over');
+}
+
+function touchEnd(e){
+  document.removeEventListener('touchmove',touchMove);
+  document.removeEventListener('touchend',touchEnd);
+  if(touchClone){touchClone.remove();touchClone=null;}
+  document.querySelectorAll('.seat.drop-over').forEach(el=>el.classList.remove('drop-over'));
+
+  if(!e.changedTouches.length)return;
+  const t=e.changedTouches[0];
+  const el=document.elementFromPoint(t.clientX,t.clientY);
+  const seat=el?.closest('.seat');
+  if(seat&&seat.dataset.r!==undefined){
+    const tr=parseInt(seat.dataset.r),tc=parseInt(seat.dataset.c);
+    if(!(tr===dragFromSeat?.r&&tc===dragFromSeat?.c))
+      dropOnSeat(tr,tc);
+  }
+  dragFromSeat=null; touchSrc=null;
+}
+
+function chipTouchStart(e,student){
+  if(mode!=='arrange')return;
+  if(student.placed)return;
+  e.preventDefault();
+  dragStudent={no:student.no,name:student.name}; dragFromSeat=null;
+
+  const chip=e.currentTarget;
+  const clone=chip.cloneNode(true);
+  clone.style.cssText=`position:fixed;opacity:.75;pointer-events:none;z-index:999;
+    width:${chip.offsetWidth}px;padding:5px 7px;
+    background:var(--accent-light);border:1.5px solid var(--accent);border-radius:6px;font-size:12px;`;
+  document.body.appendChild(clone);
+  touchClone=clone;
+
+  const t=e.touches[0];
+  clone.style.left=(t.clientX-chip.offsetWidth/2)+'px';
+  clone.style.top=(t.clientY-20)+'px';
+
+  document.addEventListener('touchmove',touchMove,{passive:false});
+  document.addEventListener('touchend',touchEnd,{passive:false});
+}
+
+function removeStudentFromGrid(no){
+  for(let r=0;r<rows;r++)
+    for(let c=0;c<cols;c++)
+      if(grid[r][c]&&grid[r][c].no===no) grid[r][c]=undefined;
+}
+
+function removeSeat(r,c){grid[r][c]=undefined;renderGrid();renderStudentList();}
+
+// ===== 名單 =====
+function parseRoster(){
+  const text=document.getElementById('rosterInput').value.trim();
+  if(!text)return;
+  const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
+  const newStudents=[];
+  lines.forEach((line,idx)=>{
+    const parts=line.split(/[\s,，]+/);
+    let no,name;
+    if(parts.length>=2&&!isNaN(parts[0])){no=parseInt(parts[0]);name=parts.slice(1).join('');}
+    else{no=idx+1;name=line;}
+    if(name)newStudents.push({no,name});
+  });
+  students=newStudents; renderStudentList(); updateStats();
+  showToast(`已匯入 ${students.length} 位學生`);
+}
+
+function importExcel(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rowData=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      const newStudents=[];
+      rowData.forEach((row,idx)=>{
+        if(!row||!row.length)return;
+        if(String(row[0]).trim()==='座號')return;
+        const no=parseInt(row[0]);
+        const name=String(row[1]||'').trim();
+        if(name)newStudents.push({no:isNaN(no)?idx+1:no,name});
+      });
+      students=newStudents; renderStudentList(); updateStats();
+      showToast(`已匯入 ${students.length} 位學生`);
+    }catch(e){showToast('匯入失敗：'+e.message);}
+    input.value='';
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function renderStudentList(){
+  const placed=new Set();
+  for(let r=0;r<rows;r++)
+    for(let c=0;c<cols;c++)
+      if(grid[r][c]&&grid[r][c].no!==undefined)placed.add(grid[r][c].no);
+
+  const list=document.getElementById('studentList');
+  if(!students.length){
+    list.innerHTML='<div style="color:var(--text3);font-size:11px;text-align:center;padding:10px">尚未匯入名單</div>';
+    return;
+  }
+  list.innerHTML='';
+  students.forEach(s=>{
+    const isPlaced=placed.has(s.no);
+    const div=document.createElement('div');
+    div.className='student-chip'+(isPlaced?' placed':'');
+    div.innerHTML=`<span class="chip-no">${s.no}</span><span class="chip-name">${s.name}</span>${isPlaced?'<span style="font-size:10px;color:var(--text3)">✓</span>':''}`;
+    if(!isPlaced){
+      // 滑鼠拖曳
+      div.draggable=true;
+      div.ondragstart=e=>{dragStudent={no:s.no,name:s.name};e.dataTransfer.effectAllowed='move';};
+      // 觸控
+      div.addEventListener('touchstart',e=>chipTouchStart(e,{...s,placed:isPlaced}),{passive:false});
+    }
+    list.appendChild(div);
+  });
+  updateStats();
+}
+
+function updateStats(){
+  const placed=countPlaced();
+  document.getElementById('totalCount').textContent=students.length;
+  document.getElementById('placedCount').textContent=placed;
+}
+
+function countPlaced(){
+  let n=0;
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)if(grid[r][c]&&grid[r][c].no!==undefined)n++;
+  return n;
+}
+
+// ===== 隨機分配 =====
+function randomAssign(){
+  if(!students.length){showToast('請先匯入學生名單');return;}
+  const placedNos=new Set();
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)if(grid[r][c]&&grid[r][c].no!==undefined)placedNos.add(grid[r][c].no);
+  const unplaced=students.filter(s=>!placedNos.has(s.no));
+  if(!unplaced.length){showToast('所有學生都已安排！');return;}
+  const empty=[];
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)if(grid[r][c]===undefined)empty.push({r,c});
+  if(!empty.length){showToast('沒有可用的空位！');return;}
+  const shuffled=[...unplaced].sort(()=>Math.random()-.5);
+  const seats=[...empty].sort(()=>Math.random()-.5);
+  const count=Math.min(shuffled.length,seats.length);
+  for(let i=0;i<count;i++)grid[seats[i].r][seats[i].c]=shuffled[i];
+  renderGrid(); renderStudentList();
+  showToast(`已隨機分配 ${count} 位學生`);
+}
+
+function clearAll(){
+  if(!confirm('確定清除所有座位安排？'))return;
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++)if(grid[r][c]!==null)grid[r][c]=undefined;
+  renderGrid(); renderStudentList();
+}
+
+// ===== 匯出 Word =====
+async function exportDocx(){
+  const {Document,Packer,Paragraph,Table,TableRow,TableCell,
+    TextRun,AlignmentType,WidthType,BorderStyle,ShadingType,
+    VerticalAlign,HeightRule}=window.docx;
+
+  const className=document.getElementById('className').value||'座位表';
+  const PAGE_W=11906,MARGIN=720,TABLE_W=PAGE_W-MARGIN*2;
+
+  let exportGrid=grid,exRows=rows,exCols=cols;
+  if(direction==='bottom'){
+    exportGrid=[...grid].reverse().map(row=>[...row].reverse());
+  }
+
+  const COL_W=Math.floor(TABLE_W/exCols);
+  const bord=(color,style)=>({
+    top:{style,size:4,color},bottom:{style,size:4,color},
+    left:{style,size:4,color},right:{style,size:4,color}
+  });
+
+  function makeCell(seat){
+    if(seat===null)return new TableCell({
+      children:[new Paragraph({children:[new TextRun({text:'✕',color:'CCCCCC',size:18,font:'標楷體'})],alignment:AlignmentType.CENTER})],
+      shading:{type:ShadingType.CLEAR,fill:'F0F0F0'},
+      borders:bord('CCCCCC',BorderStyle.DASHED),
+      verticalAlign:VerticalAlign.CENTER,
+      width:{size:COL_W,type:WidthType.DXA}
+    });
+    if(!seat)return new TableCell({
+      children:[new Paragraph('')],
+      borders:bord('BBBBBB',BorderStyle.SINGLE),
+      verticalAlign:VerticalAlign.CENTER,
+      width:{size:COL_W,type:WidthType.DXA}
+    });
+    return new TableCell({
+      children:[
+        new Paragraph({children:[new TextRun({text:seat.name,size:22,font:'標楷體'})],alignment:AlignmentType.CENTER,spacing:{before:40,after:0}}),
+        new Paragraph({children:[new TextRun({text:String(seat.no),size:17,font:'標楷體',bold:true,color:'444444'})],alignment:AlignmentType.CENTER,spacing:{before:0,after:40}})
+      ],
+      borders:bord('888888',BorderStyle.SINGLE),
+      verticalAlign:VerticalAlign.CENTER,
+      width:{size:COL_W,type:WidthType.DXA}
+    });
+  }
+
+  const dirLabel=direction==='top'?'▲ 講台（前方）':'▼ 講台（後方）';
+  const tableRows=exportGrid.slice(0,exRows).map(row=>new TableRow({
+    children:row.slice(0,exCols).map(makeCell),
+    height:{value:800,rule:HeightRule.ATLEAST}
+  }));
+
+  const children=[
+    new Paragraph({children:[new TextRun({text:className,size:34,font:'標楷體',bold:true})],alignment:AlignmentType.CENTER,spacing:{before:0,after:160}}),
+    new Paragraph({children:[new TextRun({text:dirLabel,size:19,font:'標楷體',color:'555555'})],alignment:AlignmentType.CENTER,spacing:{before:0,after:120}}),
+    new Table({rows:tableRows,width:{size:TABLE_W,type:WidthType.DXA},columnWidths:Array(exCols).fill(COL_W)})
+  ];
+
+  const doc=new Document({sections:[{properties:{page:{margin:{top:MARGIN,bottom:MARGIN,left:MARGIN,right:MARGIN}}},children}]});
+  const buf=await Packer.toBuffer(doc);
+  const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=className+'_座位表.docx'; a.click();
+  showToast('座位表已下載！');
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show';
+  clearTimeout(t._t);t._t=setTimeout(()=>t.className='toast',2500);
+}
+
+// ===== 啟動 =====
+initGrid();
+updatePodium();
+window.addEventListener('resize',()=>renderGrid());
+</script>
+</body>
+</html>
