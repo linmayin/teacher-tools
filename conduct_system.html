@@ -98,16 +98,21 @@ input[type=text],input[type=number],input[type=date],select,textarea{
 <!-- 每日登記 -->
 <div id="tab-record" class="section active">
   <div class="card">
-    <div style="display:flex;gap:8px;align-items:flex-end">
-      <div class="field" style="margin:0;flex:1">
-        <label>登記日期 <span id="recDayDisplay" style="color:var(--accent);font-weight:600"></span></label>
-        <input type="date" id="recDate" onchange="updateDayDisplay('recDate','recDayDisplay')">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text)" id="recTodayLabel"></div>
+        <div style="font-size:12px;color:var(--accent);margin-top:2px" id="recInfo"></div>
       </div>
-      <div class="field" style="margin:0;width:70px;flex-shrink:0">
-        <label>週次</label>
-        <input type="number" id="recWeek" value="1" min="1" max="52" style="text-align:center">
+      <div style="display:flex;gap:6px;align-items:center">
+        <button class="btn btn-sm" id="recModeBtn" onclick="toggleRecMode()" style="font-size:11px">📅 補登其他日期</button>
       </div>
     </div>
+    <div id="recAltDate" style="display:none;margin-top:10px">
+      <label style="font-size:12px;color:var(--text3);font-weight:500">補登日期</label>
+      <input type="date" id="recDate" onchange="updateRecordInfo()" style="margin-top:4px">
+    </div>
+    <input type="hidden" id="recWeekHidden" value="1">
+    <input type="hidden" id="recDayHidden" value="">
   </div>
   <div class="card">
     <div class="card-title">選擇項目</div>
@@ -152,12 +157,8 @@ input[type=text],input[type=number],input[type=date],select,textarea{
     <div class="card-title">貼上 CSV 匯入</div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:6px">格式：座號,項目,星期（第4欄選填備註）</div>
     <textarea id="csvPaste" style="height:100px;font-size:12px;font-family:monospace;resize:vertical" placeholder="3,作業缺交/學用品,三,英習&#10;7,服裝儀容,三"></textarea>
-    <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
-      <div style="font-size:12px;color:var(--text3)">匯入至第</div>
-      <input type="number" id="csvWeek" value="1" min="1" max="52" style="width:60px">
-      <div style="font-size:12px;color:var(--text3)">週</div>
-      <button class="btn btn-primary btn-sm" onclick="importCSVPaste()">⬆ 匯入</button>
-    </div>
+    <div style="font-size:11px;color:var(--text3);margin:6px 0">新格式：週次,星期,座號,項目,備註　舊格式：座號,項目,星期,備註</div>
+    <button class="btn btn-primary btn-sm" onclick="importCSVPaste()" style="margin-top:4px">⬆ 匯入</button>
     <div id="importMsg"></div>
   </div>
 </div>
@@ -166,16 +167,14 @@ input[type=text],input[type=number],input[type=date],select,textarea{
 <div id="tab-merit" class="section">
   <div class="card">
     <div class="card-title">新增優缺點記錄</div>
-    <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:10px">
-      <div class="field" style="margin:0;flex:1">
-        <label>日期</label>
-        <input type="date" id="meritDate">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:var(--text)" id="meritTodayLabel"></div>
+        <div style="font-size:12px;color:var(--accent);margin-top:2px" id="meritInfo"></div>
       </div>
-      <div class="field" style="margin:0;width:70px;flex-shrink:0">
-        <label>週次</label>
-        <input type="number" id="meritWeek" value="1" min="1" max="52" style="text-align:center">
-      </div>
+      <input type="date" id="meritDate" onchange="updateMeritInfo()" style="width:auto;font-size:13px;padding:6px 10px">
     </div>
+    <input type="hidden" id="meritWeekHidden" value="1">
     <div class="field" style="margin-top:10px">
       <label>類型與項目</label>
       <div class="chip-wrap" id="meritChips"></div>
@@ -271,22 +270,19 @@ input[type=text],input[type=number],input[type=date],select,textarea{
 <!-- 設定 -->
 <div id="tab-settings" class="section">
   <div class="card">
-    <div class="card-title">週次設定</div>
-    <div class="row">
-      <div class="field f1" style="margin:0">
-        <label>目前週次</label>
-        <input type="number" id="weekNum" value="1" min="1" max="52" onchange="saveSettings()">
+    <div class="card-title">學期設定</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <div class="field" style="margin:0;flex:1;min-width:140px">
+        <label>學期開始日</label>
+        <input type="date" id="semesterStart">
       </div>
-      <div class="field f1" style="margin:0">
-        <label>週一日期</label>
-        <input type="date" id="weekStart" onchange="autoWeekRange()">
+      <div class="field" style="margin:0;flex:1;min-width:140px">
+        <label>學期結束日</label>
+        <input type="date" id="semesterEnd">
       </div>
     </div>
-    <div class="field" style="margin-top:10px">
-      <label>日期範圍（自動產生）</label>
-      <input type="text" id="weekRange" readonly style="background:var(--surface2);color:var(--text2)">
-    </div>
-    <button class="btn btn-primary btn-sm" onclick="applyCurrentWeek()">套用至登記頁</button>
+    <button class="btn btn-primary btn-sm" onclick="saveSettings()" style="margin-top:10px">儲存設定</button>
+    <div id="semesterInfo" style="font-size:13px;color:var(--accent);margin-top:8px;font-weight:600"></div>
   </div>
   <div class="card">
     <div class="card-title">學生名單</div>
@@ -300,6 +296,7 @@ input[type=text],input[type=number],input[type=date],select,textarea{
   <div class="card">
     <div class="card-title">資料管理</div>
     <button class="btn btn-full" onclick="deleteWeekLogsFromSettings()">🗑 刪除指定週次常規登記</button>
+    <div style="font-size:11px;color:var(--text3);margin-top:-4px">輸入週次數字後刪除該週所有登記</div>
     <button class="btn btn-full btn-red" onclick="clearAllData()">⚠️ 清除全部資料</button>
   </div>
 </div>
@@ -338,11 +335,61 @@ let state={
   logs:[],      // [{no,item,day,note,date,week}]
   merits:[],    // [{no,item,score,date,week}]
   customMerits:[],
-  weekNum:1, weekStart:'', weekRange:'', notionToken:''
+  weekNum:1, weekStart:'', weekRange:'',
+  semesterStart:'', semesterEnd:''
 };
 let selItem=null, selNos=new Set();
 let meritItem=null, meritScore=0, meritNos=new Set();
 let summaryData=null, meritSummaryData=null;
+
+
+// ===== 學期週次計算 =====
+function calcCurrentWeek(){
+  if(!state.semesterStart) return 1;
+  const start=new Date(state.semesterStart);
+  // 找學期開始日所在週的週日
+  const startSunday=new Date(start);
+  startSunday.setDate(start.getDate()-start.getDay());
+  startSunday.setHours(0,0,0,0);
+  const today=new Date();
+  today.setHours(0,0,0,0);
+  const diff=today-startSunday;
+  const week=Math.floor(diff/(7*24*60*60*1000))+1;
+  return Math.max(1,week);
+}
+
+function calcWeekFromDate(dateStr){
+  if(!state.semesterStart||!dateStr) return 1;
+  const start=new Date(state.semesterStart);
+  const startSunday=new Date(start);
+  startSunday.setDate(start.getDate()-start.getDay());
+  startSunday.setHours(0,0,0,0);
+  const d=new Date(dateStr);
+  d.setHours(0,0,0,0);
+  const diff=d-startSunday;
+  const week=Math.floor(diff/(7*24*60*60*1000))+1;
+  return Math.max(1,week);
+}
+
+function getDayName(dateStr){
+  if(!dateStr) return '';
+  const d=new Date(dateStr);
+  const map={0:'日',1:'一',2:'二',3:'三',4:'四',5:'五',6:'六'};
+  return map[d.getDay()]||'';
+}
+
+function getWeekRange(week){
+  if(!state.semesterStart) return '';
+  const start=new Date(state.semesterStart);
+  const startSunday=new Date(start);
+  startSunday.setDate(start.getDate()-start.getDay());
+  const mon=new Date(startSunday);
+  mon.setDate(startSunday.getDate()+(week-1)*7+1);
+  const fri=new Date(mon);
+  fri.setDate(mon.getDate()+4);
+  const fmt=d=>`${d.getMonth()+1}/${d.getDate()}`;
+  return `${fmt(mon)}（一）～${fmt(fri)}（五）`;
+}
 
 // ===== 初始化 =====
 function init(){
@@ -356,12 +403,11 @@ function init(){
   renderMeritList();
   renderCustomMeritList();
   updateWeekSelectors();
-  document.getElementById('weekNum').value=state.weekNum;
-  document.getElementById('weekStart').value=state.weekStart;
-  document.getElementById('weekRange').value=state.weekRange;
-  document.getElementById('recWeek').value=state.weekNum;
-  document.getElementById('meritWeek').value=state.weekNum;
-  document.getElementById('csvWeek').value=state.weekNum;
+  const semStartEl=document.getElementById('semesterStart');
+  if(semStartEl) semStartEl.value=state.semesterStart||'';
+  const semEndEl=document.getElementById('semesterEnd');
+  if(semEndEl) semEndEl.value=state.semesterEnd||'';
+  updateSemesterInfo();
   updateRosterPreview();
 }
 
@@ -372,22 +418,38 @@ function saveState(){
   try{localStorage.setItem(DATA_KEY,JSON.stringify(state));}catch(e){}
 }
 
-function updateDayDisplay(dateId, displayId){
-  const val=document.getElementById(dateId).value;
-  const el=document.getElementById(displayId);
-  if(!el)return;
-  if(!val){el.textContent='';return;}
-  const d=new Date(val);
-  const dayMap={0:'日',1:'一',2:'二',3:'三',4:'四',5:'五',6:'六'};
-  el.textContent='（週'+dayMap[d.getDay()]+'）';
-}
-
 function setTodayDate(){
   const today=new Date();
   const dateStr=today.toLocaleDateString('sv');
-  document.getElementById('recDate').value=dateStr;
-  document.getElementById('meritDate').value=dateStr;
-  updateDayDisplay('recDate','recDayDisplay');
+  // 登記頁
+  const recDateEl=document.getElementById('recDate');
+  if(recDateEl) recDateEl.value=dateStr;
+  // 優缺點頁
+  const meritDateEl=document.getElementById('meritDate');
+  if(meritDateEl) meritDateEl.value=dateStr;
+  updateRecordInfo();
+  updateMeritInfo();
+}
+
+function updateRecordInfo(){
+  const dateStr=document.getElementById('recDate')?.value||'';
+  const week=dateStr?calcWeekFromDate(dateStr):calcCurrentWeek();
+  const day=getDayName(dateStr);
+  const el=document.getElementById('recInfo');
+  if(el) el.textContent=dateStr?`第 ${week} 週・週${day}`:'';
+  const wk=document.getElementById('recWeekHidden');
+  if(wk) wk.value=week;
+  const dk=document.getElementById('recDayHidden');
+  if(dk) dk.value=day;
+}
+
+function updateMeritInfo(){
+  const dateStr=document.getElementById('meritDate')?.value||'';
+  const week=dateStr?calcWeekFromDate(dateStr):calcCurrentWeek();
+  const el=document.getElementById('meritInfo');
+  if(el) el.textContent=dateStr?`第 ${week} 週`:'';
+  const wk=document.getElementById('meritWeekHidden');
+  if(wk) wk.value=week;
 }
 
 function switchTab(name,el){
@@ -535,17 +597,32 @@ function importCSVPaste(){
   if(!text){msgEl.innerHTML='<div style="color:var(--red);font-size:12px;margin-top:4px">請先貼上內容</div>';return;}
   let count=0;
   text.split('\n').forEach(l=>{
-    l=l.trim();if(!l)return;
+    l=l.trim();if(!l||l.startsWith('#'))return;
     const parts=l.split(',');
     if(parts.length<3)return;
-    const no=parseInt(parts[0]);
-    const itemLabel=parts[1].trim();
-    const day=parts[2].trim();
-    const note=parts[3]?parts[3].trim():'';
+    // 新格式：週次,星期,座號,項目,備註
+    // 舊格式：座號,項目,星期,備註
+    let no,itemLabel,day,note,rowWeek=week;
+    const firstNum=parseInt(parts[0]);
+    const thirdNum=parseInt(parts[2]);
+    if(!isNaN(firstNum)&&firstNum<=52&&DAYS.includes(parts[1].trim())&&!isNaN(thirdNum)){
+      // 新格式
+      rowWeek=firstNum;
+      day=parts[1].trim();
+      no=thirdNum;
+      itemLabel=parts[3]?parts[3].trim():'';
+      note=parts[4]?parts[4].trim():'';
+    } else {
+      // 舊格式
+      no=firstNum;
+      itemLabel=parts[1]?parts[1].trim():'';
+      day=parts[2]?parts[2].trim():'';
+      note=parts[3]?parts[3].trim():'';
+    }
     if(isNaN(no)||no<1||no>TOTAL||!DAYS.includes(day))return;
-    if(itemLabel==='項目')return;
+    if(itemLabel==='項目'||itemLabel==='座號')return;
     const it=CONDUCT_ITEMS.find(x=>x.label===itemLabel||itemLabel.includes(x.key)||x.label.includes(itemLabel));
-    if(it){state.logs.push({no,item:it.key,day,date:'',week,note:it.hasNote?note:''});count++;}
+    if(it){state.logs.push({no,item:it.key,day,date:'',week:rowWeek,note:it.hasNote?note:''});count++;}
   });
   document.getElementById('csvPaste').value='';
   msgEl.innerHTML=`<div style="color:var(--green);font-size:12px;margin-top:4px">已匯入 ${count} 筆（第${week}週）</div>`;
@@ -572,8 +649,8 @@ function addMerit(){
   const msg=document.getElementById('meritMsg');
   if(!meritItem){showMsg(msg,'請先選擇項目','red');return;}
   if(meritNos.size===0){showMsg(msg,'請選擇至少一個座號','red');return;}
-  const date=document.getElementById('meritDate').value;
-  const week=parseInt(document.getElementById('meritWeek').value)||state.weekNum;
+  const date=document.getElementById('meritDate').value||new Date().toLocaleDateString('sv');
+  const week=parseInt(document.getElementById('meritWeekHidden')?.value)||calcWeekFromDate(date);
   meritNos.forEach(no=>state.merits.push({no,item:meritItem,score:meritScore,date,week}));
   const cnt=meritNos.size;
   meritNos.clear(); renderNoGrid('meritGrid',meritNos,toggleMeritNo);
@@ -910,10 +987,24 @@ function autoWeekRange(){
 }
 
 function saveSettings(){
-  state.weekNum=parseInt(document.getElementById('weekNum').value)||1;
-  state.weekStart=document.getElementById('weekStart').value;
-  state.weekRange=document.getElementById('weekRange').value;
+  const ss=document.getElementById('semesterStart')?.value||'';
+  const se=document.getElementById('semesterEnd')?.value||'';
+  state.semesterStart=ss;
+  state.semesterEnd=se;
   saveState();
+  updateSemesterInfo();
+  updateRecordInfo();
+  updateMeritInfo();
+  showToast('設定已儲存');
+}
+
+function updateSemesterInfo(){
+  const el=document.getElementById('semesterInfo');
+  if(!el)return;
+  if(!state.semesterStart){el.textContent='尚未設定學期日期';return;}
+  const week=calcCurrentWeek();
+  const range=getWeekRange(week);
+  el.textContent=`今天：第 ${week} 週（${range}）`;
 }
 
 function applyCurrentWeek(){
@@ -959,6 +1050,39 @@ function dlFile(name,content,type){
 }
 
 init();
+
+// 補登模式切換
+function toggleRecMode(){
+  const alt=document.getElementById('recAltDate');
+  const btn=document.getElementById('recModeBtn');
+  const isAlt=alt.style.display==='block';
+  if(isAlt){
+    alt.style.display='none';
+    btn.textContent='📅 補登其他日期';
+    // 還原今天
+    document.getElementById('recDate').value=new Date().toLocaleDateString('sv');
+    updateRecordInfo();
+  } else {
+    alt.style.display='block';
+    btn.textContent='✕ 回到今天';
+  }
+}
+
+// 更新今天顯示
+function updateTodayLabels(){
+  const today=new Date();
+  const dateStr=today.toLocaleDateString('sv');
+  const dayMap={0:'日',1:'一',2:'二',3:'三',4:'四',5:'五',6:'六'};
+  const day=dayMap[today.getDay()];
+  const label=`今天 ${dateStr}（週${day}）`;
+  const el=document.getElementById('recTodayLabel');
+  if(el)el.textContent=label;
+  const ml=document.getElementById('meritTodayLabel');
+  if(ml)ml.textContent=label;
+}
+
+init();
+updateTodayLabels();
 </script>
 </body>
 </html>
