@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>排座位工具</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/docx@7.8.2/build/index.js"></script>
 <style>
 :root{--bg:#f5f4f0;--surface:#fff;--border:#ddd;--text:#1a1814;--text2:#666;--text3:#aaa;--accent:#5c7a5c;--accent-light:#eef3ee;--accent-dark:#3d5c3d;--red:#c0392b;--red-bg:#fce8e8;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -498,12 +498,14 @@ function clearAll(){
 // ===== 匯出 Word =====
 async function exportDocx(){
   // 等待 docx 套件載入
-  if(!window.docx||!window.docx.Document){
-    showToast('套件載入中，請稍後再試');return;
-  }
+  // docx 套件可能掛在 window.docx 或直接在 window
+  const _docx = window.docx || window;
   const {Document,Packer,Paragraph,Table,TableRow,TableCell,
     TextRun,AlignmentType,WidthType,BorderStyle,ShadingType,
-    VerticalAlign,HeightRule}=window.docx;
+    VerticalAlign,HeightRule} = _docx;
+  if(!Document||!Packer){
+    showToast('套件載入中，請稍後再試');return;
+  }
 
   const className=document.getElementById('className').value||'座位表';
   const PAGE_W=11906,MARGIN=720,TABLE_W=PAGE_W-MARGIN*2;
