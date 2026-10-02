@@ -29,7 +29,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang TC','Noto Sans TC',s
   border-bottom:2.5px solid transparent;white-space:nowrap;font-weight:500}
 .tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
 .section{display:none;padding:14px;padding-bottom:40px}.section.active{display:block}
-.card{background:var(--surface);border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}
+.card{background:var(--surface);border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:var(--shadow);overflow:hidden}
 .card-title{font-size:14px;font-weight:700;margin-bottom:10px}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;
   padding:10px 16px;border-radius:var(--radius-sm);border:1.5px solid var(--border);
@@ -44,8 +44,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang TC','Noto Sans TC',s
 .field{margin-bottom:10px}
 .field label{font-size:12px;color:var(--text3);display:block;margin-bottom:4px;font-weight:500}
 input[type=text],input[type=number],input[type=date],select,textarea{
-  width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);
-  background:var(--surface);color:var(--text);font-size:15px;font-family:inherit}
+  width:100%;max-width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--surface);color:var(--text);font-size:15px;font-family:inherit;box-sizing:border-box}
 .chip-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
 .chip{padding:8px 14px;border-radius:20px;border:1.5px solid var(--border);
   background:var(--surface2);font-size:13px;font-weight:500;cursor:pointer;user-select:none}
