@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>排座位工具</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/docx@7.8.2/build/index.js"></script>
 <style>
 :root{--bg:#f5f4f0;--surface:#fff;--border:#ddd;--text:#1a1814;--text2:#666;--text3:#aaa;--accent:#5c7a5c;--accent-light:#eef3ee;--accent-dark:#3d5c3d;--red:#c0392b;--red-bg:#fce8e8;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -497,74 +496,167 @@ function clearAll(){
 
 // ===== 匯出 Word =====
 async function exportDocx(){
-  // 等待 docx 套件載入
-  // docx 套件可能掛在 window.docx 或直接在 window
-  const _docx = window.docx || window;
-  const {Document,Packer,Paragraph,Table,TableRow,TableCell,
-    TextRun,AlignmentType,WidthType,BorderStyle,ShadingType,
-    VerticalAlign,HeightRule} = _docx;
-  if(!Document||!Packer){
-    showToast('套件載入中，請稍後再試');return;
-  }
-
   const className=document.getElementById('className').value||'座位表';
-  const PAGE_W=11906,MARGIN=720,TABLE_W=PAGE_W-MARGIN*2;
+  const dirLabel=direction==='top'?'▲ 講台（前方）':'▼ 講台（後方）';
 
-  let exportGrid=grid,exRows=rows,exCols=cols;
+  // 決定匯出的格子（依方向旋轉）
+  let exportGrid=grid;
   if(direction==='bottom'){
     exportGrid=[...grid].reverse().map(row=>[...row].reverse());
   }
 
-  const COL_W=Math.floor(TABLE_W/exCols);
-  const bord=(color,style)=>({
-    top:{style,size:4,color},bottom:{style,size:4,color},
-    left:{style,size:4,color},right:{style,size:4,color}
-  });
-
-  function makeCell(seat){
-    if(seat===null)return new TableCell({
-      children:[new Paragraph({children:[new TextRun({text:'✕',color:'CCCCCC',size:18,font:'標楷體'})],alignment:AlignmentType.CENTER})],
-      shading:{type:ShadingType.CLEAR,fill:'F0F0F0'},
-      borders:bord('CCCCCC',BorderStyle.DASHED),
-      verticalAlign:VerticalAlign.CENTER,
-      width:{size:COL_W,type:WidthType.DXA}
-    });
-    if(!seat)return new TableCell({
-      children:[new Paragraph('')],
-      borders:bord('BBBBBB',BorderStyle.SINGLE),
-      verticalAlign:VerticalAlign.CENTER,
-      width:{size:COL_W,type:WidthType.DXA}
-    });
-    return new TableCell({
-      children:[
-        new Paragraph({children:[new TextRun({text:seat.name,size:26,font:'標楷體',bold:true})],alignment:AlignmentType.CENTER,spacing:{before:40,after:0}}),
-        new Paragraph({children:[new TextRun({text:String(seat.no),size:19,font:'標楷體',bold:true,color:'333333'})],alignment:AlignmentType.CENTER,spacing:{before:0,after:40}})
-      ],
-      borders:bord('888888',BorderStyle.SINGLE),
-      verticalAlign:VerticalAlign.CENTER,
-      width:{size:COL_W,type:WidthType.DXA}
+  // 用 JSZip + XML 直接產生 docx
+  // 先動態載入 JSZip
+  if(!window.JSZip){
+    await new Promise((resolve,reject)=>{
+      const s=document.createElement('script');
+      s.src='https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
+      s.onload=resolve; s.onerror=reject;
+      document.head.appendChild(s);
     });
   }
 
-  const dirLabel=direction==='top'?'▲ 講台（前方）':'▼ 講台（後方）';
-  const tableRows=exportGrid.slice(0,exRows).map(row=>new TableRow({
-    children:row.slice(0,exCols).map(makeCell),
-    height:{value:900,rule:HeightRule.ATLEAST}
-  }));
+  const PAGE_W=11906, PAGE_H=16838, MARGIN=720;
+  const TABLE_W=PAGE_W-MARGIN*2;
+  const COL_W=Math.floor(TABLE_W/cols);
+  const ROW_H=800;
 
-  const children=[
-    new Paragraph({children:[new TextRun({text:className,size:34,font:'標楷體',bold:true})],alignment:AlignmentType.CENTER,spacing:{before:0,after:160}}),
-    new Paragraph({children:[new TextRun({text:dirLabel,size:19,font:'標楷體',color:'555555'})],alignment:AlignmentType.CENTER,spacing:{before:0,after:120}}),
-    new Table({rows:tableRows,width:{size:TABLE_W,type:WidthType.DXA},columnWidths:Array(exCols).fill(COL_W)})
-  ];
+  function escXml(s){
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
 
-  const doc=new Document({sections:[{properties:{page:{margin:{top:MARGIN,bottom:MARGIN,left:MARGIN,right:MARGIN}}},children}]});
-  const buf=await Packer.toBuffer(doc);
-  const blob=new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob); a.download=className+'_座位表.docx'; a.click();
-  showToast('座位表已下載！');
+  function makeCell(seat){
+    const w=COL_W;
+    if(seat===null){
+      // 留空 X
+      return `<w:tc>
+        <w:tcPr>
+          <w:tcW w:w="${w}" w:type="dxa"/>
+          <w:shd w:val="clear" w:color="auto" w:fill="F0F0F0"/>
+          <w:tcBorders>
+            <w:top w:val="dashed" w:sz="4" w:color="CCCCCC"/>
+            <w:bottom w:val="dashed" w:sz="4" w:color="CCCCCC"/>
+            <w:left w:val="dashed" w:sz="4" w:color="CCCCCC"/>
+            <w:right w:val="dashed" w:sz="4" w:color="CCCCCC"/>
+          </w:tcBorders>
+          <w:vAlign w:val="center"/>
+        </w:tcPr>
+        <w:p><w:pPr><w:jc w:val="center"/></w:pPr>
+        <w:r><w:rPr><w:color w:val="CCCCCC"/><w:sz w:val="20"/></w:rPr><w:t>✕</w:t></w:r></w:p>
+      </w:tc>`;
+    }
+    if(!seat){
+      // 空位
+      return `<w:tc>
+        <w:tcPr>
+          <w:tcW w:w="${w}" w:type="dxa"/>
+          <w:tcBorders>
+            <w:top w:val="single" w:sz="4" w:color="BBBBBB"/>
+            <w:bottom w:val="single" w:sz="4" w:color="BBBBBB"/>
+            <w:left w:val="single" w:sz="4" w:color="BBBBBB"/>
+            <w:right w:val="single" w:sz="4" w:color="BBBBBB"/>
+          </w:tcBorders>
+          <w:vAlign w:val="center"/>
+        </w:tcPr>
+        <w:p/>
+      </w:tc>`;
+    }
+    // 有學生
+    return `<w:tc>
+      <w:tcPr>
+        <w:tcW w:w="${w}" w:type="dxa"/>
+        <w:tcBorders>
+          <w:top w:val="single" w:sz="4" w:color="888888"/>
+          <w:bottom w:val="single" w:sz="4" w:color="888888"/>
+          <w:left w:val="single" w:sz="4" w:color="888888"/>
+          <w:right w:val="single" w:sz="4" w:color="888888"/>
+        </w:tcBorders>
+        <w:vAlign w:val="center"/>
+      </w:tcPr>
+      <w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="40" w:after="0"/></w:pPr>
+        <w:r><w:rPr><w:rFonts w:ascii="標楷體" w:hAnsi="標楷體" w:hint="eastAsia"/><w:sz w:val="26"/><w:b/></w:rPr>
+        <w:t>${escXml(seat.name)}</w:t></w:r>
+      </w:p>
+      <w:p><w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="40"/></w:pPr>
+        <w:r><w:rPr><w:rFonts w:ascii="標楷體" w:hAnsi="標楷體" w:hint="eastAsia"/><w:sz w:val="19"/><w:b/><w:color w:val="333333"/></w:rPr>
+        <w:t>${escXml(seat.no)}</w:t></w:r>
+      </w:p>
+    </w:tc>`;
+  }
+
+  // 建立表格 XML
+  const tableRows=exportGrid.slice(0,rows).map(row=>{
+    const cells=row.slice(0,cols).map(makeCell).join('');
+    return `<w:tr>
+      <w:trPr><w:trHeight w:val="${ROW_H}" w:hRule="atLeast"/></w:trPr>
+      ${cells}
+    </w:tr>`;
+  }).join('');
+
+  const colDefs=Array(cols).fill(`<w:gridCol w:w="${COL_W}"/>`).join('');
+
+  const docXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:wpc="http://schemas.microsoft.com/office/word/2010/wordprocessingCanvas"
+  xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
+  xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<w:body>
+  <w:p>
+    <w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="160"/></w:pPr>
+    <w:r><w:rPr><w:rFonts w:ascii="標楷體" w:hAnsi="標楷體" w:hint="eastAsia"/><w:sz w:val="34"/><w:b/></w:rPr>
+      <w:t>${escXml(className)}</w:t></w:r>
+  </w:p>
+  <w:p>
+    <w:pPr><w:jc w:val="center"/><w:spacing w:before="0" w:after="120"/></w:pPr>
+    <w:r><w:rPr><w:rFonts w:ascii="標楷體" w:hAnsi="標楷體" w:hint="eastAsia"/><w:sz w:val="19"/><w:color w:val="555555"/></w:rPr>
+      <w:t>${escXml(dirLabel)}</w:t></w:r>
+  </w:p>
+  <w:tbl>
+    <w:tblPr>
+      <w:tblW w:w="${TABLE_W}" w:type="dxa"/>
+      <w:tblLayout w:type="fixed"/>
+    </w:tblPr>
+    <w:tblGrid>${colDefs}</w:tblGrid>
+    ${tableRows}
+  </w:tbl>
+  <w:sectPr>
+    <w:pgSz w:w="${PAGE_W}" w:h="${PAGE_H}"/>
+    <w:pgMar w:top="${MARGIN}" w:right="${MARGIN}" w:bottom="${MARGIN}" w:left="${MARGIN}"/>
+  </w:sectPr>
+</w:body>
+</w:document>`;
+
+  // 建立 docx（ZIP）
+  const zip=new JSZip();
+  zip.file('[Content_Types].xml',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+</Types>`);
+  zip.file('_rels/.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`);
+  zip.file('word/document.xml', docXml);
+  zip.file('word/_rels/document.xml.rels',`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+</Relationships>`);
+
+  try{
+    const blob=await zip.generateAsync({type:'blob',mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=className+'_座位表.docx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showToast('座位表已下載！');
+  }catch(e){
+    showToast('下載失敗：'+e.message);
+    console.error(e);
+  }
 }
+
 
 function showToast(msg){
   const t=document.getElementById('toast');
