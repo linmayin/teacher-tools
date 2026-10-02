@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>生活常規與優缺點管理</title>
+<title>常規表現與優缺點管理</title>
+<link rel="icon" type="image/png" href="conduct_favicon.png">
 <link rel="apple-touch-icon" href="conduct_favicon.png">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
@@ -15,100 +16,104 @@
   --red:#c0392b;--red-bg:#fce8e8;
   --amber:#b45309;--amber-bg:#fef3c7;
   --purple:#6d28d9;--purple-bg:#ede9fe;
-  --radius:14px;--radius-sm:8px;
-  --shadow:0 2px 12px rgba(0,0,0,0.07);
+  --radius:14px;--radius-sm:8px;--shadow:0 2px 12px rgba(0,0,0,0.07);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font-family:-apple-system,BlinkMacSystemFont,'PingFang TC','Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);font-size:15px;min-height:100vh}
-/* Tab bar */
-.tab-bar{display:flex;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;position:sticky;top:0;z-index:100;scrollbar-width:none}
+body{font-family:-apple-system,BlinkMacSystemFont,'PingFang TC','Noto Sans TC',sans-serif;
+  background:var(--bg);color:var(--text);font-size:15px;min-height:100vh}
+.tab-bar{display:flex;background:var(--surface);border-bottom:1px solid var(--border);
+  overflow-x:auto;-webkit-overflow-scrolling:touch;position:sticky;top:0;z-index:100;scrollbar-width:none}
 .tab-bar::-webkit-scrollbar{display:none}
-.tab{flex:1;min-width:56px;padding:12px 4px 10px;font-size:12px;text-align:center;cursor:pointer;border:none;background:none;color:var(--text3);border-bottom:2.5px solid transparent;white-space:nowrap;font-weight:500;transition:color .15s}
+.tab{flex:1;min-width:52px;padding:10px 4px 8px;font-size:11px;text-align:center;
+  cursor:pointer;border:none;background:none;color:var(--text3);
+  border-bottom:2.5px solid transparent;white-space:nowrap;font-weight:500}
 .tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:700}
 .section{display:none;padding:14px;padding-bottom:40px}.section.active{display:block}
-/* Cards */
 .card{background:var(--surface);border-radius:var(--radius);padding:14px;margin-bottom:12px;box-shadow:var(--shadow)}
-.card-title{font-size:14px;font-weight:700;margin-bottom:10px;color:var(--text)}
-/* Buttons */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:10px 16px;border-radius:var(--radius-sm);border:1.5px solid var(--border);background:var(--surface);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.card-title{font-size:14px;font-weight:700;margin-bottom:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;
+  padding:10px 16px;border-radius:var(--radius-sm);border:1.5px solid var(--border);
+  background:var(--surface);color:var(--text);font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
 .btn:active{transform:scale(0.96)}
 .btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
 .btn-green{background:var(--green);color:#fff;border-color:var(--green)}
 .btn-red{background:var(--red);color:#fff;border-color:var(--red)}
+.btn-purple{background:var(--purple);color:#fff;border-color:var(--purple)}
 .btn-sm{padding:6px 12px;font-size:12px}
 .btn-full{width:100%;margin-bottom:8px}
-.btn-row{display:flex;gap:8px;flex-wrap:wrap}
-/* Form */
 .field{margin-bottom:10px}
 .field label{font-size:12px;color:var(--text3);display:block;margin-bottom:4px;font-weight:500}
-input[type=text],input[type=number],input[type=date],input[type=email],select,textarea{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);color:var(--text);font-size:15px;-webkit-appearance:none;font-family:inherit}
-input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
-/* Item chips */
+input[type=text],input[type=number],input[type=date],select,textarea{
+  width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--surface);color:var(--text);font-size:15px;font-family:inherit}
 .chip-wrap{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px}
-.chip{padding:8px 14px;border-radius:20px;border:1.5px solid var(--border);background:var(--surface2);font-size:13px;font-weight:500;cursor:pointer;user-select:none}
+.chip{padding:8px 14px;border-radius:20px;border:1.5px solid var(--border);
+  background:var(--surface2);font-size:13px;font-weight:500;cursor:pointer;user-select:none}
 .chip.sel-minus{background:var(--red-bg);border-color:var(--red);color:var(--red)}
 .chip.sel-plus{background:var(--green-bg);border-color:var(--green);color:var(--green)}
-/* Seat grid */
-.no-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:7px;margin-top:8px}
-.no-btn{padding:11px 4px;border-radius:10px;border:1.5px solid var(--border);background:var(--surface2);cursor:pointer;text-align:center;font-size:16px;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;user-select:none}
+.no-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:7px}
+.no-btn{padding:10px 4px;border-radius:10px;border:1.5px solid var(--border);
+  background:var(--surface2);cursor:pointer;text-align:center;font-size:16px;font-weight:700;
+  display:flex;flex-direction:column;align-items:center;gap:2px;user-select:none;-webkit-user-select:none}
 .no-btn:active{transform:scale(0.93)}
 .no-btn.sel{background:var(--accent);color:#fff;border-color:var(--accent)}
-.no-btn .nb-name{font-size:11px;font-weight:500;opacity:0.85;font-family:'PingFang TC','Noto Sans TC',sans-serif;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-/* Log list */
-.log-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);gap:8px;font-size:13px}
+.no-btn .nb-name{font-size:11px;font-weight:500;opacity:.85;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.log-item{display:flex;align-items:center;justify-content:space-between;
+  padding:9px 0;border-bottom:1px solid var(--border);gap:8px;font-size:13px}
 .log-item:last-child{border-bottom:none}
-.day-label{font-size:11px;font-weight:700;color:var(--text3);margin:10px 0 4px;letter-spacing:.5px}
-/* Badge */
+.week-label{font-size:11px;font-weight:700;color:var(--text3);margin:10px 0 4px;letter-spacing:.5px}
 .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:600}
 .badge-green{background:var(--green-bg);color:var(--green)}
 .badge-red{background:var(--red-bg);color:var(--red)}
-.badge-amber{background:var(--amber-bg);color:var(--amber)}
 .badge-blue{background:var(--accent-light);color:var(--accent)}
-/* Summary table */
+.badge-amber{background:var(--amber-bg);color:var(--amber)}
 .sum-table{width:100%;border-collapse:collapse;font-size:13px}
-.sum-table th{font-size:11px;color:var(--text3);font-weight:600;text-align:left;padding:6px 8px;border-bottom:1px solid var(--border)}
+.sum-table th{font-size:11px;color:var(--text3);font-weight:600;text-align:left;
+  padding:6px 8px;border-bottom:1px solid var(--border)}
 .sum-table td{padding:7px 8px;border-bottom:1px solid var(--border);vertical-align:top}
 .sum-table tr:last-child td{border-bottom:none}
-/* Stat cards */
 .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
 .stat-card{background:var(--surface);border-radius:var(--radius-sm);padding:10px;text-align:center;box-shadow:var(--shadow)}
 .stat-num{font-size:26px;font-weight:800;line-height:1.1}
 .stat-label{font-size:11px;color:var(--text3);margin-top:2px}
-/* Toast */
-.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:#1a1814;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:600;z-index:999;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);
+  background:#1a1814;color:#fff;padding:10px 20px;border-radius:20px;
+  font-size:14px;font-weight:600;z-index:999;opacity:0;transition:opacity .2s;pointer-events:none}
 .toast.show{opacity:1}
-/* Notion status */
-.notion-status{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:4px 10px;border-radius:20px;font-weight:500}
-.notion-status.ok{background:var(--green-bg);color:var(--green)}
-.notion-status.err{background:var(--red-bg);color:var(--red)}
-.notion-status.loading{background:var(--amber-bg);color:var(--amber)}
+.divider{border:none;border-top:1px solid var(--border);margin:12px 0}
+.row{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.f1{flex:1;min-width:120px}
 </style>
 </head>
 <body>
-
 <div class="tab-bar">
   <button class="tab active" onclick="switchTab('record',this)">✏️<br>登記</button>
   <button class="tab" onclick="switchTab('log',this)">📋<br>記錄</button>
   <button class="tab" onclick="switchTab('merit',this)">🏅<br>優缺點</button>
   <button class="tab" onclick="switchTab('summary',this)">📊<br>週結算</button>
+  <button class="tab" onclick="switchTab('transfer',this)">🔄<br>期末結轉</button>
   <button class="tab" onclick="switchTab('settings',this)">⚙️<br>設定</button>
 </div>
 
 <!-- 每日登記 -->
 <div id="tab-record" class="section active">
   <div class="card">
-    <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
-      <div class="field" style="flex:1;min-width:140px;margin:0">
+    <div class="row">
+      <div class="field f1" style="margin:0">
         <label>登記日期</label>
         <input type="date" id="recDate">
       </div>
-      <div class="field" style="flex:1;min-width:100px;margin:0">
+      <div class="field" style="margin:0;width:90px">
         <label>星期</label>
         <select id="recDay">
-          <option value="一">星期一</option><option value="二">星期二</option>
-          <option value="三">星期三</option><option value="四">星期四</option>
-          <option value="五">星期五</option>
+          <option value="一">一</option><option value="二">二</option>
+          <option value="三">三</option><option value="四">四</option>
+          <option value="五">五</option>
         </select>
+      </div>
+      <div class="field" style="margin:0;width:80px">
+        <label>週次</label>
+        <input type="number" id="recWeek" value="1" min="1" max="52">
       </div>
     </div>
   </div>
@@ -116,7 +121,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
     <div class="card-title">選擇項目</div>
     <div class="chip-wrap" id="itemChips"></div>
     <div id="noteWrap" style="display:none;margin-top:8px">
-      <label style="font-size:12px;color:var(--text3);font-weight:500">作業備註（如英習、數作）</label>
+      <label style="font-size:12px;color:var(--text3);font-weight:500">備註（如英習、數作）</label>
       <input type="text" id="noteInput" placeholder="英習、數作…">
     </div>
   </div>
@@ -135,24 +140,30 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
 <div id="tab-log" class="section">
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-      <div class="card-title" style="margin:0">本週登記</div>
-      <div style="display:flex;gap:6px;align-items:center">
-        <select id="logDayFilter" onchange="renderLog()" style="width:auto;font-size:13px">
-          <option value="">全部</option>
+      <div class="card-title" style="margin:0">登記記錄</div>
+      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+        <select id="logWeekFilter" onchange="renderLog()" style="font-size:13px">
+          <option value="">全部週次</option>
+        </select>
+        <select id="logDayFilter" onchange="renderLog()" style="font-size:13px">
+          <option value="">全部星期</option>
           <option value="一">週一</option><option value="二">週二</option>
           <option value="三">週三</option><option value="四">週四</option>
           <option value="五">週五</option>
         </select>
-        <button class="btn btn-sm btn-red" onclick="clearAllLogs()">🗑 清除</button>
+        <button class="btn btn-sm btn-red" onclick="deleteWeekLogs()">🗑 刪除此週</button>
       </div>
     </div>
     <div id="logList"></div>
   </div>
   <div class="card">
     <div class="card-title">貼上 CSV 匯入</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:6px">格式：座號,項目,星期（或加第4欄備註）</div>
-    <textarea id="csvPaste" style="height:110px;font-size:12px;font-family:monospace;width:100%;padding:8px;border:1.5px solid var(--border);border-radius:var(--radius-sm);resize:vertical" placeholder="3,作業缺交/學用品,三,英習&#10;7,服裝儀容,三"></textarea>
-    <div class="btn-row" style="margin-top:8px">
+    <div style="font-size:12px;color:var(--text3);margin-bottom:6px">格式：座號,項目,星期（第4欄選填備註）</div>
+    <textarea id="csvPaste" style="height:100px;font-size:12px;font-family:monospace;resize:vertical" placeholder="3,作業缺交/學用品,三,英習&#10;7,服裝儀容,三"></textarea>
+    <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+      <div style="font-size:12px;color:var(--text3)">匯入至第</div>
+      <input type="number" id="csvWeek" value="1" min="1" max="52" style="width:60px">
+      <div style="font-size:12px;color:var(--text3)">週</div>
       <button class="btn btn-primary btn-sm" onclick="importCSVPaste()">⬆ 匯入</button>
     </div>
     <div id="importMsg"></div>
@@ -163,11 +174,17 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
 <div id="tab-merit" class="section">
   <div class="card">
     <div class="card-title">新增優缺點記錄</div>
-    <div class="field">
-      <label>日期</label>
-      <input type="date" id="meritDate">
+    <div class="row">
+      <div class="field f1" style="margin:0">
+        <label>日期</label>
+        <input type="date" id="meritDate">
+      </div>
+      <div class="field" style="margin:0;width:80px">
+        <label>週次</label>
+        <input type="number" id="meritWeek" value="1" min="1" max="52">
+      </div>
     </div>
-    <div class="field">
+    <div class="field" style="margin-top:10px">
       <label>類型與項目</label>
       <div class="chip-wrap" id="meritChips"></div>
     </div>
@@ -180,9 +197,9 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
     <div id="meritMsg"></div>
   </div>
   <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px">
       <div class="card-title" style="margin:0">優缺點記錄</div>
-      <button class="btn btn-sm btn-red" onclick="clearAllMerits()">🗑 清除</button>
+      <button class="btn btn-sm btn-red" onclick="clearAllMerits()">🗑 清除全部</button>
     </div>
     <div id="meritList"></div>
   </div>
@@ -206,33 +223,56 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
 <!-- 週結算 -->
 <div id="tab-summary" class="section">
   <div class="card">
-    <div class="card-title">第 <span id="sumWeekNum">?</span> 週結算</div>
-    <div style="font-size:13px;color:var(--text3);margin-bottom:10px">結算後資料將寫入 Notion，家長可即時查詢</div>
-    <button class="btn btn-primary btn-full" onclick="calcSummary()">↻ 計算統計</button>
-    <button class="btn btn-green btn-full" id="syncBtn" onclick="syncToNotion()" style="display:none">☁ 結算並同步至 Notion</button>
+    <div class="card-title">週結算</div>
+    <div class="row">
+      <div class="field f1" style="margin:0">
+        <label>選擇結算週次</label>
+        <select id="sumWeekSel" onchange="summaryData=null;document.getElementById('summaryContent').innerHTML=''">
+          <option value="">請選擇週次</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" onclick="calcSummary()" style="height:44px">↻ 計算統計</button>
+    </div>
   </div>
   <div id="summaryContent"></div>
-</div>
-
-<!-- 家長查詢（已停用）-->
-<div id="tab-parent" class="section" style="display:none!important">
-  <div class="card">
-    <div class="card-title">家長查詢頁面</div>
-    <div style="font-size:13px;color:var(--text3);margin-bottom:12px;line-height:1.7">
-      家長使用固定網址，輸入座號＋密碼後可查詢本學期所有常規與優缺點紀錄。
+  <div id="summaryActions" style="display:none">
+    <div class="card">
+      <div class="card-title">匯出</div>
+      <button class="btn btn-full" onclick="exportWeeklyText()">⬇ 匯出週報純文字（寄家長用）</button>
+      <button class="btn btn-full" onclick="exportWeeklyCSV()">⬇ 匯出本週常規明細 CSV</button>
     </div>
-    <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:10px;font-size:13px;word-break:break-all;margin-bottom:10px">
-      🔗 <b>家長查詢網址：</b><br>
-      <span id="parentUrl" style="color:var(--accent)">https://linmayin.github.io/teacher-tools/parent_view.html</span>
-    </div>
-    <button class="btn btn-sm" onclick="copyParentUrl()">📋 複製網址</button>
   </div>
   <div class="card">
-    <div class="card-title">密碼管理</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:10px">每位學生一組固定四碼密碼，整學期不換。同步至 Notion 後家長即可使用。</div>
-    <button class="btn btn-full" onclick="generatePasswords()">🔑 為未設密碼的學生產生密碼</button>
-    <button class="btn btn-full" onclick="exportPasswordList()">⬇ 匯出密碼清單 CSV</button>
-    <div id="passwordList" style="margin-top:8px;max-height:300px;overflow-y:auto"></div>
+    <div class="card-title">常規表現總表</div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:8px">匯出所有週次的常規登記統計</div>
+    <button class="btn btn-full" onclick="exportAllConductCSV()">⬇ 匯出常規表現總表 CSV</button>
+  </div>
+</div>
+
+<!-- 期末結轉 -->
+<div id="tab-transfer" class="section">
+  <div class="card">
+    <div class="card-title">優缺點統計</div>
+    <button class="btn btn-full" onclick="calcMeritSummary()">↻ 計算優缺點統計</button>
+    <div id="meritSummaryContent"></div>
+  </div>
+  <div id="meritSummaryActions" style="display:none">
+    <div class="card">
+      <div class="card-title">匯出</div>
+      <button class="btn btn-full" onclick="exportMeritText()">⬇ 匯出純文字備案（寄家長用）</button>
+      <button class="btn btn-full" onclick="exportMeritCSV()">⬇ 匯出優缺點統計總表 CSV</button>
+    </div>
+    <div class="card" style="border:2px solid var(--red)">
+      <div class="card-title" style="color:var(--red)">⚠️ 期中／期末結轉</div>
+      <div style="font-size:13px;color:var(--text2);margin-bottom:12px;line-height:1.7">
+        結轉將自動執行：<br>
+        ① 匯出純文字備案<br>
+        ② 匯出優缺點統計總表 CSV<br>
+        ③ 清除所有優缺點記錄<br>
+        ④ 將各生餘數存回（結轉當天日期）
+      </div>
+      <button class="btn btn-red btn-full" onclick="doTransfer()">🔄 執行結轉</button>
+    </div>
   </div>
 </div>
 
@@ -240,12 +280,12 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
 <div id="tab-settings" class="section">
   <div class="card">
     <div class="card-title">週次設定</div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <div class="field" style="flex:1;min-width:80px;margin:0">
-        <label>第幾週</label>
+    <div class="row">
+      <div class="field f1" style="margin:0">
+        <label>目前週次</label>
         <input type="number" id="weekNum" value="1" min="1" max="52" onchange="saveSettings()">
       </div>
-      <div class="field" style="flex:1;min-width:140px;margin:0">
+      <div class="field f1" style="margin:0">
         <label>週一日期</label>
         <input type="date" id="weekStart" onchange="autoWeekRange()">
       </div>
@@ -254,6 +294,7 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
       <label>日期範圍（自動產生）</label>
       <input type="text" id="weekRange" readonly style="background:var(--surface2);color:var(--text2)">
     </div>
+    <button class="btn btn-primary btn-sm" onclick="applyCurrentWeek()">套用至登記頁</button>
   </div>
   <div class="card">
     <div class="card-title">學生名單</div>
@@ -265,335 +306,302 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
     <div id="rosterPreview" style="font-size:12px;color:var(--text3);margin-top:6px"></div>
   </div>
   <div class="card">
-    <div class="card-title">Notion 設定</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:8px">請確認 Notion Integration 已連結「教師工具箱資料庫」</div>
-    <div class="field">
-      <label>Integration Token</label>
-      <input type="text" id="notionToken" placeholder="ntn_xxxx…" onchange="saveSettings()">
-    </div>
-    <button class="btn btn-sm" onclick="testNotion()">🔌 測試連線</button>
-    <span id="notionTestResult" style="margin-left:8px;font-size:12px"></span>
-  </div>
-  <div class="card">
     <div class="card-title">資料管理</div>
-    <button class="btn btn-full btn-red" onclick="clearWeekData()">🗑 清除本週登記（保留優缺點）</button>
+    <button class="btn btn-full" onclick="deleteWeekLogsFromSettings()">🗑 刪除指定週次常規登記</button>
     <button class="btn btn-full btn-red" onclick="clearAllData()">⚠️ 清除全部資料</button>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
-
 <script>
 // ===== 常數 =====
-const TOTAL = 33;
-const NOTION_TOKEN_KEY = 'cs_notion_token';
-const DATA_KEY = 'cs_data_v1';
-
-// Notion DB IDs
-const NOTION_STUDENT_DB = 'd068d447-f428-47b6-9179-a3c0de0e9db7';
-const NOTION_CONDUCT_DB = '0b6fdfa6-a7bf-4420-b53f-0409a297324f';
-const NOTION_MERIT_DB   = 'f765d727-9900-45cf-8e30-c85530e8cb47';
-const NOTION_API = 'https://api.anthropic.com/v1/messages'; // 透過 Claude MCP 呼叫
-const NOTION_BASE = 'https://notion-proxy.lin-mayin.workers.dev';
-
-// 常規項目
-const CONDUCT_ITEMS = [
-  {key:'遲到',  label:'上學遲到',         noDeduct:true},
-  {key:'晚進',  label:'上課晚進',          noDeduct:false},
-  {key:'秩序',  label:'秩序表現',          noDeduct:false},
-  {key:'趴睡',  label:'上課趴睡',          noDeduct:false},
-  {key:'聯絡本',label:'聯絡本缺遲',        noDeduct:false},
-  {key:'作業',  label:'作業缺交/學用品',   noDeduct:false, hasNote:true},
-  {key:'打掃',  label:'打掃工作',          noDeduct:false},
-  {key:'環境',  label:'環境與桌椅',        noDeduct:false},
-  {key:'服儀',  label:'服裝儀容',          noDeduct:true}
+const TOTAL=33;
+const DATA_KEY='cs2_data_v1';
+const CONDUCT_ITEMS=[
+  {key:'遲到', label:'上學遲到',        noDeduct:true},
+  {key:'晚進', label:'上課晚進',         noDeduct:false},
+  {key:'秩序', label:'秩序表現',         noDeduct:false},
+  {key:'趴睡', label:'上課趴睡',         noDeduct:false},
+  {key:'聯絡本',label:'聯絡本缺遲',      noDeduct:false},
+  {key:'作業', label:'作業缺交/學用品',  noDeduct:false, hasNote:true},
+  {key:'打掃', label:'打掃工作',         noDeduct:false},
+  {key:'環境', label:'環境與桌椅',       noDeduct:false},
+  {key:'服儀', label:'服裝儀容',         noDeduct:true}
 ];
-const OUT_LABELS = {
+const OUT_LABELS={
   '遲到':'上學遲到','晚進':'上課晚進','秩序':'影響秩序','趴睡':'上課趴睡',
   '聯絡本':'聯絡本缺遲','作業':'作業缺交/學用品未帶','打掃':'打掃未完成',
   '環境':'環境（桌面未清空、椅子未靠、環境清潔待改善）','服儀':'服裝儀容待改善'
 };
-const DAYS = ['一','二','三','四','五'];
-const MERIT_RATIO = 6; // 6支=1嘉獎/警告
-
-// 預設優缺點項目
-const DEFAULT_MERIT_ITEMS = [
+const DAYS=['一','二','三','四','五'];
+const MERIT_RATIO=6;
+const DEFAULT_MERIT_ITEMS=[
   {name:'榮譽班',score:1},{name:'主動回答',score:1},{name:'表現優異',score:1},
   {name:'功課未交',score:-1},{name:'上課講話',score:-1},{name:'上課睡覺',score:-1}
 ];
 
 // ===== 狀態 =====
-let state = {
-  students: [],    // [{no, name, password}]
-  logs: [],        // 常規登記 [{no,item,day,note,date}]
-  merits: [],      // 優缺點 [{no,item,score,date,week}]
-  customMerits: [], // 自訂優缺點項目 [{name,score}]
-  weekNum: 1,
-  weekStart: '',
-  weekRange: '',
-  notionToken: ''
+let state={
+  students:[],
+  logs:[],      // [{no,item,day,note,date,week}]
+  merits:[],    // [{no,item,score,date,week}]
+  customMerits:[],
+  weekNum:1, weekStart:'', weekRange:'', notionToken:''
 };
-let selItem = null;
-let selNos = new Set();
-let meritItem = null;
-let meritScore = 0;
-let meritNos = new Set();
-let summaryData = null;
+let selItem=null, selNos=new Set();
+let meritItem=null, meritScore=0, meritNos=new Set();
+let summaryData=null, meritSummaryData=null;
 
 // ===== 初始化 =====
-function init() {
+function init(){
   loadState();
   setTodayDate();
   renderItemChips();
-  renderNoGrid('recGrid', selNos, toggleRecNo);
+  renderNoGrid('recGrid',selNos,toggleRecNo);
   renderMeritChips();
-  renderNoGrid('meritGrid', meritNos, toggleMeritNo);
+  renderNoGrid('meritGrid',meritNos,toggleMeritNo);
   renderLog();
   renderMeritList();
   renderCustomMeritList();
-  renderPasswordList();
-  document.getElementById('weekNum').value = state.weekNum;
-  document.getElementById('weekStart').value = state.weekStart;
-  document.getElementById('weekRange').value = state.weekRange;
-  document.getElementById('notionToken').value = state.notionToken;
-  document.getElementById('sumWeekNum').textContent = state.weekNum;
+  updateWeekSelectors();
+  document.getElementById('weekNum').value=state.weekNum;
+  document.getElementById('weekStart').value=state.weekStart;
+  document.getElementById('weekRange').value=state.weekRange;
+  document.getElementById('recWeek').value=state.weekNum;
+  document.getElementById('meritWeek').value=state.weekNum;
+  document.getElementById('csvWeek').value=state.weekNum;
   updateRosterPreview();
 }
 
-function loadState() {
-  try {
-    const d = localStorage.getItem(DATA_KEY);
-    if (d) Object.assign(state, JSON.parse(d));
-  } catch(e) {}
+function loadState(){
+  try{const d=localStorage.getItem(DATA_KEY);if(d)Object.assign(state,JSON.parse(d));}catch(e){}
+}
+function saveState(){
+  try{localStorage.setItem(DATA_KEY,JSON.stringify(state));}catch(e){}
 }
 
-function saveState() {
-  try { localStorage.setItem(DATA_KEY, JSON.stringify(state)); } catch(e) {}
+function setTodayDate(){
+  const today=new Date();
+  const dateStr=today.toLocaleDateString('sv');
+  document.getElementById('recDate').value=dateStr;
+  document.getElementById('meritDate').value=dateStr;
+  const dayMap={1:'一',2:'二',3:'三',4:'四',5:'五'};
+  if(dayMap[today.getDay()]) document.getElementById('recDay').value=dayMap[today.getDay()];
 }
 
-function setTodayDate() {
-  const today = new Date();
-  const yyyy = today.getFullYear();
-  const mm = String(today.getMonth()+1).padStart(2,'0');
-  const dd = String(today.getDate()).padStart(2,'0');
-  const dateStr = `${yyyy}-${mm}-${dd}`;
-  document.getElementById('recDate').value = dateStr;
-  document.getElementById('meritDate').value = dateStr;
-  // 自動設定星期
-  const dayIdx = today.getDay();
-  const dayMap = {1:'一',2:'二',3:'三',4:'四',5:'五'};
-  if (dayMap[dayIdx]) document.getElementById('recDay').value = dayMap[dayIdx];
-}
-
-function switchTab(name, el) {
+function switchTab(name,el){
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('tab-'+name).classList.add('active');
-  if (name==='log') renderLog();
-  if (name==='merit') { renderMeritList(); renderCustomMeritList(); }
-  if (name==='parent') renderPasswordList();
-  if (name==='summary') { document.getElementById('sumWeekNum').textContent=state.weekNum; }
+  if(name==='log'){renderLog();updateWeekSelectors();}
+  if(name==='merit'){renderMeritList();renderCustomMeritList();}
+  if(name==='summary'){updateWeekSelectors();}
+}
+
+// ===== 週次選單 =====
+function updateWeekSelectors(){
+  const weeks=[...new Set(state.logs.map(l=>l.week))].sort((a,b)=>a-b);
+  ['logWeekFilter','sumWeekSel'].forEach(id=>{
+    const sel=document.getElementById(id);
+    if(!sel)return;
+    const curVal=sel.value;
+    sel.innerHTML=id==='logWeekFilter'?'<option value="">全部週次</option>':'<option value="">請選擇週次</option>';
+    weeks.forEach(w=>{
+      const o=document.createElement('option');
+      o.value=w; o.textContent='第 '+w+' 週';
+      sel.appendChild(o);
+    });
+    if(curVal) sel.value=curVal;
+  });
 }
 
 // ===== 座號格子 =====
-function renderNoGrid(gridId, selSet, toggleFn) {
-  const g = document.getElementById(gridId);
-  g.innerHTML = '';
-  for (let i = 1; i <= TOTAL; i++) {
-    const s = state.students.find(x=>x.no===i);
-    const btn = document.createElement('button');
-    btn.className = 'no-btn' + (selSet.has(i) ? ' sel' : '');
-    btn.innerHTML = `<span>${String(i).padStart(2,'0')}</span>${s ? `<span class="nb-name">${s.name}</span>` : ''}`;
-    btn.onclick = () => toggleFn(i);
+function renderNoGrid(gridId,selSet,toggleFn){
+  const g=document.getElementById(gridId); g.innerHTML='';
+  for(let i=1;i<=TOTAL;i++){
+    const s=state.students.find(x=>x.no===i);
+    const btn=document.createElement('button');
+    btn.className='no-btn'+(selSet.has(i)?' sel':'');
+    btn.innerHTML=`<span>${String(i).padStart(2,'0')}</span>${s?`<span class="nb-name">${s.name}</span>`:''}`;
+    btn.onclick=()=>toggleFn(i);
     g.appendChild(btn);
   }
 }
 
-function refreshNoGrid(gridId, selSet, toggleFn) {
-  const g = document.getElementById(gridId);
-  const btns = g.querySelectorAll('.no-btn');
-  btns.forEach((btn, idx) => {
-    const no = idx + 1;
-    btn.className = 'no-btn' + (selSet.has(no) ? ' sel' : '');
-    btn.onclick = () => toggleFn(no);
+function toggleRecNo(no){
+  if(selNos.has(no))selNos.delete(no);else selNos.add(no);
+  document.querySelectorAll('#recGrid .no-btn').forEach((b,i)=>{
+    b.className='no-btn'+(selNos.has(i+1)?' sel':'');
+  });
+}
+function toggleMeritNo(no){
+  if(meritNos.has(no))meritNos.delete(no);else meritNos.add(no);
+  document.querySelectorAll('#meritGrid .no-btn').forEach((b,i)=>{
+    b.className='no-btn'+(meritNos.has(i+1)?' sel':'');
   });
 }
 
-function toggleRecNo(no) {
-  if (selNos.has(no)) selNos.delete(no); else selNos.add(no);
-  refreshNoGrid('recGrid', selNos, toggleRecNo);
-}
-
-function toggleMeritNo(no) {
-  if (meritNos.has(no)) meritNos.delete(no); else meritNos.add(no);
-  refreshNoGrid('meritGrid', meritNos, toggleMeritNo);
-}
-
 // ===== 常規項目 chip =====
-function renderItemChips() {
-  const wrap = document.getElementById('itemChips');
-  wrap.innerHTML = '';
-  CONDUCT_ITEMS.forEach(it => {
-    const div = document.createElement('div');
-    const isSel = selItem === it.key;
-    div.className = 'chip' + (isSel ? (it.noDeduct ? ' sel-plus' : ' sel-minus') : '');
-    div.innerHTML = it.label + (it.noDeduct ? ' <small style="opacity:.6;font-size:10px">僅登記</small>' : '');
-    div.onclick = () => {
-      selItem = selItem === it.key ? null : it.key;
-      const noteWrap = document.getElementById('noteWrap');
-      noteWrap.style.display = (selItem && CONDUCT_ITEMS.find(x=>x.key===selItem)?.hasNote) ? 'block' : 'none';
+function renderItemChips(){
+  const wrap=document.getElementById('itemChips'); wrap.innerHTML='';
+  CONDUCT_ITEMS.forEach(it=>{
+    const div=document.createElement('div');
+    const isSel=selItem===it.key;
+    div.className='chip'+(isSel?(it.noDeduct?' sel-plus':' sel-minus'):'');
+    div.innerHTML=it.label+(it.noDeduct?' <small style="opacity:.6;font-size:10px">僅登記</small>':'');
+    div.onclick=()=>{
+      selItem=selItem===it.key?null:it.key;
+      document.getElementById('noteWrap').style.display=(selItem&&CONDUCT_ITEMS.find(x=>x.key===selItem)?.hasNote)?'block':'none';
       renderItemChips();
     };
     wrap.appendChild(div);
   });
 }
 
-function addRecord() {
-  const msg = document.getElementById('recMsg');
-  if (!selItem) { showMsg(msg,'請先選擇項目','red'); return; }
-  if (selNos.size === 0) { showMsg(msg,'請選擇至少一個座號','red'); return; }
-  const day = document.getElementById('recDay').value;
-  const date = document.getElementById('recDate').value;
-  const note = document.getElementById('noteInput').value.trim();
-  selNos.forEach(no => {
-    state.logs.push({no, item:selItem, day, date, note: CONDUCT_ITEMS.find(x=>x.key===selItem)?.hasNote ? note : ''});
+function addRecord(){
+  const msg=document.getElementById('recMsg');
+  if(!selItem){showMsg(msg,'請先選擇項目','red');return;}
+  if(selNos.size===0){showMsg(msg,'請選擇至少一個座號','red');return;}
+  const day=document.getElementById('recDay').value;
+  const date=document.getElementById('recDate').value;
+  const week=parseInt(document.getElementById('recWeek').value)||state.weekNum;
+  const note=document.getElementById('noteInput').value.trim();
+  selNos.forEach(no=>{
+    state.logs.push({no,item:selItem,day,date,week,
+      note:CONDUCT_ITEMS.find(x=>x.key===selItem)?.hasNote?note:''});
   });
-  const cnt = selNos.size;
-  const label = CONDUCT_ITEMS.find(x=>x.key===selItem)?.label;
-  selNos.clear();
-  document.getElementById('noteInput').value = '';
-  renderItemChips();
-  renderNoGrid('recGrid', selNos, toggleRecNo);
-  saveState();
-  showMsg(msg, `已新增 ${cnt} 筆（週${day}・${label}）`, 'green');
+  const cnt=selNos.size;
+  const label=CONDUCT_ITEMS.find(x=>x.key===selItem)?.label;
+  selNos.clear(); document.getElementById('noteInput').value='';
+  renderItemChips(); renderNoGrid('recGrid',selNos,toggleRecNo);
+  saveState(); updateWeekSelectors();
+  showMsg(msg,`已新增 ${cnt} 筆（第${week}週・週${day}・${label}）`,'green');
 }
 
-function clearRecSel() {
-  selItem = null; selNos.clear();
-  document.getElementById('noteInput').value = '';
-  document.getElementById('noteWrap').style.display = 'none';
-  renderItemChips();
-  renderNoGrid('recGrid', selNos, toggleRecNo);
+function clearRecSel(){
+  selItem=null;selNos.clear();
+  document.getElementById('noteInput').value='';
+  document.getElementById('noteWrap').style.display='none';
+  renderItemChips(); renderNoGrid('recGrid',selNos,toggleRecNo);
 }
 
 // ===== 登記記錄 =====
-function renderLog() {
-  const dayFilter = document.getElementById('logDayFilter').value;
-  const list = document.getElementById('logList');
-  const filtered = state.logs.filter(l => !dayFilter || l.day === dayFilter);
-  if (!filtered.length) { list.innerHTML = '<div style="color:var(--text3);font-size:13px;padding:8px 0">尚無登記記錄</div>'; return; }
-  const grouped = {};
-  filtered.forEach((l, idx) => {
-    if (!grouped[l.day]) grouped[l.day] = [];
-    grouped[l.day].push({...l, idx: state.logs.indexOf(l)});
+function renderLog(){
+  const weekFilter=document.getElementById('logWeekFilter')?.value||'';
+  const dayFilter=document.getElementById('logDayFilter')?.value||'';
+  const list=document.getElementById('logList');
+  let filtered=state.logs.filter(l=>(!weekFilter||l.week==weekFilter)&&(!dayFilter||l.day===dayFilter));
+  if(!filtered.length){list.innerHTML='<div style="color:var(--text3);font-size:13px;padding:8px 0">尚無登記記錄</div>';return;}
+  // 依週次+星期分組
+  const grouped={};
+  filtered.forEach(l=>{
+    const key='第'+l.week+'週・週'+l.day;
+    if(!grouped[key])grouped[key]=[];
+    grouped[key].push({...l,idx:state.logs.indexOf(l)});
   });
-  let html = '';
-  DAYS.forEach(d => {
-    if (!grouped[d]) return;
-    html += `<div class="day-label">星期${d}</div>`;
-    grouped[d].forEach(l => {
-      const it = CONDUCT_ITEMS.find(x=>x.key===l.item);
-      const s = state.students.find(x=>x.no===l.no);
-      html += `<div class="log-item">
+  let html='';
+  Object.keys(grouped).sort().forEach(k=>{
+    html+=`<div class="week-label">${k}</div>`;
+    grouped[k].forEach(l=>{
+      const it=CONDUCT_ITEMS.find(x=>x.key===l.item);
+      const s=state.students.find(x=>x.no===l.no);
+      html+=`<div class="log-item">
         <span><b>${l.no}${s?' '+s.name:''}</b> — ${it?.label||l.item}${l.note?` <span style="color:var(--accent);font-size:12px">${l.note}</span>`:''}${it?.noDeduct?' <span style="font-size:11px;color:var(--text3)">僅登記</span>':''}</span>
         <button class="btn btn-sm btn-red" onclick="deleteLog(${l.idx})" style="flex-shrink:0;padding:4px 8px">🗑</button>
       </div>`;
     });
   });
-  list.innerHTML = html;
+  list.innerHTML=html;
 }
 
-function deleteLog(idx) { state.logs.splice(idx,1); saveState(); renderLog(); }
-function clearAllLogs() { if(!confirm('確定清除本週所有登記？')) return; state.logs=[]; saveState(); renderLog(); }
+function deleteLog(idx){state.logs.splice(idx,1);saveState();renderLog();}
 
-function importCSVPaste() {
-  const text = document.getElementById('csvPaste').value.trim();
-  const msgEl = document.getElementById('importMsg');
-  if (!text) { msgEl.innerHTML='<div style="color:var(--red);font-size:12px;margin-top:4px">請先貼上內容</div>'; return; }
-  let count = parseCSV(text);
-  document.getElementById('csvPaste').value = '';
-  msgEl.innerHTML = `<div style="color:var(--green);font-size:12px;margin-top:4px">已匯入 ${count} 筆</div>`;
-  setTimeout(()=>msgEl.innerHTML='',3000);
-  saveState(); renderLog();
+function deleteWeekLogs(){
+  const w=document.getElementById('logWeekFilter').value;
+  if(!w){showToast('請先選擇週次');return;}
+  if(!confirm(`確定刪除第 ${w} 週所有常規登記？`))return;
+  state.logs=state.logs.filter(l=>l.week!=w);
+  saveState();updateWeekSelectors();renderLog();
 }
 
-function parseCSV(text) {
-  let count = 0;
-  text.split('\n').forEach(l => {
-    l = l.trim(); if (!l) return;
-    const parts = l.split(',');
-    if (parts.length < 3) return;
-    const no = parseInt(parts[0]);
-    const itemLabel = parts[1].trim();
-    const day = parts[2].trim();
-    const note = parts[3] ? parts[3].trim() : '';
-    if (isNaN(no)||no<1||no>TOTAL||!DAYS.includes(day)) return;
-    if (itemLabel==='項目') return;
-    const it = CONDUCT_ITEMS.find(x=>x.label===itemLabel||x.label.includes(itemLabel)||itemLabel.includes(x.key)||itemLabel===x.key);
-    if (it) { state.logs.push({no, item:it.key, day, date:'', note:it.hasNote?note:''}); count++; }
+function importCSVPaste(){
+  const text=document.getElementById('csvPaste').value.trim();
+  const msgEl=document.getElementById('importMsg');
+  const week=parseInt(document.getElementById('csvWeek').value)||state.weekNum;
+  if(!text){msgEl.innerHTML='<div style="color:var(--red);font-size:12px;margin-top:4px">請先貼上內容</div>';return;}
+  let count=0;
+  text.split('\n').forEach(l=>{
+    l=l.trim();if(!l)return;
+    const parts=l.split(',');
+    if(parts.length<3)return;
+    const no=parseInt(parts[0]);
+    const itemLabel=parts[1].trim();
+    const day=parts[2].trim();
+    const note=parts[3]?parts[3].trim():'';
+    if(isNaN(no)||no<1||no>TOTAL||!DAYS.includes(day))return;
+    if(itemLabel==='項目')return;
+    const it=CONDUCT_ITEMS.find(x=>x.label===itemLabel||itemLabel.includes(x.key)||x.label.includes(itemLabel));
+    if(it){state.logs.push({no,item:it.key,day,date:'',week,note:it.hasNote?note:''});count++;}
   });
-  return count;
+  document.getElementById('csvPaste').value='';
+  msgEl.innerHTML=`<div style="color:var(--green);font-size:12px;margin-top:4px">已匯入 ${count} 筆（第${week}週）</div>`;
+  setTimeout(()=>msgEl.innerHTML='',3000);
+  saveState();updateWeekSelectors();renderLog();
 }
 
 // ===== 優缺點 =====
-function allMeritItems() { return DEFAULT_MERIT_ITEMS.concat(state.customMerits); }
+function allMeritItems(){return DEFAULT_MERIT_ITEMS.concat(state.customMerits);}
 
-function renderMeritChips() {
-  const wrap = document.getElementById('meritChips');
-  wrap.innerHTML = '';
-  allMeritItems().forEach(it => {
-    const div = document.createElement('div');
-    const isSel = meritItem === it.name;
-    div.className = 'chip' + (isSel ? (it.score>0?' sel-plus':' sel-minus') : '');
-    div.textContent = it.name + ' ' + (it.score>0?'+':'') + it.score;
-    div.onclick = () => { meritItem=it.name; meritScore=it.score; renderMeritChips(); };
+function renderMeritChips(){
+  const wrap=document.getElementById('meritChips');wrap.innerHTML='';
+  allMeritItems().forEach(it=>{
+    const div=document.createElement('div');
+    const isSel=meritItem===it.name;
+    div.className='chip'+(isSel?(it.score>0?' sel-plus':' sel-minus'):'');
+    div.textContent=it.name+' '+(it.score>0?'+':'')+it.score;
+    div.onclick=()=>{meritItem=it.name;meritScore=it.score;renderMeritChips();};
     wrap.appendChild(div);
   });
 }
 
-function addMerit() {
-  const msg = document.getElementById('meritMsg');
-  if (!meritItem) { showMsg(msg,'請先選擇項目','red'); return; }
-  if (meritNos.size===0) { showMsg(msg,'請選擇至少一個座號','red'); return; }
-  const date = document.getElementById('meritDate').value;
-  meritNos.forEach(no => {
-    state.merits.push({no, item:meritItem, score:meritScore, date, week:state.weekNum});
-  });
-  const cnt = meritNos.size;
-  meritNos.clear();
-  renderNoGrid('meritGrid', meritNos, toggleMeritNo);
-  saveState(); renderMeritList();
-  showMsg(msg, `已新增 ${cnt} 筆（${meritItem} ${meritScore>0?'+':''}${meritScore}）`, 'green');
+function addMerit(){
+  const msg=document.getElementById('meritMsg');
+  if(!meritItem){showMsg(msg,'請先選擇項目','red');return;}
+  if(meritNos.size===0){showMsg(msg,'請選擇至少一個座號','red');return;}
+  const date=document.getElementById('meritDate').value;
+  const week=parseInt(document.getElementById('meritWeek').value)||state.weekNum;
+  meritNos.forEach(no=>state.merits.push({no,item:meritItem,score:meritScore,date,week}));
+  const cnt=meritNos.size;
+  meritNos.clear(); renderNoGrid('meritGrid',meritNos,toggleMeritNo);
+  saveState();renderMeritList();
+  showMsg(document.getElementById('meritMsg'),`已新增 ${cnt} 筆（${meritItem} ${meritScore>0?'+':''}${meritScore}）`,'green');
 }
 
-function clearMeritSel() {
-  meritItem=null; meritScore=0; meritNos.clear();
-  renderMeritChips(); renderNoGrid('meritGrid', meritNos, toggleMeritNo);
-}
+function clearMeritSel(){meritItem=null;meritScore=0;meritNos.clear();renderMeritChips();renderNoGrid('meritGrid',meritNos,toggleMeritNo);}
 
-function renderMeritList() {
-  const list = document.getElementById('meritList');
-  if (!state.merits.length) { list.innerHTML='<div style="color:var(--text3);font-size:13px;padding:8px 0">尚無優缺點記錄</div>'; return; }
-  let html = '';
-  [...state.merits].reverse().forEach((m,ri) => {
-    const idx = state.merits.length-1-ri;
-    const s = state.students.find(x=>x.no===m.no);
-    html += `<div class="log-item">
-      <span><b>${m.no}${s?' '+s.name:''}</b> — ${m.item} <span style="color:${m.score>0?'var(--green)':'var(--red)'};">${m.score>0?'+':''}${m.score}</span> <span style="font-size:11px;color:var(--text3)">${m.date||''} W${m.week}</span></span>
+function renderMeritList(){
+  const list=document.getElementById('meritList');
+  if(!state.merits.length){list.innerHTML='<div style="color:var(--text3);font-size:13px;padding:8px 0">尚無優缺點記錄</div>';return;}
+  let html='';
+  [...state.merits].reverse().forEach((m,ri)=>{
+    const idx=state.merits.length-1-ri;
+    const s=state.students.find(x=>x.no===m.no);
+    html+=`<div class="log-item">
+      <span><b>${m.no}${s?' '+s.name:''}</b> — ${m.item} <span style="color:${m.score>0?'var(--green)':'var(--red)'};">${m.score>0?'+':''}${m.score}</span> <span style="font-size:11px;color:var(--text3)">W${m.week} ${m.date||''}</span></span>
       <button class="btn btn-sm btn-red" onclick="deleteMerit(${idx})" style="flex-shrink:0;padding:4px 8px">🗑</button>
     </div>`;
   });
-  list.innerHTML = html;
+  list.innerHTML=html;
 }
 
-function deleteMerit(idx) { state.merits.splice(idx,1); saveState(); renderMeritList(); }
-function clearAllMerits() { if(!confirm('確定清除所有優缺點記錄？'))return; state.merits=[]; saveState(); renderMeritList(); }
+function deleteMerit(idx){state.merits.splice(idx,1);saveState();renderMeritList();}
+function clearAllMerits(){if(!confirm('確定清除所有優缺點記錄？'))return;state.merits=[];saveState();renderMeritList();}
 
-function renderCustomMeritList() {
-  const list = document.getElementById('customMeritList');
-  if (!state.customMerits.length) { list.innerHTML='<div style="font-size:12px;color:var(--text3)">尚無自訂項目</div>'; return; }
-  list.innerHTML = state.customMerits.map((it,i)=>`
+function renderCustomMeritList(){
+  const list=document.getElementById('customMeritList');
+  if(!state.customMerits.length){list.innerHTML='<div style="font-size:12px;color:var(--text3)">尚無自訂項目</div>';return;}
+  list.innerHTML=state.customMerits.map((it,i)=>`
     <div class="log-item">
       <span style="font-size:14px">${it.name}</span>
       <span style="color:${it.score>0?'var(--green)':'var(--red)'};">${it.score>0?'+':''}${it.score}</span>
@@ -601,367 +609,350 @@ function renderCustomMeritList() {
     </div>`).join('');
 }
 
-function addCustomMerit() {
-  const name = document.getElementById('newMeritName').value.trim();
-  const score = parseFloat(document.getElementById('newMeritScore').value);
-  if (!name) { showToast('請輸入項目名稱'); return; }
-  if (isNaN(score)||score===0) { showToast('分數不能為零'); return; }
-  if (allMeritItems().some(x=>x.name===name)) { showToast('項目名稱已存在'); return; }
+function addCustomMerit(){
+  const name=document.getElementById('newMeritName').value.trim();
+  const score=parseFloat(document.getElementById('newMeritScore').value);
+  if(!name){showToast('請輸入項目名稱');return;}
+  if(isNaN(score)||score===0){showToast('分數不能為零');return;}
+  if(allMeritItems().some(x=>x.name===name)){showToast('項目名稱已存在');return;}
   state.customMerits.push({name,score});
-  saveState(); renderMeritChips(); renderCustomMeritList();
+  saveState();renderMeritChips();renderCustomMeritList();
   document.getElementById('newMeritName').value='';
   showToast('已新增：'+name);
 }
 
-function deleteCustomMerit(idx) {
+function deleteCustomMerit(idx){
   if(meritItem===state.customMerits[idx].name){meritItem=null;meritScore=0;}
   state.customMerits.splice(idx,1);
-  saveState(); renderMeritChips(); renderCustomMeritList();
+  saveState();renderMeritChips();renderCustomMeritList();
 }
 
 // ===== 週結算計算 =====
-function calcWeekly() {
-  const counts = {};
-  for (let i=1;i<=TOTAL;i++) {
-    counts[i] = {};
+function calcWeekly(week){
+  const counts={};
+  for(let i=1;i<=TOTAL;i++){
+    counts[i]={};
     CONDUCT_ITEMS.forEach(it=>{counts[i][it.key]={count:0,notes:[],days:[]};});
   }
-  state.logs.forEach(l=>{
+  state.logs.filter(l=>l.week==week).forEach(l=>{
     if(counts[l.no]&&counts[l.no][l.item]){
       counts[l.no][l.item].count++;
       counts[l.no][l.item].days.push(l.day);
-      if(l.note&&!counts[l.no][l.item].notes.includes(l.note)) counts[l.no][l.item].notes.push(l.note);
+      if(l.note&&!counts[l.no][l.item].notes.includes(l.note))counts[l.no][l.item].notes.push(l.note);
     }
   });
-
   return Array.from({length:TOTAL},(_,i)=>{
-    const s = state.students.find(x=>x.no===i+1);
-    let totalDeduct=0, recordDetails=[];
+    const s=state.students.find(x=>x.no===i+1);
+    let totalDeduct=0,recordDetails=[];
     CONDUCT_ITEMS.forEach(it=>{
       const c=counts[i+1][it.key];
       if(c.count>0){
-        recordDetails.push({label:it.label,outLabel:OUT_LABELS[it.key]||it.label,key:it.key,count:c.count,notes:c.notes,days:[...new Set(c.days)],noDeduct:it.noDeduct});
-        if(!it.noDeduct&&c.count>=3) totalDeduct+=Math.floor(c.count/3);
+        recordDetails.push({label:it.label,outLabel:OUT_LABELS[it.key]||it.label,key:it.key,
+          count:c.count,notes:c.notes,days:[...new Set(c.days)],noDeduct:it.noDeduct});
+        if(!it.noDeduct&&c.count>=3)totalDeduct+=Math.floor(c.count/3);
       }
     });
-
-    // 優缺點統計（本週）
-    const weekMerits = state.merits.filter(m=>m.no===i+1&&m.week===state.weekNum);
-    const meritNet = weekMerits.reduce((s,m)=>s+m.score,0);
-
-    // 本學期累計（含本週常規缺點）
-    const allMeritNet = state.merits.filter(m=>m.no===i+1).reduce((s,m)=>s+m.score,0) - totalDeduct;
-    const totalNet = allMeritNet - totalDeduct;
-    const award = totalNet>0 ? Math.floor(totalNet/MERIT_RATIO) : 0;
-    const warn  = totalNet<0 ? Math.floor(Math.abs(totalNet)/MERIT_RATIO) : 0;
-    const remain= Math.abs(totalNet) % MERIT_RATIO;
-
-    const level = recordDetails.length===0&&totalDeduct===0 ? '優異' : totalDeduct===0 ? '不錯' : '加強';
-    return {no:i+1, name:s?.name||'', level, totalDeduct, recordDetails, weekMerits, meritNet, award, warn, remain, counts:counts[i+1]};
+    const level=recordDetails.length===0&&totalDeduct===0?'優異':totalDeduct===0?'不錯':'加強';
+    return {no:i+1,name:s?.name||'',level,totalDeduct,recordDetails};
   });
 }
 
-function calcSummary() {
-  summaryData = calcWeekly();
+function calcSummary(){
+  const week=document.getElementById('sumWeekSel').value;
+  if(!week){showToast('請選擇週次');return;}
+  summaryData=calcWeekly(week);
   const good=summaryData.filter(x=>x.level==='優異').length;
   const ok=summaryData.filter(x=>x.level==='不錯').length;
   const warn=summaryData.filter(x=>x.level==='加強').length;
   const labelMap={'優異':'表現優異','不錯':'表現不錯','加強':'尚待努力'};
   const badgeMap={'優異':'badge-green','不錯':'badge-blue','加強':'badge-red'};
-
   let html=`<div class="stat-grid">
     <div class="stat-card"><div class="stat-num" style="color:var(--green)">${good}</div><div class="stat-label">表現優異</div></div>
     <div class="stat-card"><div class="stat-num" style="color:var(--accent)">${ok}</div><div class="stat-label">表現不錯</div></div>
     <div class="stat-card"><div class="stat-num" style="color:var(--red)">${warn}</div><div class="stat-label">尚待努力</div></div>
   </div>
-  <div class="card"><div class="card-title">全班明細</div>
+  <div class="card"><div class="card-title">第 ${week} 週明細</div>
   <div style="overflow-x:auto"><table class="sum-table">
-    <thead><tr><th>號</th><th>姓名</th><th>評等</th><th>缺點</th><th>嘉獎/警告</th><th>常規明細</th></tr></thead>
-    <tbody>`;
-
+  <thead><tr><th>號</th><th>姓名</th><th>評等</th><th>缺點</th><th>常規明細</th></tr></thead><tbody>`;
   summaryData.forEach(s=>{
     const det=s.recordDetails.map(d=>{
       const noteTags=d.notes.map(n=>`<span style="color:var(--accent);font-size:11px">${n}</span>`).join('');
       return `<div style="font-size:11px;margin:1px 0">${d.label}×${d.count}（週${d.days.join('、')}）${noteTags}</div>`;
     }).join('')||'<span style="color:var(--text3);font-size:11px">無</span>';
-    const meritStr = s.award>0?`嘉${s.award}` : s.warn>0?`警${s.warn}` : '—';
-    html+=`<tr>
-      <td>${s.no}</td>
-      <td style="white-space:nowrap">${s.name||'—'}</td>
+    html+=`<tr><td>${s.no}</td><td style="white-space:nowrap">${s.name||'—'}</td>
       <td><span class="badge ${badgeMap[s.level]}">${labelMap[s.level]}</span></td>
       <td style="text-align:center">${s.totalDeduct>0?s.totalDeduct+'支':'—'}</td>
-      <td style="text-align:center">${meritStr}</td>
-      <td>${det}</td>
-    </tr>`;
+      <td>${det}</td></tr>`;
   });
   html+=`</tbody></table></div></div>`;
   document.getElementById('summaryContent').innerHTML=html;
-  document.getElementById('syncBtn').style.display='block';
+  document.getElementById('summaryActions').style.display='block';
 }
 
-// ===== Notion 同步 =====
-async function notionAPI(endpoint, method='GET', body=null) {
-  const opts = {
-    method,
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  };
-  if (body) opts.body = JSON.stringify(body);
-  const resp = await fetch(NOTION_BASE + endpoint, opts);
-  const data = await resp.json();
-  if (!resp.ok) throw new Error(data.message || '請求失敗');
-  return data;
-}
-
-async function testNotion() {
-  const el = document.getElementById('notionTestResult');
-  el.textContent = '測試中…';
-  try {
-    const url = NOTION_BASE + '/databases/' + NOTION_STUDENT_DB + '/query';
-    const resp = await fetch(url, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({page_size: 1})
-    });
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data.message || 'HTTP '+resp.status);
-    el.innerHTML = '<span class="notion-status ok">✓ 連線成功</span>';
-  } catch(e) {
-    el.innerHTML = `<span class="notion-status err">✗ ${e.message}</span>`;
-    console.error('Notion test error:', e);
-  }
-}
-
-async function syncToNotion() {
-  if (!summaryData) { showToast('請先計算統計'); return; }
-  if (!state.notionToken) { showToast('請先設定 Notion Token'); return; }
-  if (!confirm(`確定同步第 ${state.weekNum} 週資料到 Notion？家長即可查詢。`)) return;
-
-  showToast('同步中…請稍候');
-  const btn = document.getElementById('syncBtn');
-  btn.disabled = true; btn.textContent = '☁ 同步中…';
-
-  try {
-    // 1. 寫入常規登記紀錄
-    for (const log of state.logs) {
-      const s = state.students.find(x=>x.no===log.no);
-      const it = CONDUCT_ITEMS.find(x=>x.key===log.item);
-      await notionAPI('/pages', 'POST', {
-        parent: {database_id: NOTION_CONDUCT_DB},
-        properties: {
-          '名稱': {title:[{text:{content:`W${state.weekNum}-${log.no}號-${it?.label||log.item}`}}]},
-          '座號': {number: log.no},
-          '項目': {rich_text:[{text:{content:it?.label||log.item}}]},
-          '星期': {select:{name:log.day}},
-          '週次': {number: state.weekNum},
-          '日期': log.date ? {date:{start:log.date}} : undefined,
-          '備註': {rich_text:[{text:{content:log.note||''}}]}
-        }
+// ===== 週報匯出 =====
+function exportWeeklyText(){
+  if(!summaryData){showToast('請先計算統計');return;}
+  const week=document.getElementById('sumWeekSel').value;
+  const weekStart=state.weekStart;
+  let dateStr='';
+  if(weekStart){const fri=new Date(weekStart);fri.setDate(fri.getDate()+4);dateStr=fri.toLocaleDateString('sv');}
+  else dateStr=new Date().toLocaleDateString('sv');
+  let txt=`第${week}週生活常規週報\n匯出時間：${new Date().toLocaleString('zh-TW')}\n${'='.repeat(40)}\n\n`;
+  summaryData.forEach(s=>{
+    const stu=state.students.find(x=>x.no===s.no);
+    const email=stu?.email||'';
+    const noStr=String(s.no).padStart(2,'0');
+    const subject=`第${week}週班級通訊－${noStr}號${s.name}同學`;
+    const levelLabel={'優異':'表現優異','不錯':'表現不錯','加強':'尚待努力'}[s.level];
+    let body=`貴家長您好，以下是第${week}週的日常表現紀錄：\n\n本週${s.name}表現\n【${levelLabel}】\n`;
+    if(s.recordDetails.length>0){
+      body+='待改善部分：\n';
+      s.recordDetails.forEach(d=>{
+        const notesStr=d.notes.length>0?'（'+d.notes.join('、')+'）':'';
+        const daysStr=d.days.join('、');
+        const pts=!d.noDeduct&&d.count>=3?' → 記'+Math.floor(d.count/3)+'支缺點':'';
+        body+=`・${d.outLabel}：${d.count}次（週${daysStr}）${notesStr}${pts}\n`;
       });
     }
-
-    // 2. 寫入優缺點紀錄（本週常規缺點 + 手動優缺點）
-    // 先寫本週手動優缺點
-    for (const m of state.merits.filter(x=>x.week===state.weekNum)) {
-      await notionAPI('/pages', 'POST', {
-        parent: {database_id: NOTION_MERIT_DB},
-        properties: {
-          '名稱': {title:[{text:{content:`W${m.week}-${m.no}號-${m.item}`}}]},
-          '座號': {number: m.no},
-          '類型': {select:{name: m.score>0?'優點':'缺點'}},
-          '項目': {rich_text:[{text:{content:m.item}}]},
-          '分數': {number: m.score},
-          '日期': m.date ? {date:{start:m.date}} : undefined,
-          '週次': {number: m.week}
-        }
-      });
-    }
-
-    // 再寫常規缺點
-    for (const s of summaryData) {
-      if (s.totalDeduct > 0) {
-        for (let i=0;i<s.totalDeduct;i++) {
-          await notionAPI('/pages', 'POST', {
-            parent: {database_id: NOTION_MERIT_DB},
-            properties: {
-              '名稱': {title:[{text:{content:`W${state.weekNum}-${s.no}號-常規缺點`}}]},
-              '座號': {number: s.no},
-              '類型': {select:{name:'缺點'}},
-              '項目': {rich_text:[{text:{content:`第${state.weekNum}週生活常規缺點`}}]},
-              '分數': {number: -1},
-              '週次': {number: state.weekNum}
-            }
-          });
-        }
-      }
-    }
-
-    // 3. 更新學生基本資料（密碼）
-    for (const stu of state.students) {
-      if (!stu.password) continue;
-      // 查詢是否已存在
-      const q = await notionAPI('/databases/'+NOTION_STUDENT_DB+'/query','POST',{
-        filter:{property:'座號',number:{equals:stu.no}}
-      });
-      if (q.results.length===0) {
-        await notionAPI('/pages','POST',{
-          parent:{database_id:NOTION_STUDENT_DB},
-          properties:{
-            '姓名':{title:[{text:{content:stu.name||String(stu.no)+'號'}}]},
-            '座號':{number:stu.no},
-            '密碼':{rich_text:[{text:{content:stu.password}}]}
-          }
-        });
-      } else {
-        const pid = q.results[0].id;
-        await notionAPI('/pages/'+pid,'PATCH',{
-          properties:{
-            '姓名':{title:[{text:{content:stu.name||String(stu.no)+'號'}}]},
-            '密碼':{rich_text:[{text:{content:stu.password}}]}
-          }
-        });
-      }
-    }
-
-    showToast('✓ 同步完成！家長可開始查詢');
-    btn.textContent = '✓ 已同步';
-  } catch(e) {
-    showToast('同步失敗：' + e.message);
-    btn.disabled=false; btn.textContent='☁ 結算並同步至 Notion';
-  }
-}
-
-// ===== 密碼管理 =====
-function generatePasswords() {
-  let count = 0;
-  for (let i=1;i<=TOTAL;i++) {
-    let s = state.students.find(x=>x.no===i);
-    if (!s) { s={no:i,name:'',password:''}; state.students.push(s); }
-    if (!s.password) {
-      s.password = String(Math.floor(1000+Math.random()*9000));
-      count++;
-    }
-  }
-  saveState(); renderPasswordList();
-  showToast(`已為 ${count} 位學生產生密碼`);
-}
-
-function renderPasswordList() {
-  const list = document.getElementById('passwordList');
-  const students = [...state.students].sort((a,b)=>a.no-b.no);
-  if (!students.length) { list.innerHTML='<div style="font-size:12px;color:var(--text3)">尚無學生資料，請先匯入名單</div>'; return; }
-  list.innerHTML=`<table class="sum-table" style="margin-top:6px">
-    <thead><tr><th>座號</th><th>姓名</th><th>密碼</th></tr></thead>
-    <tbody>` +
-    students.map(s=>`<tr><td>${s.no}</td><td>${s.name||'—'}</td><td style="font-weight:700;color:var(--accent);font-family:monospace">${s.password||'<span style="color:var(--text3)">未設定</span>'}</td></tr>`).join('') +
-    `</tbody></table>`;
-}
-
-function exportPasswordList() {
-  let csv = '\uFEFF座號,姓名,家長查詢密碼\n';
-  [...state.students].sort((a,b)=>a.no-b.no).forEach(s=>{
-    csv += `${s.no},"${s.name||''}","${s.password||''}"\n`;
+    if(s.totalDeduct>0)body+=`\n總計缺點共${s.totalDeduct}支，請家長留意並督促孩子一起重視團體規範，並鼓勵孩子主動找老師進行「愛班服務」來抵銷缺點，藉此培養負責任的態度。\n`;
+    body+=`\n非常感謝您在家庭端的陪伴與鼓勵，我們一起引導孩子建立良好的生活常規。若您對孩子的狀況有任何想進一步了解或討論的地方，可以直接回覆此 Email。\n\n導師 林美吟 敬上`;
+    txt+=`【${noStr} ${s.name}】${email?' Email: '+email:'（無 Email）'}\n主旨：${subject}\n${body}\n${'-'.repeat(30)}\n\n`;
   });
-  dlFile('學生密碼清單.csv', csv, 'text/csv');
+  dlFile(`第${week}週生活常規週報.txt`,txt,'text/plain');
+  showToast('週報純文字已匯出');
 }
 
-function copyParentUrl() {
-  const url = 'https://linmayin.github.io/teacher-tools/parent_view.html';
-  navigator.clipboard.writeText(url).then(()=>showToast('已複製網址'));
+function exportWeeklyCSV(){
+  if(!summaryData){showToast('請先計算統計');return;}
+  const week=document.getElementById('sumWeekSel').value;
+  let csv='\uFEFF座號,姓名,評等,缺點支數,登記項目\n';
+  summaryData.forEach(s=>{
+    const det=s.recordDetails.map(d=>d.label+'×'+d.count).join('；');
+    csv+=`${s.no},"${s.name}","${{'優異':'表現優異','不錯':'表現不錯','加強':'尚待努力'}[s.level]}",${s.totalDeduct},"${det}"\n`;
+  });
+  dlFile(`第${week}週常規明細.csv`,csv,'text/csv');
+}
+
+function exportAllConductCSV(){
+  let csv='\uFEFF週次,座號,姓名,項目,次數,星期,備註\n';
+  const weeks=[...new Set(state.logs.map(l=>l.week))].sort((a,b)=>a-b);
+  weeks.forEach(week=>{
+    const data=calcWeekly(week);
+    data.forEach(s=>{
+      s.recordDetails.forEach(d=>{
+        csv+=`${week},${s.no},"${s.name}","${d.label}",${d.count},"${d.days.join('、')}","${d.notes.join('、')}"\n`;
+      });
+    });
+  });
+  dlFile('常規表現總表.csv',csv,'text/csv');
+  showToast('常規表現總表已匯出');
+}
+
+// ===== 優缺點結算 =====
+function calcMeritForStudent(no){
+  const sub=state.merits.filter(m=>m.no===no);
+  const net=sub.reduce((s,m)=>s+m.score,0);
+  let award=0,warn=0,remain=0,remainType='';
+  if(net>0){award=Math.floor(net/MERIT_RATIO);remain=net%MERIT_RATIO;remainType=remain>0?'優點':'';}
+  else if(net<0){const absNet=Math.abs(net);warn=Math.floor(absNet/MERIT_RATIO);remain=absNet%MERIT_RATIO;remainType=remain>0?'缺點':'';}
+  return{net,award,warn,remain,remainType,records:sub};
+}
+
+function calcMeritSummary(){
+  meritSummaryData=Array.from({length:TOTAL},(_,i)=>{
+    const no=i+1;
+    const s=state.students.find(x=>x.no===no);
+    return{no,name:s?.name||'',email:s?.email||'',...calcMeritForStudent(no)};
+  });
+  const totalWarn=meritSummaryData.filter(x=>x.warn>0).length;
+  const totalAward=meritSummaryData.filter(x=>x.award>0).length;
+  let html=`<div class="stat-grid" style="margin-top:12px">
+    <div class="stat-card"><div class="stat-num" style="color:var(--green)">${totalAward}</div><div class="stat-label">有嘉獎</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--red)">${totalWarn}</div><div class="stat-label">有警告</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--text2)">${meritSummaryData.filter(x=>x.net===0).length}</div><div class="stat-label">結餘為零</div></div>
+  </div>
+  <div class="card"><div class="card-title">優缺點明細</div>
+  <div style="overflow-x:auto"><table class="sum-table">
+  <thead><tr><th>號</th><th>姓名</th><th>淨值</th><th>嘉獎</th><th>警告</th><th>餘數</th></tr></thead><tbody>`;
+  meritSummaryData.forEach(s=>{
+    const remainStr=s.remain>0?(s.remainType==='優點'?'+':'-')+s.remain+'支'+s.remainType:'—';
+    html+=`<tr>
+      <td>${s.no}</td><td>${s.name||'—'}</td>
+      <td style="color:${s.net>0?'var(--green)':s.net<0?'var(--red)':'var(--text2)'};">${s.net>0?'+':''}${s.net}</td>
+      <td style="text-align:center">${s.award>0?s.award+'支':'—'}</td>
+      <td style="text-align:center">${s.warn>0?s.warn+'支':'—'}</td>
+      <td style="font-size:12px">${remainStr}</td>
+    </tr>`;
+  });
+  html+=`</tbody></table></div></div>`;
+  document.getElementById('meritSummaryContent').innerHTML=html;
+  document.getElementById('meritSummaryActions').style.display='block';
+}
+
+function exportMeritText(){
+  if(!meritSummaryData){showToast('請先計算統計');return;}
+  const today=new Date().toLocaleString('zh-TW');
+  let txt=`品德卡優缺點結算通知備案\n匯出時間：${today}\n${'='.repeat(40)}\n\n`;
+  meritSummaryData.forEach(s=>{
+    const noStr=String(s.no).padStart(2,'0');
+    const subject=`品德卡優缺點結算通知－${noStr}號${s.name}同學`;
+    let remainStr='';
+    if(s.remain>0)remainStr=`${s.remainType==='優點'?'記嘉獎':'記警告'} ${s.award||s.warn} 支；餘數 ${s.remain} 支${s.remainType}（累積至下次結算）`;
+    let body=`貴家長您好：\n\n貴子弟【${noStr}號】【${s.name}】同學優缺點紀錄如下：\n\n`;
+    if(s.records.length===0){body+='本期無優缺點記錄。\n';}
+    else{s.records.forEach(r=>{body+=`${r.date||''} ${r.item} ${r.score>0?'+':''}${r.score}；\n`;});}
+    body+='\n';
+    if(s.net>0){
+      body+=`優缺點互抵後尚有優點 ${s.net} 支。\n`;
+      if(s.award>0)body+=`記嘉獎 ${s.award} 支；`;
+      if(s.remain>0)body+=`餘數 ${s.remain} 支優點（累積至下次結算）`;
+      if(s.award>0||s.remain>0)body+='\n';
+    }else if(s.net<0){
+      body+=`優缺點互抵後尚有缺點 ${Math.abs(s.net)} 支。\n`;
+      if(s.warn>0)body+=`記警告 ${s.warn} 支；`;
+      if(s.remain>0)body+=`餘數 ${s.remain} 支缺點（累積至下次結算）`;
+      if(s.warn>0||s.remain>0)body+='\n';
+    }else{body+='優缺點互抵後結餘為零。\n';}
+    body+='\n說明：\n- 品德卡一學期統計兩次，期中期末各一次。\n- +代表優點；-代表缺點\n- 累積六支優點可記一支嘉獎；反之亦然。\n- 警告可至學務處申請後做愛校服務銷除。\n\n導師 林美吟 敬上';
+    txt+=`【${noStr} ${s.name}】${s.email?' Email: '+s.email:'（無 Email）'}\n主旨：${subject}\n${body}\n${'-'.repeat(30)}\n\n`;
+  });
+  dlFile('品德卡優缺點結算通知備案_'+new Date().toLocaleDateString('sv')+'.txt',txt,'text/plain');
+  showToast('純文字備案已匯出');
+}
+
+function exportMeritCSV(){
+  if(!meritSummaryData){showToast('請先計算統計');return;}
+  let csv='\uFEFF座號,姓名,優點合計,缺點合計,淨值,嘉獎,警告,餘數,餘數類型\n';
+  meritSummaryData.forEach(s=>{
+    const plus=s.records.filter(r=>r.score>0).reduce((a,r)=>a+r.score,0);
+    const minus=Math.abs(s.records.filter(r=>r.score<0).reduce((a,r)=>a+r.score,0));
+    csv+=`${s.no},"${s.name}",${plus},${minus},${s.net},${s.award},${s.warn},${s.remain},"${s.remainType}"\n`;
+  });
+  dlFile('優缺點統計總表_'+new Date().toLocaleDateString('sv')+'.csv',csv,'text/csv');
+  showToast('優缺點統計總表已匯出');
+}
+
+// ===== 期末結轉 =====
+async function doTransfer(){
+  if(!meritSummaryData){showToast('請先計算統計');return;}
+  if(!confirm('確定執行結轉？\n\n① 匯出純文字備案\n② 匯出統計總表 CSV\n③ 清除所有優缺點記錄\n④ 存入各生餘數\n\n請確認已允許下載。'))return;
+  exportMeritText();
+  await new Promise(r=>setTimeout(r,800));
+  exportMeritCSV();
+  await new Promise(r=>setTimeout(r,800));
+  const today=new Date().toLocaleDateString('sv');
+  state.merits=[];
+  meritSummaryData.forEach(s=>{
+    if(s.remain>0){
+      const score=s.remainType==='優點'?s.remain:-s.remain;
+      state.merits.push({no:s.no,item:'結轉餘數',score,date:today,week:state.weekNum});
+    }
+  });
+  meritSummaryData=null;
+  document.getElementById('meritSummaryContent').innerHTML='';
+  document.getElementById('meritSummaryActions').style.display='none';
+  saveState();renderMeritList();
+  showToast('結轉完成！');
 }
 
 // ===== 名單匯入 =====
-function importRoster(input) {
-  const file = input.files[0]; if(!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    try {
-      const data = new Uint8Array(e.target.result);
-      const wb = XLSX.read(data, {type:'array'});
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
-      const students = [];
-      rows.forEach(row => {
-        if (!row||!row.length) return;
-        if (String(row[0]).trim()==='座號') return;
-        const no = parseInt(row[0]);
-        const name = String(row[1]||'').trim();
-        if (!isNaN(no)&&no>=1&&no<=TOTAL&&name) students.push({no, name});
+function importRoster(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      const students=[];
+      rows.forEach((row,idx)=>{
+        if(!row||!row.length)return;
+        if(String(row[0]).trim()==='座號')return;
+        const no=parseInt(row[0]);
+        const name=String(row[1]||'').trim();
+        const email=String(row[2]||'').trim();
+        if(name)students.push({no:isNaN(no)?idx+1:no,name,email});
       });
-      // 合併密碼
+      // 合併保留舊資料
       students.forEach(s=>{
-        const existing = state.students.find(x=>x.no===s.no);
-        if (existing) { existing.name=s.name; }
-        else { state.students.push({no:s.no, name:s.name, password:''}); }
+        const ex=state.students.find(x=>x.no===s.no);
+        if(ex){ex.name=s.name;if(s.email)ex.email=s.email;}
+        else state.students.push(s);
       });
-      saveState();
-      updateRosterPreview();
-      renderNoGrid('recGrid', selNos, toggleRecNo);
-      renderNoGrid('meritGrid', meritNos, toggleMeritNo);
-      renderPasswordList();
+      saveState();updateRosterPreview();
+      renderNoGrid('recGrid',selNos,toggleRecNo);
+      renderNoGrid('meritGrid',meritNos,toggleMeritNo);
       showToast(`已匯入 ${students.length} 位學生`);
-    } catch(e) { showToast('匯入失敗：'+e.message); }
+    }catch(e){showToast('匯入失敗：'+e.message);}
     input.value='';
   };
   reader.readAsArrayBuffer(file);
 }
 
-function updateRosterPreview() {
-  const el = document.getElementById('rosterPreview');
-  const cnt = state.students.filter(s=>s.name).length;
-  el.textContent = cnt>0 ? `已匯入 ${cnt} 位學生名單` : '尚未匯入名單';
+function updateRosterPreview(){
+  const el=document.getElementById('rosterPreview');
+  const cnt=state.students.filter(s=>s.name).length;
+  const emailCnt=state.students.filter(s=>s.email).length;
+  el.textContent=cnt>0?`已匯入 ${cnt} 位學生，${emailCnt} 位有 Email`:'尚未匯入名單';
 }
 
 // ===== 設定 =====
-function autoWeekRange() {
-  const val = document.getElementById('weekStart').value;
-  if (!val) return;
-  const mon = new Date(val);
-  const fri = new Date(mon); fri.setDate(mon.getDate()+4);
-  const fmt = d => `${d.getMonth()+1}/${d.getDate()}`;
-  const range = `${fmt(mon)}（一）－${fmt(fri)}（五）`;
-  document.getElementById('weekRange').value = range;
-  state.weekStart = val; state.weekRange = range;
-  saveSettings();
+function autoWeekRange(){
+  const val=document.getElementById('weekStart').value;if(!val)return;
+  const mon=new Date(val);const fri=new Date(mon);fri.setDate(mon.getDate()+4);
+  const fmt=d=>`${d.getMonth()+1}/${d.getDate()}`;
+  const range=`${fmt(mon)}（一）－${fmt(fri)}（五）`;
+  document.getElementById('weekRange').value=range;
+  state.weekStart=val;state.weekRange=range;saveSettings();
 }
 
-function saveSettings() {
-  state.weekNum = parseInt(document.getElementById('weekNum').value)||1;
-  state.weekStart = document.getElementById('weekStart').value;
-  state.weekRange = document.getElementById('weekRange').value;
-  state.notionToken = document.getElementById('notionToken').value.trim();
-  document.getElementById('sumWeekNum').textContent = state.weekNum;
+function saveSettings(){
+  state.weekNum=parseInt(document.getElementById('weekNum').value)||1;
+  state.weekStart=document.getElementById('weekStart').value;
+  state.weekRange=document.getElementById('weekRange').value;
   saveState();
 }
 
-function clearWeekData() {
-  if (!confirm('確定清除本週所有常規登記？（優缺點記錄保留）')) return;
-  state.logs=[]; saveState(); renderLog(); showToast('本週登記已清除');
+function applyCurrentWeek(){
+  const w=parseInt(document.getElementById('weekNum').value)||1;
+  state.weekNum=w;
+  document.getElementById('recWeek').value=w;
+  document.getElementById('meritWeek').value=w;
+  document.getElementById('csvWeek').value=w;
+  saveState();showToast('已套用至登記頁');
 }
 
-function clearAllData() {
-  if (!confirm('⚠️ 確定清除全部資料？此動作無法復原！')) return;
-  state.logs=[]; state.merits=[]; state.students=[]; state.customMerits=[];
-  saveState(); init(); showToast('全部資料已清除');
+function deleteWeekLogsFromSettings(){
+  const w=prompt('請輸入要刪除的週次（數字）：');
+  if(!w||isNaN(parseInt(w)))return;
+  const week=parseInt(w);
+  const cnt=state.logs.filter(l=>l.week===week).length;
+  if(!confirm(`確定刪除第 ${week} 週的 ${cnt} 筆常規登記？`))return;
+  state.logs=state.logs.filter(l=>l.week!==week);
+  saveState();updateWeekSelectors();renderLog();
+  showToast(`第 ${week} 週登記已刪除`);
+}
+
+function clearAllData(){
+  if(!confirm('⚠️ 確定清除全部資料？此動作無法復原！'))return;
+  state.logs=[];state.merits=[];state.students=[];state.customMerits=[];
+  saveState();init();showToast('全部資料已清除');
 }
 
 // ===== 工具 =====
-function showToast(msg) {
+function showToast(msg){
   const t=document.getElementById('toast');
-  t.textContent=msg; t.className='toast show';
-  clearTimeout(t._t); t._t=setTimeout(()=>t.className='toast',2500);
+  t.textContent=msg;t.className='toast show';
+  clearTimeout(t._t);t._t=setTimeout(()=>t.className='toast',2500);
 }
-
-function showMsg(el, text, color) {
+function showMsg(el,text,color){
   el.innerHTML=`<div style="color:var(--${color});font-size:13px;margin-top:6px">${text}</div>`;
   setTimeout(()=>el.innerHTML='',2500);
 }
-
-function dlFile(name, content, type) {
+function dlFile(name,content,type){
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([content],{type:type+';charset=utf-8'}));
-  a.download=name; a.click();
+  a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);
 }
 
 init();
