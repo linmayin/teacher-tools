@@ -97,23 +97,15 @@ input[type=text],input[type=number],input[type=date],select,textarea{
 
 <!-- 每日登記 -->
 <div id="tab-record" class="section active">
-  <div class="card" style="overflow:visible">
-    <div style="display:grid;grid-template-columns:1fr 64px 64px;gap:8px">
-      <div class="field" style="margin:0;min-width:0">
-        <label>登記日期</label>
-        <input type="date" id="recDate" style="width:100%;min-width:0;font-size:14px;padding:10px 6px">
+  <div class="card">
+    <div style="display:flex;gap:8px;align-items:flex-end">
+      <div class="field" style="margin:0;flex:1">
+        <label>登記日期 <span id="recDayDisplay" style="color:var(--accent);font-weight:600"></span></label>
+        <input type="date" id="recDate" onchange="updateDayDisplay('recDate','recDayDisplay')">
       </div>
-      <div class="field" style="margin:0">
-        <label>星期</label>
-        <select id="recDay" style="padding:10px 2px;font-size:14px;text-align:center">
-          <option value="一">一</option><option value="二">二</option>
-          <option value="三">三</option><option value="四">四</option>
-          <option value="五">五</option>
-        </select>
-      </div>
-      <div class="field" style="margin:0">
+      <div class="field" style="margin:0;width:70px;flex-shrink:0">
         <label>週次</label>
-        <input type="number" id="recWeek" value="1" min="1" max="52" style="text-align:center;font-size:14px;padding:10px 2px">
+        <input type="number" id="recWeek" value="1" min="1" max="52" style="text-align:center">
       </div>
     </div>
   </div>
@@ -174,14 +166,14 @@ input[type=text],input[type=number],input[type=date],select,textarea{
 <div id="tab-merit" class="section">
   <div class="card">
     <div class="card-title">新增優缺點記錄</div>
-    <div style="display:grid;grid-template-columns:1fr 64px;gap:8px;margin-bottom:10px">
-      <div class="field" style="margin:0;min-width:0">
+    <div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:10px">
+      <div class="field" style="margin:0;flex:1">
         <label>日期</label>
-        <input type="date" id="meritDate" style="width:100%;min-width:0;font-size:14px;padding:10px 6px">
+        <input type="date" id="meritDate">
       </div>
-      <div class="field" style="margin:0">
+      <div class="field" style="margin:0;width:70px;flex-shrink:0">
         <label>週次</label>
-        <input type="number" id="meritWeek" value="1" min="1" max="52" style="text-align:center;font-size:14px;padding:10px 2px">
+        <input type="number" id="meritWeek" value="1" min="1" max="52" style="text-align:center">
       </div>
     </div>
     <div class="field" style="margin-top:10px">
@@ -380,13 +372,22 @@ function saveState(){
   try{localStorage.setItem(DATA_KEY,JSON.stringify(state));}catch(e){}
 }
 
+function updateDayDisplay(dateId, displayId){
+  const val=document.getElementById(dateId).value;
+  const el=document.getElementById(displayId);
+  if(!el)return;
+  if(!val){el.textContent='';return;}
+  const d=new Date(val);
+  const dayMap={0:'日',1:'一',2:'二',3:'三',4:'四',5:'五',6:'六'};
+  el.textContent='（週'+dayMap[d.getDay()]+'）';
+}
+
 function setTodayDate(){
   const today=new Date();
   const dateStr=today.toLocaleDateString('sv');
   document.getElementById('recDate').value=dateStr;
   document.getElementById('meritDate').value=dateStr;
-  const dayMap={1:'一',2:'二',3:'三',4:'四',5:'五'};
-  if(dayMap[today.getDay()]) document.getElementById('recDay').value=dayMap[today.getDay()];
+  updateDayDisplay('recDate','recDayDisplay');
 }
 
 function switchTab(name,el){
@@ -463,7 +464,9 @@ function addRecord(){
   const msg=document.getElementById('recMsg');
   if(!selItem){showMsg(msg,'請先選擇項目','red');return;}
   if(selNos.size===0){showMsg(msg,'請選擇至少一個座號','red');return;}
-  const day=document.getElementById('recDay').value;
+  const _d=new Date(document.getElementById('recDate').value);
+  const dayMap2={1:'一',2:'二',3:'三',4:'四',5:'五'};
+  const day=dayMap2[_d.getDay()]||'一';
   const date=document.getElementById('recDate').value;
   const week=parseInt(document.getElementById('recWeek').value)||state.weekNum;
   const note=document.getElementById('noteInput').value.trim();
