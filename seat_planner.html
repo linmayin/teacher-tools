@@ -21,10 +21,12 @@ body{font-family:'PingFang TC','Noto Sans TC',sans-serif;background:var(--bg);co
 .podium-bar{background:var(--accent);color:#fff;border-radius:6px;padding:6px 28px;font-size:13px;font-weight:700;letter-spacing:1px;flex-shrink:0}
 .classroom-grid{display:grid;gap:4px;flex-shrink:0}
 .seat{border-radius:6px;border:1.5px solid var(--border);background:var(--surface);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;position:relative;touch-action:none;user-select:none;-webkit-user-select:none;overflow:hidden}
-.seat.empty-slot{background:#f0f0f0;border-style:dashed;border-color:#bbb}
+.seat.checker{background:#f0f0f0}
+.seat.empty-slot{background:#ddd;border-style:dashed;border-color:#bbb}
 .seat.empty-slot::after{content:"\2715";font-size:15px;color:#bbb}
 .seat.drop-over{border-color:var(--accent);background:var(--accent-light)}
-.seat.occupied{background:var(--accent-light);border-color:var(--accent)}
+.seat.occupied{border-color:var(--accent)}
+.seat.occupied.checker{background:#e0ecdf}
 .seat-name{font-size:16px;font-weight:700;line-height:1.2;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 2px}
 .seat-no{font-size:12px;font-weight:700;color:var(--accent);margin-top:2px}
 .seat-remove{position:absolute;top:1px;right:3px;font-size:10px;color:#bbb;cursor:pointer;padding:2px}
@@ -83,7 +85,7 @@ body{font-family:'PingFang TC','Noto Sans TC',sans-serif;background:var(--bg);co
 <div class="main">
   <div class="work-area">
     <div class="canvas-area" id="canvasArea">
-      <div class="podium-bar" id="podiumBar">&#x25B2; 講台</div>
+      <div class="podium-bar" id="podiumBar">講台</div>
       <div class="classroom-grid" id="classGrid"></div>
     </div>
     <div class="bottom-roster" id="bottomRoster">
@@ -102,14 +104,14 @@ body{font-family:'PingFang TC','Noto Sans TC',sans-serif;background:var(--bg);co
     </div>
     <div class="s-section">
       <div class="s-title">學生名單</div>
-      <textarea id="rosterInput" placeholder="1 王小明&#10;2 李小花&#10;（座號 姓名）" style="width:100%;height:70px;padding:5px;border:1px solid var(--border);border-radius:5px;font-size:12px;font-family:inherit;resize:none"></textarea>
-      <div style="display:flex;gap:4px;margin-top:4px">
-        <button class="btn btn-primary btn-sm" style="flex:1" onclick="parseRoster()">匯入</button>
-        <label class="btn btn-sm" style="cursor:pointer;flex:1;justify-content:center">&#x1F4CA; Excel<input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importExcel(this)"></label>
-      </div>
+      <label class="btn btn-primary btn-full" style="cursor:pointer;justify-content:center">
+        &#x1F4CA; 匯入 Excel 名單
+        <input type="file" accept=".xlsx,.xls,.csv" style="display:none" onchange="importExcel(this)">
+      </label>
     </div>
     <div class="s-section">
-      <div class="stat-row">學生：<span class="stat-badge" id="totalCount">0</span>已排：<span class="stat-badge" id="placedCount">0</span></div>
+      <div class="stat-row" style="margin-bottom:4px">學生：<span class="stat-badge" id="totalCount">0</span>已排：<span class="stat-badge" id="placedCount">0</span></div>
+      <div class="stat-row">可用：<span class="stat-badge" id="availCount">0</span>白底：<span class="stat-badge" id="whiteCount">0</span>灰底：<span class="stat-badge" id="grayCount">0</span></div>
     </div>
     <div class="student-list" id="studentList"><div style="color:var(--text3);font-size:11px;text-align:center;padding:10px">尚未匯入名單</div></div>
     <div class="s-section"><button class="btn btn-sm btn-red btn-full" onclick="clearAll()">&#x1F5D1; 清除座位安排</button></div>
@@ -177,10 +179,10 @@ function updatePodium(){
   canvas.style.flexDirection='column';
   if(direction==='top'){
     canvas.insertBefore(bar,grid);
-    bar.textContent='▲ 講台';
+    bar.textContent='講台';
   } else {
     canvas.appendChild(bar);
-    bar.textContent='▼ 講台';
+    bar.textContent='講台';
   }
 }
 
@@ -213,15 +215,17 @@ function renderGrid(){
       const div=document.createElement('div');
       div.style.width=w+'px';
       div.style.height=h+'px';
+      // 棋盤格：(排+列) 為偶數=白底，奇數=灰底
+      const isChecker=(r+c)%2===1;
 
       if(cell===null){
-        div.className='seat empty-slot';
+        div.className='seat empty-slot'+(isChecker?' checker':'');
         if(mode==='setup'){
           div.onclick=()=>toggleEmpty(r,c);
           div.title='點擊取消留空';
         }
       } else {
-        div.className='seat'+(cell?' occupied':'');
+        div.className='seat'+(cell?' occupied':'')+(isChecker?' checker':'');
         div.dataset.r=realR; div.dataset.c=realC;
         if(cell){
           const rem=document.createElement('span');
@@ -462,6 +466,22 @@ function updateStats(){
   const placed=countPlaced();
   document.getElementById('totalCount').textContent=students.length;
   document.getElementById('placedCount').textContent=placed;
+  // 計算可用座位（非留空）
+  let avail=0,white=0,gray=0;
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      if(grid[r][c]!==null){
+        avail++;
+        if((r+c)%2===0) white++; else gray++;
+      }
+    }
+  }
+  const ae=document.getElementById('availCount');
+  const we=document.getElementById('whiteCount');
+  const ge=document.getElementById('grayCount');
+  if(ae) ae.textContent=avail;
+  if(we) we.textContent=white;
+  if(ge) ge.textContent=gray;
 }
 
 function countPlaced(){
@@ -497,7 +517,7 @@ function clearAll(){
 // ===== 匯出 Word =====
 async function exportDocx(){
   const className=document.getElementById('className').value||'座位表';
-  const dirLabel=direction==='top'?'▲ 講台（前方）':'▼ 講台（後方）';
+  const dirLabel=direction==='top'?'講台（前方）':'講台（後方）';
 
   // 決定匯出的格子（依方向旋轉）
   let exportGrid=grid;
