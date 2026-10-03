@@ -376,15 +376,16 @@ function renderLogSummary(week){
 function doWeeklySettle(){
   const week=parseInt(document.getElementById('logWeekFilter').value);
   if(!week){showToast('請先選擇週次');return;}
-  // 檢查是否已結算
+  // 已結算過 → 詢問是否重新結算
   if(state.settledWeeks&&state.settledWeeks.includes(week)){
-    showToast(`第 ${week} 週已結算過，如需重新結算請先取消`);
-    return;
+    if(!confirm(`第 ${week} 週已結算過，要再重新結算嗎？\n（將重新寫入優缺點記錄，舊的常規記錄會先清除再寫入）`))return;
+    // 移除舊的已結算記錄
+    state.settledWeeks=state.settledWeeks.filter(w=>w!==week);
+  } else {
+    if(!confirm(`確定結算第 ${week} 週？\n系統將自動把常規缺點和優異記錄寫入優缺點記錄。`))return;
   }
   const data=window._currentSummaryData||calcWeekly(week);
-  if(!confirm(`確定結算第 ${week} 週？\n系統將自動把常規缺點和優異記錄寫入優缺點記錄。`))return;
   autoWriteMeritsFromSummary(data, week);
-  // 記錄已結算
   if(!state.settledWeeks) state.settledWeeks=[];
   state.settledWeeks.push(week);
   saveState();
