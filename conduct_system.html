@@ -88,9 +88,9 @@ input[type=text],input[type=number],input[type=date],select,textarea{
 <body>
 <div class="tab-bar">
   <button class="tab active" onclick="switchTab('record',this)">✏️<br>常規登記</button>
-  <button class="tab" onclick="switchTab('log',this)">📋<br>記錄</button>
-  <button class="tab" onclick="switchTab('merit',this)">🏅<br>優缺點</button>
+  <button class="tab" onclick="switchTab('log',this)">📋<br>常規記錄</button>
   <button class="tab" onclick="switchTab('summary',this)">📊<br>週結算</button>
+  <button class="tab" onclick="switchTab('merit',this)">🏅<br>優缺點</button>
   <button class="tab" onclick="switchTab('transfer',this)">🔄<br>期末結轉</button>
   <button class="tab" onclick="switchTab('settings',this)">⚙️<br>設定</button>
 </div>
@@ -167,7 +167,7 @@ input[type=text],input[type=number],input[type=date],select,textarea{
 <div id="tab-merit" class="section">
   <div class="card">
     <div class="card-title">新增優缺點記錄</div>
-    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:12px">
       <div>
         <div style="font-size:13px;font-weight:700;color:var(--text)" id="meritTodayLabel"></div>
         <div style="font-size:12px;color:var(--accent);margin-top:2px" id="meritInfo"></div>
@@ -175,11 +175,24 @@ input[type=text],input[type=number],input[type=date],select,textarea{
       <input type="date" id="meritDate" onchange="updateMeritInfo()" style="width:auto;font-size:13px;padding:6px 10px">
     </div>
     <input type="hidden" id="meritWeekHidden" value="1">
-    <div class="field" style="margin-top:10px">
-      <label>類型與項目</label>
-      <div class="chip-wrap" id="meritChips"></div>
+    <!-- Step 1: 選項目 -->
+    <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:6px">① 選擇項目</div>
+    <div class="chip-wrap" id="meritChips"></div>
+    <!-- Step 2: 確認/修改分數 -->
+    <div id="meritScoreWrap" style="display:none;margin-top:10px;padding:10px;background:var(--surface2);border-radius:var(--radius-sm)">
+      <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:6px">② 確認分數</div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="font-size:14px;font-weight:600" id="meritItemLabel"></div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <button class="btn btn-sm" onclick="adjustMeritScore(-1)" style="width:32px;padding:4px">−</button>
+          <input type="number" id="meritScoreInput" value="1" style="width:70px;text-align:center;font-size:16px;font-weight:700">
+          <button class="btn btn-sm" onclick="adjustMeritScore(1)" style="width:32px;padding:4px">＋</button>
+        </div>
+        <div id="meritScoreHint" style="font-size:11px;color:var(--text3)"></div>
+      </div>
     </div>
-    <div class="card-title" style="margin-top:4px">選擇座號（可多選）</div>
+    <!-- Step 3: 選座號 -->
+    <div style="font-size:12px;font-weight:700;color:var(--text3);margin:12px 0 6px">③ 選擇座號（可多選）</div>
     <div class="no-grid" id="meritGrid"></div>
     <div style="display:flex;gap:8px;margin-top:10px">
       <button class="btn btn-primary" style="flex:2" onclick="addMerit()">＋ 新增</button>
@@ -325,8 +338,11 @@ const OUT_LABELS={
 const DAYS=['一','二','三','四','五'];
 const MERIT_RATIO=6;
 const DEFAULT_MERIT_ITEMS=[
-  {name:'榮譽班',score:1},{name:'主動回答',score:1},{name:'表現優異',score:1},
-  {name:'功課未交',score:-1},{name:'上課講話',score:-1},{name:'上課睡覺',score:-1}
+  {name:'榮譽班',    score:2,  editable:true,  sign:1},
+  {name:'整潔獎',    score:1,  editable:true,  sign:1},
+  {name:'秩序獎',    score:1,  editable:true,  sign:1},
+  {name:'品德卡記錄',score:0,  editable:true,  sign:0},  // 正負由使用者決定
+  {name:'熱心公務',  score:0,  editable:true,  sign:1},   // 正分，使用者輸入
 ];
 
 // ===== 狀態 =====
@@ -482,8 +498,12 @@ function updateWeekSelectors(){
 // ===== 座號格子 =====
 function renderNoGrid(gridId,selSet,toggleFn){
   const g=document.getElementById(gridId); g.innerHTML='';
-  for(let i=1;i<=TOTAL;i++){
+  // 若已匯入名單，只顯示名單中的座號；否則顯示全部
+  const hasRoster=state.students.length>0;
+  const maxNo=hasRoster?Math.max(...state.students.map(x=>x.no)):TOTAL;
+  for(let i=1;i<=maxNo;i++){
     const s=state.students.find(x=>x.no===i);
+    if(hasRoster&&!s) continue; // 跳過名單中沒有的座號
     const btn=document.createElement('button');
     btn.className='no-btn'+(selSet.has(i)?' sel':'');
     btn.innerHTML=`<span>${String(i).padStart(2,'0')}</span>${s?`<span class="nb-name">${s.name}</span>`:''}`;
@@ -639,11 +659,39 @@ function renderMeritChips(){
   allMeritItems().forEach(it=>{
     const div=document.createElement('div');
     const isSel=meritItem===it.name;
-    div.className='chip'+(isSel?(it.score>0?' sel-plus':' sel-minus'):'');
-    div.textContent=it.name+' '+(it.score>0?'+':'')+it.score;
-    div.onclick=()=>{meritItem=it.name;meritScore=it.score;renderMeritChips();};
+    const scoreDisplay=it.score===0?'手動輸入':(it.score>0?'+':'')+it.score;
+    div.className='chip'+(isSel?(meritScore>0?' sel-plus':meritScore<0?' sel-minus':' sel-plus'):'');
+    div.textContent=it.name+(it.score!==0?' '+scoreDisplay:'');
+    div.onclick=()=>{
+      meritItem=it.name;
+      // 有預設分數直接帶入；score=0 代表手動輸入
+      if(it.score!==0){
+        meritScore=it.score;
+        document.getElementById('meritScoreInput').value=it.score;
+      } else {
+        meritScore=it.sign>=0?1:-1;
+        document.getElementById('meritScoreInput').value=it.sign>=0?1:-1;
+      }
+      document.getElementById('meritItemLabel').textContent=it.name;
+      const hint=it.editable?'可修改分數':('固定 '+(it.score>0?'+':'')+it.score);
+      document.getElementById('meritScoreHint').textContent=hint;
+      document.getElementById('meritScoreWrap').style.display='block';
+      renderMeritChips();
+    };
     wrap.appendChild(div);
   });
+}
+
+function adjustMeritScore(delta){
+  const inp=document.getElementById('meritScoreInput');
+  const cur=parseInt(inp.value)||0;
+  const it=allMeritItems().find(x=>x.name===meritItem);
+  // 品德卡可正可負，其他只能往預設方向
+  const newVal=cur+delta;
+  if(it&&it.sign===0) inp.value=newVal; // 品德卡：正負都可
+  else if(it&&it.sign>=0) inp.value=Math.max(1,newVal); // 正分項目
+  else inp.value=Math.min(-1,newVal); // 負分項目
+  meritScore=parseInt(inp.value);
 }
 
 function addMerit(){
@@ -652,14 +700,21 @@ function addMerit(){
   if(meritNos.size===0){showMsg(msg,'請選擇至少一個座號','red');return;}
   const date=document.getElementById('meritDate').value||new Date().toLocaleDateString('sv');
   const week=parseInt(document.getElementById('meritWeekHidden')?.value)||calcWeekFromDate(date);
-  meritNos.forEach(no=>state.merits.push({no,item:meritItem,score:meritScore,date,week}));
+  // 從 input 取得最終分數（可能已被使用者修改）
+  const finalScore=parseInt(document.getElementById('meritScoreInput')?.value)||meritScore;
+  if(finalScore===0){showMsg(document.getElementById('meritMsg'),'請輸入分數','red');return;}
+  meritNos.forEach(no=>state.merits.push({no,item:meritItem,score:finalScore,date,week}));
   const cnt=meritNos.size;
   meritNos.clear(); renderNoGrid('meritGrid',meritNos,toggleMeritNo);
   saveState();renderMeritList();
   showMsg(document.getElementById('meritMsg'),`已新增 ${cnt} 筆（${meritItem} ${meritScore>0?'+':''}${meritScore}）`,'green');
 }
 
-function clearMeritSel(){meritItem=null;meritScore=0;meritNos.clear();renderMeritChips();renderNoGrid('meritGrid',meritNos,toggleMeritNo);}
+function clearMeritSel(){
+  meritItem=null;meritScore=0;meritNos.clear();
+  document.getElementById('meritScoreWrap').style.display='none';
+  renderMeritChips();renderNoGrid('meritGrid',meritNos,toggleMeritNo);
+}
 
 function renderMeritList(){
   const list=document.getElementById('meritList');
