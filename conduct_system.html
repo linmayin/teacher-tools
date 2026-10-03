@@ -308,9 +308,8 @@ input[type=text],input[type=number],input[type=date],select,textarea{
   </div>
   <div class="card">
     <div class="card-title">資料管理</div>
-    <button class="btn btn-full" onclick="deleteWeekLogsFromSettings()">🗑 刪除指定週次常規登記</button>
-    <div style="font-size:11px;color:var(--text3);margin-top:-4px">輸入週次數字後刪除該週所有登記</div>
-    <button class="btn btn-full btn-red" onclick="clearAllData()">⚠️ 清除全部資料</button>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:8px">⚠️ 以下操作無法復原，請謹慎使用</div>
+    <button class="btn btn-full btn-red" onclick="clearAllData()">🗑 清除所有資料（換新班級）</button>
   </div>
 </div>
 
@@ -887,7 +886,7 @@ function renderMeritList(){
 }
 
 function deleteMerit(idx){state.merits.splice(idx,1);saveState();renderMeritList();}
-function clearAllMerits(){if(!confirm('確定清除所有優缺點記錄？'))return;state.merits=[];saveState();renderMeritList();}
+function clearAllMerits(){if(!confirm('確定清除所有優缺點記錄？'))return;state.merits=[];saveState();renderMeritSummaryList();showToast('優缺點記錄已清除');}
 
 function renderCustomMeritList(){
   const list=document.getElementById('customMeritList');
@@ -1211,7 +1210,7 @@ function exportMeritCSV(){
 }
 
 // ===== 期末結轉 =====
-async function doTransfer(){
+async async function doTransfer(){
   if(!meritSummaryData){showToast('請先計算統計');return;}
   if(!confirm('確定執行結轉？\n\n① 匯出純文字備案\n② 匯出統計總表 CSV\n③ 清除所有優缺點記錄\n④ 存入各生餘數\n\n請確認已允許下載。'))return;
   exportMeritText();
@@ -1219,21 +1218,27 @@ async function doTransfer(){
   exportMeritCSV();
   await new Promise(r=>setTimeout(r,800));
   const today=new Date().toLocaleDateString('sv');
-  state.merits=[];
+  const curWeek=calcCurrentWeek();
+  // 先收集餘數
+  const remainList=[];
   meritSummaryData.forEach(s=>{
     if(s.remain>0){
       const score=s.remainType==='優點'?s.remain:-s.remain;
-      state.merits.push({no:s.no,item:'結轉餘數',score,date:today,week:state.weekNum});
+      remainList.push({no:s.no,item:'結轉餘數',score,date:today,week:curWeek});
     }
   });
+  // 清除並寫回餘數
+  state.merits=remainList;
+  state.settledWeeks=[];
   meritSummaryData=null;
-  document.getElementById('meritSummaryContent').innerHTML='';
-  document.getElementById('meritSummaryActions').style.display='none';
-  saveState();renderMeritList();
-  showToast('結轉完成！');
+  const mc=document.getElementById('meritSummaryContent');
+  if(mc)mc.innerHTML='';
+  const ma=document.getElementById('meritSummaryActions');
+  if(ma)ma.style.display='none';
+  saveState();
+  renderMeritSummaryList();
+  showToast('結轉完成！餘數已存回優缺點記錄');
 }
-
-// ===== 名單匯入 =====
 function importRoster(input){
   const file=input.files[0];if(!file)return;
   const reader=new FileReader();
