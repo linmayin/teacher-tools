@@ -464,7 +464,7 @@ function switchTab(name,el){
 
 // ===== 週次選單 =====
 function updateWeekSelectors(){
-  const weeks=[...new Set(state.logs.map(l=>l.week))].sort((a,b)=>a-b);
+  const weeks=[...new Set(state.logs.map(l=>parseInt(l.week)))].filter(w=>!isNaN(w)).sort((a,b)=>a-b);
   ['logWeekFilter','sumWeekSel'].forEach(id=>{
     const sel=document.getElementById(id);
     if(!sel)return;
@@ -556,7 +556,7 @@ function renderLog(){
   const weekFilter=document.getElementById('logWeekFilter')?.value||'';
   const dayFilter=document.getElementById('logDayFilter')?.value||'';
   const list=document.getElementById('logList');
-  let filtered=state.logs.filter(l=>(!weekFilter||l.week==weekFilter)&&(!dayFilter||l.day===dayFilter));
+  let filtered=state.logs.filter(l=>(!weekFilter||String(l.week)===String(weekFilter))&&(!dayFilter||l.day===dayFilter));
   if(!filtered.length){list.innerHTML='<div style="color:var(--text3);font-size:13px;padding:8px 0">尚無登記記錄</div>';return;}
   // 依週次+星期分組
   const grouped={};
@@ -622,10 +622,11 @@ function importCSVPaste(){
     if(isNaN(no)||no<1||no>TOTAL||!DAYS.includes(day))return;
     if(itemLabel==='項目'||itemLabel==='座號')return;
     const it=CONDUCT_ITEMS.find(x=>x.label===itemLabel||itemLabel.includes(x.key)||x.label.includes(itemLabel));
-    if(it){state.logs.push({no,item:it.key,day,date:'',week:rowWeek,note:it.hasNote?note:''});count++;}
+    if(it){state.logs.push({no,item:it.key,day,date:'',week:parseInt(rowWeek),note:it.hasNote?note:''});count++;}
   });
   document.getElementById('csvPaste').value='';
-  msgEl.innerHTML=`<div style="color:var(--green);font-size:12px;margin-top:4px">已匯入 ${count} 筆（第${week}週）</div>`;
+  const importedWeeks=[...new Set(state.logs.slice(-count).map(l=>l.week))].sort((a,b)=>a-b);
+  msgEl.innerHTML=`<div style="color:var(--green);font-size:12px;margin-top:4px">已匯入 ${count} 筆（第${importedWeeks.join('、')}週）</div>`;
   setTimeout(()=>msgEl.innerHTML='',3000);
   saveState();updateWeekSelectors();renderLog();
 }
@@ -714,7 +715,7 @@ function calcWeekly(week){
     counts[i]={};
     CONDUCT_ITEMS.forEach(it=>{counts[i][it.key]={count:0,notes:[],days:[]};});
   }
-  state.logs.filter(l=>l.week==week).forEach(l=>{
+  state.logs.filter(l=>parseInt(l.week)===parseInt(week)).forEach(l=>{
     if(counts[l.no]&&counts[l.no][l.item]){
       counts[l.no][l.item].count++;
       counts[l.no][l.item].days.push(l.day);
@@ -815,9 +816,9 @@ function exportWeeklyCSV(){
 
 function exportAllConductCSV(){
   let csv='\uFEFF週次,座號,姓名,項目,次數,星期,備註\n';
-  const weeks=[...new Set(state.logs.map(l=>l.week))].sort((a,b)=>a-b);
+  const weeks=[...new Set(state.logs.map(l=>parseInt(l.week)))].filter(w=>!isNaN(w)).sort((a,b)=>a-b);
   weeks.forEach(week=>{
-    const data=calcWeekly(week);
+    const data=calcWeekly(parseInt(week));
     data.forEach(s=>{
       s.recordDetails.forEach(d=>{
         csv+=`${week},${s.no},"${s.name}","${d.label}",${d.count},"${d.days.join('、')}","${d.notes.join('、')}"\n`;
