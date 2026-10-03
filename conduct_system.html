@@ -851,14 +851,18 @@ function addMerit(){
   if(meritNos.size===0){showMsg(msg,'請選擇至少一個座號','red');return;}
   const date=document.getElementById('meritDate').value||new Date().toLocaleDateString('sv');
   const week=parseInt(document.getElementById('meritWeekHidden')?.value)||calcWeekFromDate(date);
-  // 從 input 取得最終分數（可能已被使用者修改）
-  const finalScore=parseInt(document.getElementById('meritScoreInput')?.value)||meritScore;
-  if(finalScore===0){showMsg(document.getElementById('meritMsg'),'請輸入分數','red');return;}
-  meritNos.forEach(no=>state.merits.push({no,item:meritItem,score:finalScore,date,week}));
+  // 從 input 取得最終分數
+  const scoreEl=document.getElementById('meritScoreInput');
+  const finalScore=scoreEl?parseInt(scoreEl.value):meritScore;
+  if(!finalScore||finalScore===0){showMsg(msg,'請輸入分數（不能為零）','red');return;}
   const cnt=meritNos.size;
-  meritNos.clear(); renderNoGrid('meritGrid',meritNos,toggleMeritNo);
-  saveState();renderMeritList();
-  showMsg(document.getElementById('meritMsg'),`已新增 ${cnt} 筆（${meritItem} ${meritScore>0?'+':''}${meritScore}）`,'green');
+  const itemName=meritItem;
+  meritNos.forEach(no=>state.merits.push({no,item:itemName,score:finalScore,date,week}));
+  meritNos.clear();
+  saveState();
+  renderNoGrid('meritGrid',meritNos,toggleMeritNo);
+  renderMeritSummaryList();
+  showMsg(msg,`已新增 ${cnt} 筆（${itemName} ${finalScore>0?'+':''}${finalScore}）`,'green');
 }
 
 function clearMeritSel(){
