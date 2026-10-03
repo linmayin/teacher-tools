@@ -768,6 +768,42 @@ function calcSummary(){
   html+=`</tbody></table></div></div>`;
   document.getElementById('summaryContent').innerHTML=html;
   document.getElementById('summaryActions').style.display='block';
+
+  // 自動寫入優缺點記錄
+  autoWriteMeritsFromSummary(summaryData, parseInt(week));
+}
+
+function autoWriteMeritsFromSummary(data, week){
+  // 先移除同週次舊的常規自動產生記錄（避免重複）
+  state.merits=state.merits.filter(m=>
+    !(m.week===week && (m.item.includes('生活常規缺點')||m.item.includes('生活常規表現優異')))
+  );
+
+  const today=new Date().toLocaleDateString('sv');
+  let addCount=0;
+
+  data.forEach(s=>{
+    if(s.totalDeduct>0){
+      // 每支缺點各記一筆
+      for(let i=0;i<s.totalDeduct;i++){
+        state.merits.push({
+          no:s.no, item:`第${week}週生活常規缺點`,
+          score:-1, date:today, week:week
+        });
+        addCount++;
+      }
+    } else if(s.level==='優異'){
+      // 表現優異記1支優點
+      state.merits.push({
+        no:s.no, item:`第${week}週生活常規表現優異`,
+        score:1, date:today, week:week
+      });
+      addCount++;
+    }
+  });
+
+  saveState();
+  if(addCount>0) showToast(`已自動寫入 ${addCount} 筆優缺點記錄`);
 }
 
 // ===== 週報匯出 =====
