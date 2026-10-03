@@ -89,7 +89,6 @@ input[type=text],input[type=number],input[type=date],select,textarea{
 <div class="tab-bar">
   <button class="tab active" onclick="switchTab('record',this)">✏️<br>常規登記</button>
   <button class="tab" onclick="switchTab('log',this)">📋<br>常規記錄</button>
-  <button class="tab" onclick="switchTab('summary',this)">📊<br>週結算</button>
   <button class="tab" onclick="switchTab('merit',this)">🏅<br>優缺點</button>
   <button class="tab" onclick="switchTab('transfer',this)">🔄<br>期末結轉</button>
   <button class="tab" onclick="switchTab('settings',this)">⚙️<br>設定</button>
@@ -133,38 +132,54 @@ input[type=text],input[type=number],input[type=date],select,textarea{
   <div id="recMsg"></div>
 </div>
 
-<!-- 登記記錄 -->
+<!-- 常規記錄 -->
 <div id="tab-log" class="section">
   <div class="card">
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-      <div class="card-title" style="margin:0">登記記錄</div>
-      <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-        <select id="logWeekFilter" onchange="renderLog()" style="font-size:13px">
-          <option value="">全部週次</option>
+      <div class="card-title" style="margin:0">常規統計</div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <select id="logWeekFilter" onchange="onWeekFilterChange()" style="font-size:14px;font-weight:600;color:var(--accent);border-color:var(--accent);padding:6px 8px">
+          <option value="">請選擇週次</option>
         </select>
-        <select id="logDayFilter" onchange="renderLog()" style="font-size:13px">
-          <option value="">全部星期</option>
-          <option value="一">週一</option><option value="二">週二</option>
-          <option value="三">週三</option><option value="四">週四</option>
-          <option value="五">週五</option>
-        </select>
-        <button class="btn btn-sm btn-red" onclick="deleteWeekLogs()">🗑 刪除此週</button>
+        <button class="btn btn-sm btn-red" onclick="deleteWeekLogs()" style="padding:6px 10px">🗑</button>
       </div>
+    </div>
+    <div class="stat-grid" id="logStatGrid" style="display:none;margin-bottom:10px">
+      <div class="stat-card"><div class="stat-num" id="logStatGood" style="color:var(--green)">0</div><div class="stat-label">表現優異</div></div>
+      <div class="stat-card"><div class="stat-num" id="logStatOk" style="color:var(--accent)">0</div><div class="stat-label">表現不錯</div></div>
+      <div class="stat-card"><div class="stat-num" id="logStatWarn" style="color:var(--red)">0</div><div class="stat-label">尚待努力</div></div>
+    </div>
+    <div id="logSummaryTable" style="overflow-x:auto;margin-bottom:8px"></div>
+    <div id="logActions" style="display:none;flex-direction:column;gap:6px">
+      <button class="btn btn-full" id="btnExportText" onclick="exportWeeklyText()">⬇ 匯出週報純文字（寄家長用）</button>
+      <button class="btn btn-full" id="btnExportCSV" onclick="exportWeeklyCSV()">⬇ 匯出本週常規明細 CSV</button>
+      <button class="btn btn-green btn-full" id="btnSettle" onclick="doWeeklySettle()">✅ 結算本週（自動寫入優缺點）</button>
+    </div>
+  </div>
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+      <div class="card-title" style="margin:0">登記明細</div>
+      <select id="logDayFilter" onchange="renderLog()" style="font-size:13px">
+        <option value="">全部星期</option>
+        <option value="一">週一</option><option value="二">週二</option>
+        <option value="三">週三</option><option value="四">週四</option>
+        <option value="五">週五</option>
+      </select>
     </div>
     <div id="logList"></div>
   </div>
   <div class="card">
     <div class="card-title">貼上 CSV 匯入</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:6px">格式：座號,項目,星期（第4欄選填備註）</div>
-    <textarea id="csvPaste" style="height:100px;font-size:12px;font-family:monospace;resize:vertical" placeholder="3,作業缺交/學用品,三,英習&#10;7,服裝儀容,三"></textarea>
-    <div style="font-size:11px;color:var(--text3);margin:6px 0">新格式：週次,星期,座號,項目,備註　舊格式：座號,項目,星期,備註</div>
-    <button class="btn btn-primary btn-sm" onclick="importCSVPaste()" style="margin-top:4px">⬆ 匯入</button>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:6px">新格式：週次,星期,座號,項目,備註　舊格式：座號,項目,星期,備註</div>
+    <textarea id="csvPaste" style="height:90px;font-size:12px;font-family:monospace;resize:vertical"></textarea>
+    <button class="btn btn-primary btn-sm" onclick="importCSVPaste()" style="margin-top:6px">⬆ 匯入</button>
     <div id="importMsg"></div>
   </div>
 </div>
 
 <!-- 優缺點 -->
 <div id="tab-merit" class="section">
+  <!-- 新增優缺點 -->
   <div class="card">
     <div class="card-title">新增優缺點記錄</div>
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:12px">
@@ -175,23 +190,20 @@ input[type=text],input[type=number],input[type=date],select,textarea{
       <input type="date" id="meritDate" onchange="updateMeritInfo()" style="width:auto;font-size:13px;padding:6px 10px">
     </div>
     <input type="hidden" id="meritWeekHidden" value="1">
-    <!-- Step 1: 選項目 -->
     <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:6px">① 選擇項目</div>
     <div class="chip-wrap" id="meritChips"></div>
-    <!-- Step 2: 確認/修改分數 -->
     <div id="meritScoreWrap" style="display:none;margin-top:10px;padding:10px;background:var(--surface2);border-radius:var(--radius-sm)">
       <div style="font-size:12px;font-weight:700;color:var(--text3);margin-bottom:6px">② 確認分數</div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <div style="font-size:14px;font-weight:600" id="meritItemLabel"></div>
         <div style="display:flex;align-items:center;gap:6px">
-          <button class="btn btn-sm" onclick="adjustMeritScore(-1)" style="width:32px;padding:4px">−</button>
+          <button class="btn btn-sm" onclick="adjustMeritScore(-1)" style="width:36px;padding:8px 0;font-size:16px">−</button>
           <input type="number" id="meritScoreInput" value="1" style="width:70px;text-align:center;font-size:16px;font-weight:700">
-          <button class="btn btn-sm" onclick="adjustMeritScore(1)" style="width:32px;padding:4px">＋</button>
+          <button class="btn btn-sm" onclick="adjustMeritScore(1)" style="width:36px;padding:8px 0;font-size:16px">＋</button>
         </div>
         <div id="meritScoreHint" style="font-size:11px;color:var(--text3)"></div>
       </div>
     </div>
-    <!-- Step 3: 選座號 -->
     <div style="font-size:12px;font-weight:700;color:var(--text3);margin:12px 0 6px">③ 選擇座號（可多選）</div>
     <div class="no-grid" id="meritGrid"></div>
     <div style="display:flex;gap:8px;margin-top:10px">
@@ -200,7 +212,7 @@ input[type=text],input[type=number],input[type=date],select,textarea{
     </div>
     <div id="meritMsg"></div>
   </div>
-
+  <!-- 自訂項目 -->
   <div class="card">
     <div class="card-title">自訂優缺點項目</div>
     <div id="customMeritList" style="margin-bottom:8px"></div>
@@ -220,44 +232,16 @@ input[type=text],input[type=number],input[type=date],select,textarea{
       <button class="btn btn-primary btn-sm" onclick="addCustomMerit()" style="height:42px">新增</button>
     </div>
   </div>
+  <!-- 優缺點統計（按座號分組）-->
   <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px">
-      <div class="card-title" style="margin:0">優缺點記錄</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+      <div class="card-title" style="margin:0">優缺點統計</div>
       <button class="btn btn-sm btn-red" onclick="clearAllMerits()">🗑 清除全部</button>
     </div>
-    <div id="meritList"></div>
-  </div>
-
-</div>
-
-<!-- 週結算 -->
-<div id="tab-summary" class="section">
-  <div class="card">
-    <div class="card-title">週結算</div>
-    <div class="row">
-      <div class="field f1" style="margin:0">
-        <label>選擇結算週次</label>
-        <select id="sumWeekSel" onchange="summaryData=null;document.getElementById('summaryContent').innerHTML=''">
-          <option value="">請選擇週次</option>
-        </select>
-      </div>
-      <button class="btn btn-primary" onclick="calcSummary()" style="height:44px">↻ 計算統計</button>
-    </div>
-  </div>
-  <div id="summaryContent"></div>
-  <div id="summaryActions" style="display:none">
-    <div class="card">
-      <div class="card-title">匯出</div>
-      <button class="btn btn-full" onclick="exportWeeklyText()">⬇ 匯出週報純文字（寄家長用）</button>
-      <button class="btn btn-full" onclick="exportWeeklyCSV()">⬇ 匯出本週常規明細 CSV</button>
-    </div>
-  </div>
-  <div class="card">
-    <div class="card-title">常規表現總表</div>
-    <div style="font-size:12px;color:var(--text3);margin-bottom:8px">匯出所有週次的常規登記統計</div>
-    <button class="btn btn-full" onclick="exportAllConductCSV()">⬇ 匯出常規表現總表 CSV</button>
+    <div id="meritSummaryList"></div>
   </div>
 </div>
+
 
 <!-- 期末結轉 -->
 <div id="tab-transfer" class="section">
@@ -322,6 +306,129 @@ input[type=text],input[type=number],input[type=date],select,textarea{
 
 <div class="toast" id="toast"></div>
 <script>
+// ===== 常規記錄統計 =====
+function onWeekFilterChange(){
+  const w=document.getElementById('logWeekFilter').value;
+  renderLog();
+  if(w){
+    renderLogSummary(parseInt(w));
+  } else {
+    document.getElementById('logStatGrid').style.display='none';
+    document.getElementById('logSummaryTable').innerHTML='';
+    document.getElementById('logActions').style.display='none';
+  }
+}
+
+function renderLogSummary(week){
+  const data=calcWeekly(week);
+  const good=data.filter(x=>x.level==='優異').length;
+  const ok=data.filter(x=>x.level==='不錯').length;
+  const warn=data.filter(x=>x.level==='加強').length;
+  // 統計卡
+  document.getElementById('logStatGrid').style.display='grid';
+  document.getElementById('logStatGood').textContent=good;
+  document.getElementById('logStatOk').textContent=ok;
+  document.getElementById('logStatWarn').textContent=warn;
+  // 全班明細表
+  const labelMap={'優異':'表現優異','不錯':'表現不錯','加強':'尚待努力'};
+  const badgeMap={'優異':'badge-green','不錯':'badge-blue','加強':'badge-red'};
+  const range=getWeekRange(week);
+  let html=`<div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--text2)">全班明細 第${week}週${range?' '+range:''}</div>`;
+  html+=`<table class="sum-table"><thead><tr>
+    <th>號</th><th>姓名</th><th>評等</th><th>缺點</th><th>登記明細</th>
+  </tr></thead><tbody>`;
+  data.forEach(s=>{
+    const det=s.recordDetails.map(d=>{
+      const noteTags=d.notes.map(n=>`<span style="color:var(--accent);font-size:11px;background:var(--accent-light);padding:1px 4px;border-radius:4px;margin-left:2px">${n}</span>`).join('');
+      return `<span style="display:inline-block;background:var(--surface2);border-radius:6px;padding:2px 7px;font-size:11px;margin:1px">${d.outLabel}×${d.count}（週${d.days.join('、')}）${noteTags}</span>`;
+    }).join('')||`<span style="color:var(--text3);font-size:11px">無記錄</span>`;
+    html+=`<tr>
+      <td>${s.no}</td>
+      <td style="white-space:nowrap;font-weight:500">${s.name||'—'}</td>
+      <td><span class="badge ${badgeMap[s.level]}">${labelMap[s.level]}</span></td>
+      <td style="text-align:center;font-weight:700;color:${s.totalDeduct>0?'var(--red)':'var(--text3)'}">${s.totalDeduct>0?s.totalDeduct+'支':'—'}</td>
+      <td>${det}</td>
+    </tr>`;
+  });
+  html+=`</tbody></table>`;
+  document.getElementById('logSummaryTable').innerHTML=html;
+  // 顯示匯出和結算按鈕
+  const actions=document.getElementById('logActions');
+  actions.style.display='flex';
+  document.getElementById('btnExportText').style.display='block';
+  document.getElementById('btnExportCSV').style.display='block';
+  document.getElementById('btnSettle').style.display='block';
+  // 存當前統計資料供匯出用
+  window._currentSummaryData=data;
+  window._currentSummaryWeek=week;
+}
+
+function doWeeklySettle(){
+  const week=parseInt(document.getElementById('logWeekFilter').value);
+  if(!week){showToast('請先選擇週次');return;}
+  const data=window._currentSummaryData||calcWeekly(week);
+  if(!confirm(`確定結算第 ${week} 週？\n系統將自動把常規缺點和優異記錄寫入優缺點記錄。`))return;
+  autoWriteMeritsFromSummary(data, week);
+  renderMeritSummaryList();
+  showToast(`第 ${week} 週結算完成，優缺點已更新`);
+}
+
+// ===== 優缺點統計列表 =====
+function renderMeritSummaryList(){
+  const list=document.getElementById('meritSummaryList');
+  if(!list)return;
+  const hasRoster=state.students.length>0;
+  const noList=hasRoster?[...state.students].sort((a,b)=>a.no-b.no).map(x=>x.no):
+    [...new Set(state.merits.map(m=>m.no))].sort((a,b)=>a-b);
+  if(!noList.length){list.innerHTML='<div style="color:var(--text3);font-size:13px">尚無記錄</div>';return;}
+  let html='';
+  noList.forEach(no=>{
+    const s=state.students.find(x=>x.no===no);
+    const sub=state.merits.filter(m=>m.no===no);
+    const net=sub.reduce((a,m)=>a+m.score,0);
+    const netColor=net>0?'var(--green)':net<0?'var(--red)':'var(--text3)';
+    const netStr=net>0?'+'+net:String(net);
+    const noStr=String(no).padStart(2,'0');
+    html+=`<div style="border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px;overflow:hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;cursor:pointer;background:var(--surface)" onclick="toggleMeritDetail(${no})">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:14px;font-weight:700">${noStr}號</span>
+          <span style="font-size:13px;color:var(--text2)">${s?.name||''}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:14px;font-weight:700;color:${netColor}">淨 ${netStr}</span>
+          <span style="font-size:12px;color:var(--text3)">${sub.length}筆</span>
+          <span id="meritChev${no}" style="font-size:12px;color:var(--text3)">›</span>
+        </div>
+      </div>
+      <div id="meritDetail${no}" style="display:none;padding:0 12px 10px;background:var(--surface2)">`;
+    if(sub.length===0){
+      html+=`<div style="font-size:12px;color:var(--text3);padding:8px 0">無記錄</div>`;
+    } else {
+      sub.forEach((m,mi)=>{
+        const idx=state.merits.indexOf(m);
+        html+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px">
+          <span style="color:var(--text3);font-size:11px;min-width:80px">${m.date||''}</span>
+          <span style="flex:1;margin:0 8px">${m.item}</span>
+          <span style="font-weight:700;color:${m.score>0?'var(--green)':'var(--red)'};">${m.score>0?'+':''}${m.score}</span>
+          <button class="btn btn-sm btn-red" onclick="event.stopPropagation();deleteMerit(${idx});renderMeritSummaryList();" style="padding:3px 8px;margin-left:8px;font-size:11px">✕</button>
+        </div>`;
+      });
+    }
+    html+=`</div></div>`;
+  });
+  list.innerHTML=html;
+}
+
+function toggleMeritDetail(no){
+  const detail=document.getElementById('meritDetail'+no);
+  const chev=document.getElementById('meritChev'+no);
+  const isOpen=detail.style.display==='block';
+  detail.style.display=isOpen?'none':'block';
+  chev.textContent=isOpen?'›':'∨';
+}
+
+
 // ===== 常數 =====
 const TOTAL=33;
 const DATA_KEY='cs2_data_v1';
@@ -487,7 +594,7 @@ function switchTab(name,el){
 // ===== 週次選單 =====
 function updateWeekSelectors(){
   const weeks=[...new Set(state.logs.map(l=>parseInt(l.week)))].filter(w=>!isNaN(w)).sort((a,b)=>a-b);
-  ['logWeekFilter','sumWeekSel'].forEach(id=>{
+  ['logWeekFilter'].forEach(id=>{
     const sel=document.getElementById(id);
     if(!sel)return;
     const curVal=sel.value;
@@ -878,8 +985,10 @@ function autoWriteMeritsFromSummary(data, week){
 
 // ===== 週報匯出 =====
 function exportWeeklyText(){
-  if(!summaryData){showToast('請先計算統計');return;}
-  const week=document.getElementById('sumWeekSel').value;
+  const data=window._currentSummaryData;
+  const week=window._currentSummaryWeek;
+  if(!data||!week){showToast('請先在常規記錄頁選擇週次');return;}
+  summaryData=data;
   const weekStart=state.weekStart;
   let dateStr='';
   if(weekStart){const fri=new Date(weekStart);fri.setDate(fri.getDate()+4);dateStr=fri.toLocaleDateString('sv');}
@@ -910,8 +1019,10 @@ function exportWeeklyText(){
 }
 
 function exportWeeklyCSV(){
-  if(!summaryData){showToast('請先計算統計');return;}
-  const week=document.getElementById('sumWeekSel').value;
+  const data=window._currentSummaryData;
+  const week=window._currentSummaryWeek;
+  if(!data||!week){showToast('請先在常規記錄頁選擇週次');return;}
+  summaryData=data;
   let csv='\uFEFF座號,姓名,評等,缺點支數,登記項目\n';
   summaryData.forEach(s=>{
     const det=s.recordDetails.map(d=>d.label+'×'+d.count).join('；');
@@ -1191,6 +1302,40 @@ function updateTodayLabels(){
 
 init();
 updateTodayLabels();
+
+// 補登模式切換
+function toggleRecMode(){
+  const alt=document.getElementById('recAltDate');
+  const btn=document.getElementById('recModeBtn');
+  const isAlt=alt.style.display==='block';
+  if(isAlt){
+    alt.style.display='none';
+    btn.textContent='📅 補登其他日期';
+    // 還原今天
+    document.getElementById('recDate').value=new Date().toLocaleDateString('sv');
+    updateRecordInfo();
+  } else {
+    alt.style.display='block';
+    btn.textContent='✕ 回到今天';
+  }
+}
+
+// 更新今天顯示
+function updateTodayLabels(){
+  const today=new Date();
+  const dateStr=today.toLocaleDateString('sv');
+  const dayMap={0:'日',1:'一',2:'二',3:'三',4:'四',5:'五',6:'六'};
+  const day=dayMap[today.getDay()];
+  const label=`今天 ${dateStr}（週${day}）`;
+  const el=document.getElementById('recTodayLabel');
+  if(el)el.textContent=label;
+  const ml=document.getElementById('meritTodayLabel');
+  if(ml)ml.textContent=label;
+}
+
+init();
+updateTodayLabels();
+
 </script>
 </body>
 </html>
