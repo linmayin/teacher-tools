@@ -1210,7 +1210,7 @@ function exportMeritCSV(){
 }
 
 // ===== 期末結轉 =====
-async async function doTransfer(){
+async function doTransfer(){
   if(!meritSummaryData){showToast('請先計算統計');return;}
   if(!confirm('確定執行結轉？\n\n① 匯出純文字備案\n② 匯出統計總表 CSV\n③ 清除所有優缺點記錄\n④ 存入各生餘數\n\n請確認已允許下載。'))return;
   exportMeritText();
