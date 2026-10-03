@@ -212,6 +212,16 @@ input[type=text],input[type=number],input[type=date],select,textarea{
     </div>
     <div id="meritMsg"></div>
   </div>
+  <!-- CSV 匯入 -->
+  <div class="card">
+    <div class="card-title">匯入優缺點記錄 CSV</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:8px">格式：日期,座號,類型,項目,分數（與優缺點記錄小程式匯出格式相同）</div>
+    <label class="btn btn-full" style="cursor:pointer;justify-content:center">
+      📂 選擇 CSV 檔案
+      <input type="file" accept=".csv,.txt" style="display:none" onchange="importMeritCSV(this)">
+    </label>
+    <div id="meritImportMsg"></div>
+  </div>
   <!-- 自訂項目 -->
   <div class="card">
     <div class="card-title">自訂優缺點項目</div>
@@ -361,16 +371,43 @@ function renderLogSummary(week){
   // 存當前統計資料供匯出用
   window._currentSummaryData=data;
   window._currentSummaryWeek=week;
+  updateSettleBtn(week);
 }
 
 function doWeeklySettle(){
   const week=parseInt(document.getElementById('logWeekFilter').value);
   if(!week){showToast('請先選擇週次');return;}
+  // 檢查是否已結算
+  if(state.settledWeeks&&state.settledWeeks.includes(week)){
+    showToast(`第 ${week} 週已結算過，如需重新結算請先取消`);
+    return;
+  }
   const data=window._currentSummaryData||calcWeekly(week);
   if(!confirm(`確定結算第 ${week} 週？\n系統將自動把常規缺點和優異記錄寫入優缺點記錄。`))return;
   autoWriteMeritsFromSummary(data, week);
+  // 記錄已結算
+  if(!state.settledWeeks) state.settledWeeks=[];
+  state.settledWeeks.push(week);
+  saveState();
   renderMeritSummaryList();
-  showToast(`第 ${week} 週結算完成，優缺點已更新`);
+  updateSettleBtn(week);
+  showToast(`第 ${week} 週結算完成！`);
+}
+
+function updateSettleBtn(week){
+  const btn=document.getElementById('btnSettle');
+  if(!btn)return;
+  if(state.settledWeeks&&state.settledWeeks.includes(parseInt(week))){
+    btn.disabled=true;
+    btn.textContent='✅ 本週已結算';
+    btn.style.opacity='0.5';
+    btn.style.cursor='default';
+  } else {
+    btn.disabled=false;
+    btn.textContent='✅ 結算本週（自動寫入優缺點）';
+    btn.style.opacity='1';
+    btn.style.cursor='pointer';
+  }
 }
 
 // ===== 優缺點統計列表 =====
@@ -464,6 +501,7 @@ let state={
   logs:[],      // [{no,item,day,note,date,week}]
   merits:[],    // [{no,item,score,date,week}]
   customMerits:[],
+  settledWeeks:[], // 已結算的週次
   weekNum:1, weekStart:'', weekRange:'',
   semesterStart:'', semesterEnd:''
 };
@@ -856,6 +894,43 @@ function renderCustomMeritList(){
       <span style="color:${it.score>0?'var(--green)':'var(--red)'};">${it.score>0?'+':''}${it.score}</span>
       <button class="btn btn-sm btn-red" onclick="deleteCustomMerit(${i})" style="padding:4px 8px">刪除</button>
     </div>`).join('');
+}
+
+function importMeritCSV(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const text=e.target.result;
+      const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
+      let count=0, skip=0;
+      lines.forEach(l=>{
+        const parts=l.split(',');
+        if(parts.length<5)return;
+        const date=parts[0].trim();
+        if(date==='日期')return; // 標題行
+        const no=parseInt(parts[1]);
+        const item=parts[3].trim();
+        const score=parseFloat(parts[4]);
+        if(isNaN(no)||isNaN(score)||!item){skip++;return;}
+        // 計算週次
+        const week=calcWeekFromDate(date)||1;
+        // 避免完全重複
+        const dup=state.merits.some(m=>m.no===no&&m.item===item&&m.score===score&&m.date===date);
+        if(dup){skip++;return;}
+        state.merits.push({no,item,score,date,week});
+        count++;
+      });
+      saveState();
+      renderMeritSummaryList();
+      const msg=document.getElementById('meritImportMsg');
+      msg.innerHTML=`<div style="color:var(--green);font-size:12px;margin-top:6px">已匯入 ${count} 筆${skip>0?`，略過 ${skip} 筆重複`:''}</div>`;
+      setTimeout(()=>msg.innerHTML='',4000);
+      showToast(`已匯入 ${count} 筆優缺點記錄`);
+    }catch(e){showToast('匯入失敗：'+e.message);}
+    input.value='';
+  };
+  reader.readAsText(file,'UTF-8');
 }
 
 function adjustNewMeritScore(delta){
