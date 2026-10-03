@@ -593,7 +593,7 @@ function deleteWeekLogs(){
 function importCSVPaste(){
   const text=document.getElementById('csvPaste').value.trim();
   const msgEl=document.getElementById('importMsg');
-  const week=parseInt(document.getElementById('csvWeek').value)||state.weekNum;
+  const week=calcCurrentWeek();
   if(!text){msgEl.innerHTML='<div style="color:var(--red);font-size:12px;margin-top:4px">請先貼上內容</div>';return;}
   let count=0;
   text.split('\n').forEach(l=>{
