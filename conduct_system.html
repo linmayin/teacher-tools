@@ -1102,7 +1102,9 @@ function exportWeeklyText(){
     const subject=`第${week}週班級通訊－${noStr}號${s.name}同學`;
     const levelLabel={'優異':'表現優異','不錯':'表現不錯','加強':'尚待努力'}[s.level];
     let body=`貴家長您好，以下是第${week}週的日常表現紀錄：\n\n本週${s.name}表現\n【${levelLabel}】\n`;
-    if(s.recordDetails.length>0){
+    if(s.level==='優異'){
+      body+=`本週表現優異，無任何待改善記錄，記優點 1 支！\n`;
+    } else if(s.recordDetails.length>0){
       body+='待改善部分：\n';
       s.recordDetails.forEach(d=>{
         const notesStr=d.notes.length>0?'（'+d.notes.join('、')+'）':'';
@@ -1124,10 +1126,11 @@ function exportWeeklyCSV(){
   const week=window._currentSummaryWeek;
   if(!data||!week){showToast('請先在常規記錄頁選擇週次');return;}
   summaryData=data;
-  let csv='\uFEFF座號,姓名,評等,缺點支數,登記項目\n';
+  let csv='\uFEFF座號,姓名,評等,缺點支數,優點支數,登記項目\n';
   summaryData.forEach(s=>{
     const det=s.recordDetails.map(d=>d.label+'×'+d.count).join('；');
-    csv+=`${s.no},"${s.name}","${{'優異':'表現優異','不錯':'表現不錯','加強':'尚待努力'}[s.level]}",${s.totalDeduct},"${det}"\n`;
+    const merit=s.level==='優異'?1:0;
+    csv+=`${s.no},"${s.name}","${{'優異':'表現優異','不錯':'表現不錯','加強':'尚待努力'}[s.level]}",${s.totalDeduct},${merit},"${det}"\n`;
   });
   dlFile(`第${week}週常規明細.csv`,csv,'text/csv');
 }
