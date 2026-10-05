@@ -346,18 +346,20 @@ function renderLogSummary(week){
   const range=getWeekRange(week);
   let html=`<div style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--text2)">全班明細 第${week}週${range?' '+range:''}</div>`;
   html+=`<table class="sum-table"><thead><tr>
-    <th>號</th><th>姓名</th><th>評等</th><th>缺點</th><th>登記明細</th>
+    <th>號</th><th>姓名</th><th>評等</th><th>缺點</th><th>優點</th><th>登記明細</th>
   </tr></thead><tbody>`;
   data.forEach(s=>{
     const det=s.recordDetails.map(d=>{
       const noteTags=d.notes.map(n=>`<span style="color:var(--accent);font-size:11px;background:var(--accent-light);padding:1px 4px;border-radius:4px;margin-left:2px">${n}</span>`).join('');
       return `<span style="display:inline-block;background:var(--surface2);border-radius:6px;padding:2px 7px;font-size:11px;margin:1px">${d.outLabel}×${d.count}（週${d.days.join('、')}）${noteTags}</span>`;
     }).join('')||`<span style="color:var(--text3);font-size:11px">無記錄</span>`;
+    const merit=s.level==='優異'?1:0;
     html+=`<tr>
       <td>${s.no}</td>
       <td style="white-space:nowrap;font-weight:500">${s.name||'—'}</td>
       <td><span class="badge ${badgeMap[s.level]}">${labelMap[s.level]}</span></td>
       <td style="text-align:center;font-weight:700;color:${s.totalDeduct>0?'var(--red)':'var(--text3)'}">${s.totalDeduct>0?s.totalDeduct+'支':'—'}</td>
+      <td style="text-align:center;font-weight:700;color:${merit>0?'var(--green)':'var(--text3)'}">${merit>0?'+'+merit+'支':'—'}</td>
       <td>${det}</td>
     </tr>`;
   });
