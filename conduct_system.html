@@ -309,6 +309,8 @@ input[type=text],input[type=number],input[type=date],select,textarea{
   <div class="card">
     <div class="card-title">資料管理</div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:8px">⚠️ 以下操作無法復原，請謹慎使用</div>
+    <button class="btn btn-full" onclick="diagStorage()" style="margin-bottom:6px">🔍 診斷資料儲存狀態</button>
+    <div id="diagResult" style="font-size:12px;margin-bottom:8px;padding:8px;background:var(--surface2);border-radius:6px;display:none;word-break:break-all"></div>
     <button class="btn btn-full btn-red" onclick="clearAllData()">🗑 清除所有資料（換新班級）</button>
   </div>
 </div>
@@ -579,10 +581,30 @@ function init(){
 }
 
 function loadState(){
-  try{const d=localStorage.getItem(DATA_KEY);if(d)Object.assign(state,JSON.parse(d));}catch(e){}
+  try{
+    const d=localStorage.getItem(DATA_KEY);
+    if(d){
+      const parsed=JSON.parse(d);
+      Object.assign(state,parsed);
+      console.log('loadState 成功，logs:',state.logs.length,'merits:',state.merits.length);
+    } else {
+      console.log('loadState: localStorage 無資料（首次使用）');
+    }
+  }catch(e){
+    console.error('loadState 失敗:', e);
+  }
 }
 function saveState(){
-  try{localStorage.setItem(DATA_KEY,JSON.stringify(state));}catch(e){}
+  try{
+    const json=JSON.stringify(state);
+    localStorage.setItem(DATA_KEY,json);
+    // 驗證存入成功
+    const check=localStorage.getItem(DATA_KEY);
+    if(!check) console.warn('saveState: 存入後讀取失敗');
+  }catch(e){
+    console.error('saveState 失敗:', e);
+    showToast('⚠️ 資料儲存失敗：'+e.message);
+  }
 }
 
 function setTodayDate(){
@@ -1318,6 +1340,28 @@ function applyCurrentWeek(){
   document.getElementById('meritWeek').value=w;
   document.getElementById('csvWeek').value=w;
   saveState();showToast('已套用至登記頁');
+}
+
+function diagStorage(){
+  const el=document.getElementById('diagResult');
+  el.style.display='block';
+  try{
+    const raw=localStorage.getItem(DATA_KEY);
+    if(!raw){el.innerHTML='<span style="color:var(--red)">❌ localStorage 無資料</span>';return;}
+    const d=JSON.parse(raw);
+    const info=[
+      '✅ localStorage 有資料',
+      `常規登記：${d.logs?.length||0} 筆`,
+      `優缺點：${d.merits?.length||0} 筆`,
+      `學生名單：${d.students?.length||0} 人`,
+      `已結算週次：${d.settledWeeks?.join('、')||'無'}`,
+      `學期開始：${d.semesterStart||'未設定'}`,
+      `資料大小：${raw.length} 字元`
+    ];
+    el.innerHTML=info.join('<br>');
+  }catch(e){
+    el.innerHTML='<span style="color:var(--red)">❌ 讀取失敗：'+e.message+'</span>';
+  }
 }
 
 function deleteWeekLogsFromSettings(){
