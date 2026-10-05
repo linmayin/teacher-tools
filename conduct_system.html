@@ -569,7 +569,7 @@ function init(){
   renderMeritChips();
   renderNoGrid('meritGrid',meritNos,toggleMeritNo);
   renderLog();
-  renderMeritList();
+  renderMeritSummaryList();
   renderCustomMeritList();
   updateWeekSelectors();
   const semStartEl=document.getElementById('semesterStart');
@@ -1358,7 +1358,7 @@ function diagStorage(){
       `學期開始：${d.semesterStart||'未設定'}`,
       `資料大小：${raw.length} 字元`
     ];
-    el.innerHTML=info.join('<br>');
+    el.innerHTML=info.join('<br>')+'<br><small style="color:var(--text3)">JSON前50字：'+raw.slice(0,50)+'...</small>';
   }catch(e){
     el.innerHTML='<span style="color:var(--red)">❌ 讀取失敗：'+e.message+'</span>';
   }
