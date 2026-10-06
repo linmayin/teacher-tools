@@ -82,6 +82,9 @@ body{font-family:'PingFang TC','Noto Sans TC',sans-serif;background:var(--bg);co
     <button class="btn-hdr" onclick="toggleMode()">切換模式</button>
     <button class="btn-hdr" onclick="randomAssign()">🎲 隨機</button>
     <button class="btn-hdr" onclick="exportDocx()">&#x2B07; Word</button>
+    <button class="btn-hdr" onclick="saveBackup()">💾 備份</button>
+    <label class="btn-hdr" style="cursor:pointer">📂 載入<input type="file" accept=".json" style="display:none" onchange="loadBackup(this)"></label>
+    <button class="btn-hdr" style="background:rgba(220,50,50,.35)" onclick="clearSeats()">🗑 清除座位</button>
   </div>
 </div>
 <div class="main">
@@ -116,7 +119,7 @@ body{font-family:'PingFang TC','Noto Sans TC',sans-serif;background:var(--bg);co
       <div class="stat-row">可用：<span class="stat-badge" id="availCount">0</span>白底：<span class="stat-badge" id="whiteCount">0</span>灰底：<span class="stat-badge" id="grayCount">0</span></div>
     </div>
     <div class="student-list" id="studentList"><div style="color:var(--text3);font-size:11px;text-align:center;padding:10px">尚未匯入名單</div></div>
-    <div class="s-section"><button class="btn btn-sm btn-red btn-full" onclick="clearAll()">&#x1F5D1; 清除座位安排</button></div>
+
   </div>
 </div>
 <div class="toast" id="toast"></div>
@@ -152,6 +155,7 @@ function initGrid(){
     }
   }
   renderGrid();
+  saveState();
 }
 
 function adjustGrid(type,delta){
@@ -268,6 +272,7 @@ function renderGrid(){
 function toggleEmpty(r,c){
   grid[r][c]=grid[r][c]===null?undefined:null;
   renderGrid();
+  saveState();
 }
 
 // ===== 滑鼠拖放 =====
@@ -282,7 +287,7 @@ function dropOnSeat(r,c){
     removeStudentFromGrid(dragStudent.no);
     grid[r][c]=dragStudent; dragStudent=null;
   }
-  renderGrid(); renderStudentList();
+  renderGrid(); renderStudentList(); saveState();
 }
 
 // ===== 觸控拖曳（iPad）=====
@@ -369,7 +374,7 @@ function removeStudentFromGrid(no){
       if(grid[r][c]&&grid[r][c].no===no) grid[r][c]=undefined;
 }
 
-function removeSeat(r,c){grid[r][c]=undefined;renderGrid();renderStudentList();}
+function removeSeat(r,c){grid[r][c]=undefined;renderGrid();renderStudentList();saveState();}
 
 // ===== 名單 =====
 function parseRoster(){
@@ -402,9 +407,9 @@ function importExcel(input){
         if(String(row[0]).trim()==='座號')return;
         const no=parseInt(row[0]);
         const name=String(row[1]||'').trim();
-        if(name)newStudents.push({no:isNaN(no)?idx+1:no,name});
+        if(name){const sno=isNaN(no)?idx+1:no; newStudents.push({id:sno,no:sno,name});}
       });
-      students=newStudents; renderStudentList(); updateStats();
+      students=newStudents; renderStudentList(); updateStats(); saveState();
       showToast(`已匯入 ${students.length} 位學生`);
     }catch(e){showToast('匯入失敗：'+e.message);}
     input.value='';
@@ -506,8 +511,135 @@ function randomAssign(){
   const seats=[...empty].sort(()=>Math.random()-.5);
   const count=Math.min(shuffled.length,seats.length);
   for(let i=0;i<count;i++)grid[seats[i].r][seats[i].c]=shuffled[i];
-  renderGrid(); renderStudentList();
+  renderGrid(); renderStudentList(); saveState();
   showToast(`已隨機分配 ${count} 位學生`);
+}
+
+// ===== localStorage 自動儲存 =====
+const LS_KEY = 'seat_planner_v1';
+
+function saveState(){
+  try{
+    const state={
+      rows, cols, direction,
+      gridBlocked: grid.map(row=>row.map(cell=>cell===null)),
+      gridSeats: grid.map(row=>row.map(cell=>(cell&&(cell.id!=null||cell.no!=null))?(cell.id!=null?cell.id:cell.no):null)),
+      students: students.map(s=>({id:s.id,name:s.name,no:s.no})),
+      className: document.getElementById('className').value||''
+    };
+    localStorage.setItem(LS_KEY, JSON.stringify(state));
+  }catch(e){}
+}
+
+function loadState(){
+  try{
+    const raw=localStorage.getItem(LS_KEY);
+    if(!raw)return false;
+    const state=JSON.parse(raw);
+    // 還原班級名稱
+    if(state.className){
+      const el=document.getElementById('className');
+      if(el)el.value=state.className;
+    }
+    // 還原格局
+    rows=state.rows||6; cols=state.cols||6; direction=state.direction||'top';
+    document.getElementById('rowCount').value=rows;
+    document.getElementById('colCount').value=cols;
+    document.querySelectorAll('.dir-btn').forEach(b=>b.classList.remove('active'));
+    const db=document.getElementById('dir-'+direction);
+    if(db)db.classList.add('active');
+    // 還原學生名單
+    students=state.students||[];
+    // 還原格子
+    grid=[];
+    for(let r=0;r<rows;r++){
+      grid[r]=[];
+      for(let cc=0;cc<cols;cc++){
+        const blocked=state.gridBlocked&&state.gridBlocked[r]&&state.gridBlocked[r][cc];
+        const sid=state.gridSeats&&state.gridSeats[r]&&state.gridSeats[r][cc];
+        if(blocked){ grid[r][cc]=null; }
+        else if(sid!=null){
+          const stu=students.find(s=>(s.id!=null?s.id:s.no)===sid);
+          grid[r][cc]=stu||undefined;
+        } else { grid[r][cc]=undefined; }
+      }
+    }
+    return true;
+  }catch(e){return false;}
+}
+
+// ===== 備份匯出 =====
+function saveBackup(){
+  const state={
+    rows, cols, direction,
+    gridBlocked: grid.map(row=>row.map(cell=>cell===null)),
+    gridSeats: grid.map(row=>row.map(cell=>(cell&&(cell.id!=null||cell.no!=null))?(cell.id!=null?cell.id:cell.no):null)),
+    students: students.map(s=>({id:s.id,name:s.name,no:s.no})),
+    className: document.getElementById('className').value||''
+  };
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  const date=new Date().toLocaleDateString('sv').replace(/-/g,'');
+  a.download='座位備份_'+date+'.json';
+  a.href=URL.createObjectURL(blob);
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ===== 備份匯入 =====
+function loadBackup(input){
+  const file=input.files[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const state=JSON.parse(e.target.result);
+      // 還原班級名稱
+      if(state.className){
+        const el=document.getElementById('className');
+        if(el)el.value=state.className;
+      }
+      rows=state.rows||6; cols=state.cols||6; direction=state.direction||'top';
+      document.getElementById('rowCount').value=rows;
+      document.getElementById('colCount').value=cols;
+      document.querySelectorAll('.dir-btn').forEach(b=>b.classList.remove('active'));
+      const db=document.getElementById('dir-'+direction);
+      if(db)db.classList.add('active');
+      students=state.students||[];
+      grid=[];
+      for(let r=0;r<rows;r++){
+        grid[r]=[];
+        for(let cc=0;cc<cols;cc++){
+          const blocked=state.gridBlocked&&state.gridBlocked[r]&&state.gridBlocked[r][cc];
+          const sid=state.gridSeats&&state.gridSeats[r]&&state.gridSeats[r][cc];
+          if(blocked){ grid[r][cc]=null; }
+          else if(sid!=null){
+            const stu=students.find(s=>(s.id!=null?s.id:s.no)===sid);
+            grid[r][cc]=stu||undefined;
+          } else { grid[r][cc]=undefined; }
+        }
+      }
+      const podiumBar=document.getElementById('podiumBar');
+      if(podiumBar){
+        podiumBar.style.order=direction==='bottom'?'10':'-1';
+        podiumBar.textContent='講台';
+      }
+      renderGrid(); renderStudentList();
+      saveState();
+      alert('備份載入成功！');
+    }catch(err){
+      alert('載入失敗：'+err.message);
+    }
+    input.value='';
+  };
+  reader.readAsText(file,'utf-8');
+}
+
+// ===== 清除座位安排（保留格局與名單）=====
+function clearSeats(){
+  if(!confirm('確定清除所有座位安排？\n格局和名單會保留，學生將回到待排名單。'))return;
+  for(let r=0;r<rows;r++)for(let cc=0;cc<cols;cc++)if(grid[r][cc]!==null)grid[r][cc]=undefined;
+  renderGrid(); renderStudentList(); saveState();
 }
 
 function clearAll(){
@@ -687,9 +819,18 @@ function showToast(msg){
 }
 
 // ===== 啟動 =====
-initGrid();
-updatePodium();
-window.addEventListener('resize',()=>renderGrid());
+(function(){
+  const restored = loadState();
+  if(restored){
+    updatePodium();
+    renderGrid();
+    renderStudentList();
+  } else {
+    initGrid();
+    updatePodium();
+  }
+  window.addEventListener('resize',()=>renderGrid());
+})();
 
 </script>
 </body>
