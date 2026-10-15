@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>段考看板</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-base: #0d0f18;
+    --bg-panel: #13162200;
+    --bg-card: #161925;
+    --bg-row: #12151f;
+    --bg-input: #0d0f18;
+    --border: #252a3d;
+    --border-focus: #4a6cf7;
+    --text-primary: #e8eaf6;
+    --text-secondary: #7b82a8;
+    --text-muted: #4a5070;
+    --accent: #4a6cf7;
+    --accent-soft: #1e2d5a;
+    --active-bg: #0f1e3d;
+    --active-border: #3a5cc5;
+    --active-text: #93b4ff;
+    --active-time: #bbc9ff;
+    --active-ret: #64b5f6;
+    --highlight: #f59e0b;
+    --danger: #e57373;
+  }
+
+  html, body {
+    width: 100%; height: 100%;
+    background: var(--bg-base);
+    color: var(--text-primary);
+    font-family: 'Noto Sans TC', sans-serif;
+    overflow: hidden;
+  }
+
+  .dashboard {
+    width: 100vw;
+    height: 100vh;
+    display: grid;
+    grid-template-rows: 72px minmax(0,1fr) 17vh;
+    grid-template-columns: minmax(0,1fr) clamp(340px, 24vw, 440px);
+    gap: 10px;
+    padding: 12px;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-card);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 0 22px;
+    position: relative;
+  }
+
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+
+  .title-zh {
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 1px;
+  }
+
+  .title-box {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #1a1f35;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 10px;
+    text-align: center;
+  }
+
+  .editable-box {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-primary);
+    font-size: inherit;
+    font-weight: inherit;
+    font-family: inherit;
+    text-align: center;
+    width: 2em;
+  }
+
+  .title-en {
+    font-family: 'Arial Black', 'Arial', sans-serif;
+    font-size: 20px;
+    font-weight: 900;
+    color: #9fa8da;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    letter-spacing: 1px;
+  }
+
+  .title-en .title-box {
+    min-width: 0;
+  }
+
+  .clock-block {
+    text-align: right;
+  }
+
+  .clock-time {
+    font-size: 40px;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: 'Georgia', monospace;
+    letter-spacing: 3px;
+    line-height: 1;
+  }
+
+  .clock-date {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 3px;
+    letter-spacing: 1px;
+  }
+
+  /* mode toggle */
+  .mode-btn {
+    background: #1a1f35;
+    border: 0.5px solid var(--border);
+    border-radius: 20px;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-family: 'Noto Sans TC', sans-serif;
+    padding: 3px 14px;
+    cursor: pointer;
+    letter-spacing: 1px;
+    transition: color 0.2s, border-color 0.2s;
+    white-space: nowrap;
+  }
+  .mode-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* ── SCHEDULE ── */
+  .schedule-panel {
+    grid-column: 1;
+    background: var(--bg-card);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow: hidden;
+  }
+
+  .panel-label {
+    font-size: 2.2vh;
+    color: var(--text-muted);
+    letter-spacing: 3px;
+    border-bottom: 0.5px solid var(--border);
+    padding-bottom: 8px;
+    margin-bottom: 2px;
+  }
+
+  .subject-row {
+    display: grid;
+    grid-template-columns: minmax(0,1fr) auto auto;
+    gap: 2vw;
+    align-items: center;
+    padding: 0.6vh 2vw;
+    border-radius: 8px;
+    border: 0.5px solid var(--border);
+    background: var(--bg-row);
+    transition: background 0.3s, border-color 0.3s;
+    flex: 1;
+  }
+
+  .subject-row.active {
+    background: var(--active-bg);
+    border-color: var(--active-border);
+  }
+
+  .subject-col {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .subject-name-display {
+    font-size: 6vh;
+    font-weight: 900;
+    color: var(--text-primary);
+    line-height: 1.1;
+  }
+  .subject-row.active .subject-name-display { color: var(--active-text); }
+
+  .active-badge {
+    display: none;
+    font-size: 2vh;
+    background: #0d1e45;
+    color: #64b5f6;
+    border-radius: 4px;
+    padding: 2px 7px;
+    letter-spacing: 1px;
+    width: fit-content;
+  }
+  .subject-row.active .active-badge { display: block; }
+
+  .time-col {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .time-display {
+    font-size: 5.6vh;
+    font-weight: 700;
+    color: #9fa8da;
+    font-family: 'Georgia', monospace;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .subject-row.active .time-display { color: var(--active-time); }
+
+  .time-sep { color: var(--text-muted); font-size: 4vh; }
+
+  .ret-col {
+    text-align: right;
+  }
+
+  .ret-label {
+    font-size: 2.2vh;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .ret-val {
+    font-size: 4.6vh;
+    font-weight: 700;
+    color: var(--text-muted);
+    font-family: 'Georgia', monospace;
+    letter-spacing: 1px;
+    white-space: nowrap;
+  }
+  .subject-row.active .ret-val { color: var(--active-ret); }
+
+  /* edit mode inputs */
+  .subject-name-input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #2a2f4a;
+    color: var(--text-primary);
+    font-size: 4vh;
+    font-weight: 700;
+    font-family: 'Noto Sans TC', sans-serif;
+    outline: none;
+    width: 100%;
+    padding: 2px 0;
+    transition: border-color 0.2s;
+  }
+  .subject-name-input:focus { border-bottom-color: var(--border-focus); }
+
+  .time-input {
+    background: var(--bg-input);
+    border: 0.5px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 2.6vh;
+    font-family: 'Georgia', monospace;
+    outline: none;
+    padding: 4px 6px;
+    width: 22vh;
+    text-align: center;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+  .time-input::-webkit-calendar-picker-indicator { filter: invert(0.6); cursor: pointer; }
+  .time-input:focus { border-color: var(--border-focus); }
+
+  /* ── RIGHT PANEL ── */
+  .right-panel {
+    grid-column: 2;
+    background: var(--bg-card);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    overflow: hidden;
+  }
+
+  .att-stat {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .att-label { font-size: 3vh; color: var(--text-secondary); }
+
+  .att-num {
+    font-size: 6vh;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-family: 'Georgia', monospace;
+  }
+
+  .att-input {
+    background: var(--bg-input);
+    border: 0.5px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 4.5vh;
+    font-weight: 700;
+    font-family: 'Georgia', monospace;
+    outline: none;
+    padding: 2px 8px;
+    width: 12vh;
+    text-align: center;
+    transition: border-color 0.2s;
+  }
+  .att-input:focus { border-color: var(--border-focus); }
+
+  .absent-label { font-size: 2.4vh; color: var(--text-muted); margin-bottom: 6px; letter-spacing: 1px; }
+
+  .absent-display {
+    font-size: 3.4vh;
+    color: #ef9a9a;
+    line-height: 1.5;
+    flex: 1;
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
+
+  .absent-textarea {
+    background: var(--bg-input);
+    border: 0.5px solid var(--border);
+    border-radius: 6px;
+    color: #ef9a9a;
+    font-size: 3.2vh;
+    font-family: 'Noto Sans TC', sans-serif;
+    outline: none;
+    padding: 8px;
+    width: 100%;
+    flex: 1;
+    resize: none;
+    line-height: 1.7;
+    transition: border-color 0.2s;
+  }
+  .absent-textarea:focus { border-color: var(--border-focus); }
+
+  .divider {
+    height: 0.5px;
+    background: var(--border);
+    margin: 2px 0;
+  }
+
+  /* ── NOTE PANEL ── */
+  .note-panel {
+    grid-column: 1 / -1;
+    background: var(--bg-card);
+    border: 0.5px solid var(--border);
+    border-radius: 10px;
+    padding: 1vh 18px;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .note-label {
+    font-size: 2.2vh;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    white-space: nowrap;
+    margin-top: 3px;
+    padding-top: 2px;
+  }
+
+  .note-display {
+    font-size: 4vh;
+    color: var(--text-secondary);
+    line-height: 1.4;
+    flex: 1;
+    white-space: pre-wrap;
+    overflow-y: auto;
+    max-height: 100%;
+    padding-right: 12vw;
+  }
+
+  .note-textarea {
+    background: transparent;
+    border: none;
+    border-left: 2px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 4vh;
+    font-family: 'Noto Sans TC', sans-serif;
+    outline: none;
+    width: 100%;
+    flex: 1;
+    resize: none;
+    line-height: 1.4;
+    padding-left: 12px;
+    height: 100%;
+  }
+  .note-textarea:focus { border-left-color: var(--border-focus); }
+
+  /* ── SHOW MODE ── */
+  .edit-only { display: block; }
+  .show-only { display: none; }
+
+  body.show-mode .edit-only { display: none !important; }
+  body.show-mode .show-only { display: block; }
+  body.show-mode .title-box { border-color: transparent; background: transparent; }
+  body.show-mode .mode-btn { opacity: 0.3; }
+  body.show-mode .mode-btn:hover { opacity: 1; }
+
+  /* ── OVERLAY ── */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #07080f;
+    z-index: 9999;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px;
+  }
+  .overlay.show { display: flex; }
+
+  .overlay-icon {
+    font-size: 7vh;
+    margin-bottom: 3vh;
+    color: #4a6cf7;
+    letter-spacing: 16px;
+  }
+
+  .overlay-main {
+    font-size: min(12vh, 8vw);
+    font-weight: 900;
+    color: #c5cae9;
+    letter-spacing: 6px;
+    line-height: 1.4;
+    margin-bottom: 4vh;
+  }
+
+  .overlay-sub {
+    font-size: 5vh;
+    color: #7986cb;
+    font-family: 'Georgia', monospace;
+    letter-spacing: 2px;
+    margin-bottom: 5vh;
+  }
+
+  .overlay-time {
+    font-size: 8vh;
+    font-weight: 700;
+    color: #9fa8da;
+    font-family: 'Georgia', monospace;
+    letter-spacing: 3px;
+    margin-bottom: 2vh;
+  }
+
+  .overlay-close-btn {
+    background: #1a1f35;
+    border: 1px solid #3a4a80;
+    border-radius: 8px;
+    color: #7986cb;
+    font-size: 3vh;
+    font-family: 'Noto Sans TC', sans-serif;
+    padding: 1.4vh 4vh;
+    cursor: pointer;
+    letter-spacing: 2px;
+    transition: border-color 0.2s, color 0.2s;
+  }
+  .overlay-close-btn:hover { border-color: var(--accent); color: var(--accent-soft); color: #90a8ff; }
+
+  .countdown-bar-wrap {
+    width: 50vw;
+    height: 6px;
+    background: #1a1f35;
+    border-radius: 2px;
+    margin-bottom: 5vh;
+    overflow: hidden;
+  }
+  .countdown-bar {
+    height: 100%;
+    background: #3a5cc5;
+    border-radius: 2px;
+    transition: width 1s linear;
+  }
+
+  /* ── v3 overrides: note in right panel, sound controls ── */
+  .dashboard { grid-template-rows: 72px minmax(0,1fr); grid-template-columns: minmax(0,1fr) clamp(380px, 30vw, 580px); }
+  .right-panel { gap: 1vh; }
+  .right-panel .divider { margin: 0.4vh 0; }
+  .absent-display { flex: 0 0 11vh; line-height: 1.5; }
+  .absent-textarea { flex: 0 0 11vh; line-height: 1.5; }
+  .note-display { font-size: 3.4vh; line-height: 1.45; min-height: 0; max-height: none; padding-right: 0; flex: 1; }
+  .note-textarea { font-size: 3.4vh; line-height: 1.45; min-height: 0; height: auto; flex: 1;
+    border: 0.5px solid var(--border); border-left: 2px solid var(--border); padding: 8px 12px; border-radius: 6px; }
+  .mode-btn { align-self: flex-end; font-size: 2vh; padding: 0.6vh 1.6vh; }
+  .sound-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8vh 1vh; }
+  .sound-row label { font-size: 2.2vh; color: var(--text-secondary); }
+  .sound-row select, .sound-row button {
+    background: var(--bg-input); border: 0.5px solid var(--border); border-radius: 6px;
+    color: var(--text-primary); font-size: 2.4vh; font-family: 'Noto Sans TC', sans-serif;
+    padding: 0.6vh 1vh; outline: none; cursor: pointer; }
+  .sound-row button:hover, .sound-row select:focus { border-color: var(--border-focus); }
+</style>
+</head>
+<body>
+
+<div class="dashboard" id="dashboard">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="title-zh">
+        第
+        <span class="title-box" >
+          <span class="show-only" id="examNumDisplay">一</span>
+          <input class="editable-box edit-only" id="examNumInput" value="一" placeholder="一">
+        </span>
+        次段考
+      </div>
+      <div class="title-en">
+        Day
+        <span class="title-box" >
+          <span class="show-only" id="examDayDisplay">1</span>
+          <input class="editable-box edit-only" id="examDayInput" value="1" placeholder="1">
+        </span>
+      </div>
+    </div>
+
+
+    <div class="clock-block">
+      <div class="clock-time" id="clockTime">--:--</div>
+      <div class="clock-date" id="clockDate"></div>
+    </div>
+  </div>
+
+  <!-- SCHEDULE -->
+  <div class="schedule-panel">
+    <div class="panel-label">考試時程</div>
+    <div id="subjectList" style="display:flex;flex-direction:column;gap:8px;flex:1;"></div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right-panel">
+    <div class="panel-label">出缺狀況</div>
+    <div class="att-stat">
+      <span class="att-label">應到人數</span>
+      <span class="show-only att-num" id="totalDisplay">32</span>
+      <input class="att-input edit-only" id="totalInput" type="number" value="32" min="0">
+    </div>
+    <div class="att-stat">
+      <span class="att-label">實到人數</span>
+      <span class="show-only att-num" id="presentDisplay">32</span>
+      <input class="att-input edit-only" id="presentInput" type="number" value="32" min="0">
+    </div>
+    <div class="divider"></div>
+    <div class="absent-label">缺席座號</div>
+    <div class="show-only absent-display" id="absentDisplay"></div>
+    <textarea class="absent-textarea edit-only" id="absentInput" placeholder="02(病假)&#10;15(事假)"></textarea>
+    <div class="divider"></div>
+    <div class="absent-label">導師叮嚀</div>
+    <div class="show-only note-display" id="noteDisplay"></div>
+    <textarea class="note-textarea edit-only" id="noteInput" placeholder="在此輸入導師叮嚀事項..."></textarea>
+    <div class="edit-only sound-box">
+      <div class="sound-row">
+        <label for="soundSelect">提醒音</label>
+        <select id="soundSelect">
+          <option value="bell">1 學校鐘聲</option>
+          <option value="alarm">2 電子警報</option>
+          <option value="clock">3 鬧鐘</option>
+          <option value="ding">4 高音叮噹</option>
+          <option value="twotone">5 雙音警示</option>
+        </select>
+        <label for="volSelect">音量</label>
+        <select id="volSelect">
+          <option value="mid">中</option>
+          <option value="large">大</option>
+          <option value="xl">特大</option>
+        </select>
+        <button type="button" onclick="previewSound()">🔔 試聽</button>
+      </div>
+    </div>
+    <button class="mode-btn" id="modeBtn" onclick="toggleMode()">⬡ 切換展示模式</button>
+  </div>
+
+</div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="overlay-icon">◈ ◈ ◈</div>
+  <div class="overlay-main">請考生回到座位<br>安靜等候考試</div>
+  <div class="overlay-time" id="overlayTime">--:--</div>
+  <div class="overlay-sub" id="overlaySub">下節考試開始時間：--:--</div>
+  <div class="countdown-bar-wrap">
+    <div class="countdown-bar" id="countdownBar" style="width:100%"></div>
+  </div>
+  <button class="overlay-close-btn" onclick="closeOverlay()">關閉提醒</button>
+</div>
+
+<script>
+const STORAGE_KEY = 'examDashboard_v2';
+
+const defaultSubjects = [
+  { name: '數學', start: '08:30', end: '09:30' },
+  { name: '自習', start: '09:50', end: '10:40' },
+  { name: '英語', start: '11:00', end: '12:00' },
+  { name: '自習', start: '13:40', end: '14:40' },
+  { name: '國文', start: '15:05', end: '16:05' },
+];
+
+let state = loadState();
+let firedReminders = new Set();
+let overlayTimer = null;
+let overlayCountdown = null;
+let overlayEndTime = null;
+let isShowMode = false;
+let chimeInterval = null;
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch(e) {}
+  return {
+    examNum: '一',
+    examDay: '1',
+    subjects: defaultSubjects.map(s => ({...s})),
+    total: '32',
+    present: '32',
+    absent: '',
+    note: '',
+    sound: 'bell',
+    volume: 'xl',
+  };
+}
+
+function saveState() {
+  state.examNum = document.getElementById('examNumInput').value;
+  state.examDay = document.getElementById('examDayInput').value;
+  state.total = document.getElementById('totalInput').value;
+  state.present = document.getElementById('presentInput').value;
+  state.absent = document.getElementById('absentInput').value;
+  state.note = document.getElementById('noteInput').value;
+  state.sound = document.getElementById('soundSelect').value;
+  state.volume = document.getElementById('volSelect').value;
+  state.subjects = subjects.map((s,i) => ({
+    name: document.getElementById('sname-'+i)?.value ?? s.name,
+    start: document.getElementById('sstart-'+i)?.value ?? s.start,
+    end: document.getElementById('send-'+i)?.value ?? s.end,
+  }));
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+}
+
+let subjects = state.subjects.map(s => ({...s}));
+
+function pad(n) { return String(n).padStart(2,'0'); }
+
+function timeToMin(str) {
+  const p = (str||'').split(':');
+  if (p.length < 2) return NaN;
+  return parseInt(p[0])*60 + parseInt(p[1]);
+}
+
+function minToStr(m) { return pad(Math.floor(m/60))+':'+pad(m%60); }
+
+function calcReturn(startStr) {
+  const m = timeToMin(startStr);
+  return isNaN(m) ? '--:--' : minToStr(m - 10);
+}
+
+function renderSubjects() {
+  const list = document.getElementById('subjectList');
+  list.innerHTML = '';
+  subjects.forEach((s, i) => {
+    const row = document.createElement('div');
+    row.className = 'subject-row';
+    row.id = 'row-'+i;
+    row.style.flex = '1';
+    row.innerHTML = `
+      <div class="subject-col">
+        <span class="show-only subject-name-display" id="sname-display-${i}">${s.name||'──'}</span>
+        <input class="subject-name-input edit-only" id="sname-${i}" value="${s.name}" placeholder="科目">
+        <span class="active-badge">進行中</span>
+      </div>
+      <div class="time-col">
+        <span class="show-only time-display" id="stime-display-${i}">${s.start||'--:--'} – ${s.end||'--:--'}</span>
+        <div class="edit-only" style="display:flex;align-items:center;gap:6px;">
+          <input class="time-input" id="sstart-${i}" type="time" value="${s.start}">
+          <span class="time-sep">–</span>
+          <input class="time-input" id="send-${i}" type="time" value="${s.end}">
+        </div>
+      </div>
+      <div class="ret-col">
+        <span class="ret-label">返座時間</span>
+        <span class="ret-val" id="ret-${i}">${calcReturn(s.start)}</span>
+      </div>
+    `;
+    list.appendChild(row);
+
+    document.getElementById('sname-'+i).addEventListener('input', e => {
+      subjects[i].name = e.target.value;
+      document.getElementById('sname-display-'+i).textContent = e.target.value || '──';
+      saveState();
+    });
+    document.getElementById('sstart-'+i).addEventListener('change', e => {
+      subjects[i].start = e.target.value;
+      document.getElementById('ret-'+i).textContent = calcReturn(e.target.value);
+      document.getElementById('stime-display-'+i).textContent = (e.target.value||'--:--') + ' – ' + (subjects[i].end||'--:--');
+      firedReminders.delete(i);
+      saveState();
+    });
+    document.getElementById('send-'+i).addEventListener('change', e => {
+      subjects[i].end = e.target.value;
+      document.getElementById('stime-display-'+i).textContent = (subjects[i].start||'--:--') + ' – ' + (e.target.value||'--:--');
+      saveState();
+    });
+  });
+}
+
+// sync display fields from state
+function syncInputsFromState() {
+  document.getElementById('examNumInput').value = state.examNum;
+  document.getElementById('examDayInput').value = state.examDay;
+  document.getElementById('totalInput').value = state.total;
+  document.getElementById('presentInput').value = state.present;
+  document.getElementById('absentInput').value = state.absent;
+  document.getElementById('noteInput').value = state.note;
+  document.getElementById('soundSelect').value = state.sound || 'bell';
+  document.getElementById('volSelect').value = state.volume || 'xl';
+}
+
+function syncDisplayFields() {
+  document.getElementById('examNumDisplay').textContent = document.getElementById('examNumInput').value || '　';
+  document.getElementById('examDayDisplay').textContent = document.getElementById('examDayInput').value || '　';
+  document.getElementById('totalDisplay').textContent = document.getElementById('totalInput').value;
+  document.getElementById('presentDisplay').textContent = document.getElementById('presentInput').value;
+  document.getElementById('absentDisplay').textContent = document.getElementById('absentInput').value;
+  document.getElementById('noteDisplay').textContent = document.getElementById('noteInput').value;
+}
+
+function toggleMode() {
+  isShowMode = !isShowMode;
+  syncDisplayFields();
+  document.body.classList.toggle('show-mode', isShowMode);
+  document.getElementById('modeBtn').textContent = isShowMode ? '⬡ 切換編輯模式' : '⬡ 切換展示模式';
+  if (isShowMode) {
+    // 趁使用者觸碰按鈕的當下初始化 AudioContext（iOS 限制）
+    getAudioCtx();
+  } else {
+    saveState();
+  }
+}
+
+['examNumInput','examDayInput','totalInput','presentInput','absentInput','noteInput'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', saveState);
+});
+
+document.getElementById('soundSelect').addEventListener('change', () => { saveState(); previewSound(); });
+document.getElementById('volSelect').addEventListener('change', () => { saveState(); previewSound(); });
+
+// clock & highlight
+function updateClock() {
+  const now = new Date();
+  const h = pad(now.getHours()), m = pad(now.getMinutes()), s = pad(now.getSeconds());
+  document.getElementById('clockTime').textContent = h+':'+m;
+  const days = ['日','一','二','三','四','五','六'];
+  document.getElementById('clockDate').textContent =
+    `${now.getFullYear()} / ${pad(now.getMonth()+1)} / ${pad(now.getDate())}  （週${days[now.getDay()]}）`;
+
+  // update overlay time
+  if (document.getElementById('overlay').classList.contains('show')) {
+    document.getElementById('overlayTime').textContent = h+':'+m;
+    if (overlayEndTime) {
+      const elapsed = Date.now() - (overlayEndTime - 8*60*1000);
+      const pct = Math.max(0, 100 - (elapsed / (8*60*1000)) * 100);
+      document.getElementById('countdownBar').style.width = pct.toFixed(1) + '%';
+    }
+  }
+
+  const nowMin = now.getHours()*60 + now.getMinutes();
+  const nowSec = now.getSeconds();
+
+  subjects.forEach((s, i) => {
+    const startMin = timeToMin(s.start);
+    const endMin = timeToMin(s.end);
+    const retMin = startMin - 10;
+    const row = document.getElementById('row-'+i);
+    if (!row) return;
+
+    row.classList.toggle('active', !isNaN(startMin) && !isNaN(endMin) && nowMin >= startMin && nowMin < endMin);
+
+    if (!isNaN(retMin) && nowMin === retMin && nowSec === 0 && !firedReminders.has(i)) {
+      firedReminders.add(i);
+      triggerReminder(i, s);
+    }
+  });
+}
+
+// chime — shared AudioContext, initialized on user gesture
+let sharedAudioCtx = null;
+
+function getAudioCtx() {
+  if (!sharedAudioCtx || sharedAudioCtx.state === 'closed') {
+    sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (sharedAudioCtx.state === 'suspended') {
+    sharedAudioCtx.resume();
+  }
+  return sharedAudioCtx;
+}
+
+const VOLUME_GAIN = { mid: 0.35, large: 0.65, xl: 1.0 };
+
+// 單一音符：type 波形、env 'decay'(鐘聲衰減) 或 'flat'(嗶聲平音)
+function tone(ctx, out, t0, freq, dur, type, peak, env) {
+  const osc = ctx.createOscillator();
+  const g = ctx.createGain();
+  osc.type = type;
+  osc.frequency.value = freq;
+  osc.connect(g); g.connect(out);
+  g.gain.setValueAtTime(0.0001, t0);
+  g.gain.linearRampToValueAtTime(peak, t0 + 0.005);
+  if (env === 'decay') {
+    g.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+  } else {
+    g.gain.setValueAtTime(peak, t0 + Math.max(0.01, dur - 0.015));
+    g.gain.linearRampToValueAtTime(0.0001, t0 + dur);
+  }
+  osc.start(t0); osc.stop(t0 + dur + 0.02);
+}
+
+// 鐘聲：基音 + 泛音，聽起來更像金屬鐘
+function bellNote(ctx, out, t0, freq, dur, peak) {
+  tone(ctx, out, t0, freq, dur, 'sine', peak, 'decay');
+  tone(ctx, out, t0, freq * 2.0, dur * 0.7, 'sine', peak * 0.5, 'decay');
+  tone(ctx, out, t0, freq * 3.01, dur * 0.4, 'sine', peak * 0.25, 'decay');
+}
+
+const SOUNDS = {
+  // 1 學校鐘聲：叮咚叮咚
+  bell(ctx, out, t) {
+    [1318.5, 1046.5, 1318.5, 1046.5].forEach((f, i) => bellNote(ctx, out, t + i * 0.55, f, 1.0, 0.9));
+    return 2.6;
+  },
+  // 2 電子警報：三聲短促高音
+  alarm(ctx, out, t) {
+    for (let i = 0; i < 3; i++) tone(ctx, out, t + i * 0.3, 2000, 0.18, 'square', 0.45, 'flat');
+    return 1.3;
+  },
+  // 3 鬧鐘：嗶嗶嗶嗶 × 2 組
+  clock(ctx, out, t) {
+    for (let g = 0; g < 2; g++)
+      for (let i = 0; i < 4; i++) tone(ctx, out, t + g * 0.75 + i * 0.12, 2400, 0.07, 'square', 0.45, 'flat');
+    return 1.6;
+  },
+  // 4 高音叮噹：上行三個高音
+  ding(ctx, out, t) {
+    [1568, 1976, 2349].forEach((f, i) => bellNote(ctx, out, t + i * 0.32, f, 0.8, 0.85));
+    return 1.8;
+  },
+  // 5 雙音警示：高低音交替
+  twotone(ctx, out, t) {
+    for (let i = 0; i < 4; i++) tone(ctx, out, t + i * 0.3, i % 2 ? 1900 : 1400, 0.28, 'square', 0.4, 'flat');
+    return 1.5;
+  },
+};
+
+function playChime() {
+  try {
+    const ctx = getAudioCtx();
+    const vol = VOLUME_GAIN[state.volume] ?? 1.0;
+    const master = ctx.createGain();
+    master.gain.value = vol;
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -12; comp.ratio.value = 6;
+    master.connect(comp); comp.connect(ctx.destination);
+    const fn = SOUNDS[state.sound] || SOUNDS.bell;
+    const sec = fn(ctx, master, ctx.currentTime + 0.05);
+    return sec * 1000;
+  } catch(e) { return 500; }
+}
+
+function previewSound() {
+  state.sound = document.getElementById('soundSelect').value;
+  state.volume = document.getElementById('volSelect').value;
+  playChime();
+}
+
+function triggerReminder(idx, subject) {
+  let count = 0;
+  function ring() {
+    if (count >= 5) {
+      showOverlay(subject);
+      return;
+    }
+    count++;
+    const dur = playChime();
+    setTimeout(ring, dur);
+  }
+  ring();
+}
+
+function showOverlay(subject) {
+  const overlay = document.getElementById('overlay');
+  document.getElementById('overlaySub').textContent = `下節考試開始時間：${subject.start}`;
+  overlayEndTime = Date.now() + 8*60*1000;
+  overlay.classList.add('show');
+  document.getElementById('countdownBar').style.width = '100%';
+
+  if (overlayTimer) clearTimeout(overlayTimer);
+  overlayTimer = setTimeout(closeOverlay, 8*60*1000);
+}
+
+function closeOverlay() {
+  document.getElementById('overlay').classList.remove('show');
+  if (overlayTimer) clearTimeout(overlayTimer);
+  overlayEndTime = null;
+}
+
+// init
+syncInputsFromState();
+renderSubjects();
+updateClock();
+setInterval(updateClock, 1000);
+</script>
+</body>
+</html>
